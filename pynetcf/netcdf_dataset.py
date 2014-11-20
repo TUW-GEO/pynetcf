@@ -1519,11 +1519,19 @@ class netCDFImageStack(OrthoMultiTs):
 
     def __getitem__(self, key):
 
-        gpi = np.atleast_1d(key)
-        for i, gp in enumerate(gpi):
-            data = super(netCDFImageStack, self).read_all_ts(gp)
+        if type(key) == datetime.datetime:
+            index = netCDF4.date2index(
+                key, self.dataset.variables[self.time_var])
+            data = {}
+            for var in self._get_all_ts_variables():
+                data[var] = self.dataset.variables[var][:, index]
+            return data
+        else:
+            gpi = np.atleast_1d(key)
+            for i, gp in enumerate(gpi):
+                data = super(netCDFImageStack, self).read_all_ts(gp)
 
-        return pd.DataFrame(data, index=self.times)
+            return pd.DataFrame(data, index=self.times)
 
 
 class netCDF2DImageStack(Dataset):
@@ -1665,4 +1673,3 @@ class netCDF2DImageStack(Dataset):
                     :, row, column]
 
         return pd.DataFrame(data, index=self.times)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
