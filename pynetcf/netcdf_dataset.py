@@ -1452,19 +1452,26 @@ class netCDFImageStack(OrthoMultiTs):
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
-        self.lat_chunksize = len(self.grid.activegpis)
-        super(netCDFImageStack, self).__init__(filename,
-                                               n_loc=len(self.grid.activegpis),
-                                               name=name, mode=mode,
-                                               read_dates=False)
 
-        if self.mode in ['a', 'r']:
+        if mode in ['a', 'r']:
+            super(netCDFImageStack, self).__init__(
+                filename, name=name, mode=mode, read_dates=False)
             self._load_grid()
             self._load_times()
-        if self.mode == 'w':
+
+        if mode == 'w':
+            if grid is None:
+                raise IOError("grid needs to be defined")
+
+            super(netCDFImageStack, self).__init__(
+                filename, n_loc=len(self.grid.activegpis),
+                name=name, mode=mode, read_dates=False)
+
             self.dataset.variables[self.lon_var][:] = self.grid.activearrlon
             self.dataset.variables[self.lat_var][:] = self.grid.activearrlat
             self.dataset.variables[self.loc_ids_name][:] = self.grid.activegpis
+
+        self.lat_chunksize = len(self.grid.activegpis)
 
     def _load_grid(self):
         lons = self.dataset.variables[self.lon_var][:]
