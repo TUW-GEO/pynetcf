@@ -1,4 +1,4 @@
-# Copyright (c) 2014,Vienna University of Technology,
+# Copyright (c) 2015, Vienna University of Technology,
 # Department of Geodesy and Geoinformation
 # All rights reserved.
 
@@ -6,13 +6,13 @@
 # modification, are permitted provided that the following conditions are met:
 #   * Redistributions of source code must retain the above copyright
 #     notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#    * Neither the name of the Vienna University of Technology,
-#      Department of Geodesy and Geoinformation nor the
-#      names of its contributors may be used to endorse or promote products
-#      derived from this software without specific prior written permission.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the Vienna University of Technology,
+#     Department of Geodesy and Geoinformation nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -27,245 +27,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-Reads and writes netcdf time series according to the Climate Forecast Metadata
-Conventions
-
-Created on Dec 09, 2013
-
-@author: Christoph Paulik christoph.paulik@geo.tuwien.ac.at
+Classes for reading and writing time series in NetCDF files
+according to the Climate Forecast Metadata Conventions
+(http://cfconventions.org/).
 """
 
 import os
+import pandas as pd
 import numpy as np
 import netCDF4
-import datetime
-import pandas as pd
 
+from base import Dataset
 import pytesmo.io.dataset_base as dsbase
-import pytesmo.grid.grids as grids
-
-
-class DatasetError(Exception):
-    pass
-
-
-class Dataset(object):
-
-    """
-    NetCDF file wrapper class that makes some things easier
-
-    Parameters
-    ----------
-    filename : string
-        filename of netCDF file. If already exiting then it will be opened
-        as read only unless the append keyword is set. if the overwrite
-        keyword is set then the file will be overwritten
-    name : string, optional
-        will be written as a global attribute if the file is a new file
-    file_format : string, optional
-        file format
-    mode : string, optional
-        access mode. default 'r'
-        'r' means read-only; no data can be modified.
-        'w' means write; a new file is created, an existing file with the
-            same name is deleted.
-        'a' and 'r+' mean append (in analogy with serial files); an existing
-            file is opened for reading and writing.
-        Appending s to modes w, r+ or a will enable unbuffered shared access
-        to NETCDF3_CLASSIC or NETCDF3_64BIT formatted files. Unbuffered
-        access may be useful even if you don't need shared access, since it
-        may be faster for programs that don't access data sequentially.
-        This option is ignored for NETCDF4 and NETCDF4_CLASSIC
-        formatted files.
-    zlib : boolean, optional
-        Default True
-        if set netCDF compression will be used
-    complevel : int, optional
-        Default 4
-        compression level used from 1(low compression) to 9(high compression)
-    """
-
-    def __init__(self, filename, name=None, file_format="NETCDF4",
-                 mode='r', zlib=True, complevel=4):
-
-        self.dataset_name = name
-        self.filename = filename
-        self.file = None
-        self.file_format = file_format
-        self.buf_len = 0
-        self.global_attr = {}
-        self.global_attr['id'] = os.path.split(self.filename)[1]
-        s = "%Y-%m-%d %H:%M:%S"
-        self.global_attr['date_created'] = datetime.datetime.now().strftime(s)
-        if self.dataset_name is not None:
-            self.global_attr['dataset_name'] = self.dataset_name
-        self.zlib = zlib
-        self.complevel = complevel
-        self.mode = mode
-
-        if self.mode == "a" and not os.path.exists(self.filename):
-            self.mode = "w"
-        if self.mode == 'w':
-            path = os.path.dirname(self.filename)
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-        self.dataset = netCDF4.Dataset(self.filename, self.mode,
-                                       format=self.file_format)
-
-    def _set_global_attr(self):
-        """
-        Write global attributes to NetCDF file.
-        """
-        self.dataset.setncatts(self.global_attr)
-        self.global_attr = {}
-
-    def create_dim(self, name, n):
-        """
-        Create dimension for NetCDF file.
-        if it does not yet exist
-
-        Parameters
-        ----------
-        name : str
-            Name of the NetCDF dimension.
-        n : int
-            Size of the dimension.
-        """
-        if name not in self.dataset.dimensions.keys():
-            self.dataset.createDimension(name, size=n)
-
-    def write_var(self, name, data=None, dim=None, attr={}, dtype=None,
-                  zlib=None, complevel=None, chunksizes=None, **kwargs):
-        """
-        Create or overwrite values in a NetCDF variable. The data will be
-        written to disk once flush or close is called
-
-        Parameters
-        ----------
-        name : str
-            Name of the NetCDF variable.
-        data : np.ndarray, optional
-            Array containing the data.
-            if not given then the variable will be left empty
-        dim : tuple, optional
-            A tuple containing the dimension names.
-        attr : dict, optional
-            A dictionary containing the variable attributes.
-        dtype: data type, string or numpy.dtype, optional
-            if not given data.dtype will be used
-        zlib: boolean, optional
-            explicit compression for this variable
-            if not given then global attribute is used
-        complevel: int, optional
-            explicit compression level for this variable
-            if not given then global attribute is used
-        chunksizes : tuple, optional
-            chunksizes can be used to manually specify the
-            HDF5 chunksizes for each dimension of the variable.
-        """
-
-        fill_value = None
-        if '_FillValue' in attr:
-            fill_value = attr.pop('_FillValue')
-
-        if dtype is None:
-            dtype = data.dtype
-
-        if zlib is None:
-            zlib = self.zlib
-        if complevel is None:
-            complevel = self.complevel
-
-        if name in self.dataset.variables.keys():
-            var = self.dataset.variables[name]
-        else:
-            var = self.dataset.createVariable(name, dtype,
-                                              dim, fill_value=fill_value,
-                                              zlib=zlib, complevel=complevel,
-                                              chunksizes=chunksizes, **kwargs)
-        if data is not None:
-            var[:] = data
-
-        for attr_name, attr_value in attr.iteritems():
-            self.dataset.variables[name].setncattr(attr_name, attr_value)
-
-    def append_var(self, name, data):
-        """
-        append data along unlimited dimension(s) of variable
-
-        Parameters
-        ----------
-        name : string
-            name of variable to append to
-        data : numpy.array
-            numpy array of correct dimension
-
-        Raises
-        ------
-        IOError
-            if appending to variable without unlimited dimension
-        """
-        if name in self.dataset.variables.keys():
-            var = self.dataset.variables[name]
-            dim_unlimited = []
-            key = []
-            for index, dim in enumerate(var.dimensions):
-                unlimited = self.dataset.dimensions[dim].isunlimited()
-                dim_unlimited.append(unlimited)
-                if not unlimited:
-                    # if the dimension is not unlimited set the slice to :
-                    key.append(slice(None, None, None))
-                else:
-                    # if unlimited set slice of this dimension to
-                    # append meaning
-                    # [var.shape[index]:]
-                    key.append(slice(var.shape[index], None, None))
-
-            dim_unlimited = np.array(dim_unlimited)
-            nr_unlimited = np.where(dim_unlimited)[0].size
-            key = tuple(key)
-            # if there are unlimited dimensions we can do an append
-            if nr_unlimited > 0:
-                var[key] = data
-            else:
-                raise IOError(''.join(('Cannot append to variable that ',
-                                       'has no unlimited dimension')))
-
-    def read_var(self, name):
-        """
-        reads variable from netCDF file
-
-        Parameters
-        ----------
-        name : string
-            name of the variable
-        """
-
-        if self.mode in ['r', 'r+']:
-            if name in self.dataset.variables.keys():
-                return self.dataset.variables[name][:]
-
-    def add_global_attr(self, name, value):
-        self.global_attr[name] = value
-
-    def flush(self):
-        if self.dataset is not None:
-            if self.mode in ['w', 'r+']:
-                self._set_global_attr()
-                self.dataset.sync()
-
-    def close(self):
-        if self.dataset is not None:
-            self.flush()
-            self.dataset.close()
-            self.dataset = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, value_type, value, traceback):
-        self.close()
 
 
 class OrthoMultiTs(Dataset):
@@ -367,6 +140,10 @@ class OrthoMultiTs(Dataset):
         self.dates = None
         self.read_dates_auto = read_dates
         self.read_bulk = read_bulk
+
+        # cache location id during reading
+        self.prev_loc_id = None
+
         # if read bulk is activated the arrays will
         # be read into the local variables dict
         # if it is not activated the data will be read
@@ -494,13 +271,13 @@ class OrthoMultiTs(Dataset):
             loc_id = np.array([loc_id])
         if type(lon) != np.ndarray:
             lon = np.array([lon])
-        # netCDF library can not handle arrays of length 1 that contain onla a
+        # netCDF library can not handle arrays of length 1 that contain only a
         # None value
         if lon.size == 1 and lon[0] is None:
             lon = None
         if type(lat) != np.ndarray:
             lat = np.array([lat])
-        # netCDF library can not handle arrays of length 1 that contain onla a
+        # netCDF library can not handle arrays of length 1 that contain only a
         # None value
         if lat.size == 1 and lat[0] is None:
             lat = None
@@ -630,7 +407,13 @@ class OrthoMultiTs(Dataset):
         var : string
             name of variable to read
         """
-        index = self._get_index_of_ts(loc_id)
+        if self.prev_loc_id != loc_id:
+            index = self._get_index_of_ts(loc_id)
+            self.prev_loc_index = index
+        else:
+            index = self.prev_loc_index
+
+        self.prev_loc_id = loc_id
 
         if self.read_bulk:
             if var not in self.variables.keys():
@@ -1315,7 +1098,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
                                  calendar='standard')
 
 
-class NetCDFGriddedTS(dsbase.DatasetTSBase):
+class GriddedTs(dsbase.DatasetTSBase):
 
     """
     Base class for reading time series data on a cell grid
@@ -1324,10 +1107,21 @@ class NetCDFGriddedTS(dsbase.DatasetTSBase):
 
     Parameters
     ----------
+    mode : str
+        Access mode. 'r' for reading, 'w' for writing, 'a' for appending
     grid : grid object
-        that implements find_nearest_gpi() and gpi2cell()
+        That implements find_nearest_gpi() and gpi2cell()
     read_bulk : boolean, optional
-        if true read_bulk will be activated
+        If true read_bulk will be activated. Default: False
+        There is a gain in performance if several time series from the
+        same cell are read in a sequence, because the file is not closed
+        and opened again all the time.
+    write_bulk : boolean, optional
+        If true write_bulk will be activated. Default: False
+        There is a gain in performance if several time series from the
+        same cell are written in a sequence, because the file is not closed
+        and opened again all the time. An automatic flush will take place if
+        the cell is not the same as the previous one.
     data_path : string, optional
         path to the data directory
     parameters : list, optional
@@ -1339,28 +1133,97 @@ class NetCDFGriddedTS(dsbase.DatasetTSBase):
         specified in the netCDF file
     scale_factors : dict, optional
         scale factors to apply to a variable
-
     """
 
-    def __init__(self, grid=None, read_bulk=False,
-                 data_path=None, parameters=None,
-                 ioclass=None, cell_filename_template='%04d.nc',
-                 offsets=None, scale_factors=None):
+    def __init__(self, path, ioclass, mode='r', grid=None, read_bulk=False,
+                 write_bulk=False, parameters=None,
+                 cell_fn='{:04d}.nc', offsets=None, scale_factors=None):
 
-        self.parameters = parameters
         self.ioclass = ioclass
-        self.netcdf_obj = None
-        self.cell_file_templ = cell_filename_template
+        self.mode = mode
+        self.parameters = parameters
+        self.cell_fn = cell_fn
         self.read_bulk = read_bulk
+        self.write_bulk = write_bulk
         self.previous_cell = None
         self.offsets = offsets
         self.scale_factors = scale_factors
+
+        self.is_overwritten = False
+
         if self.ioclass == OrthoMultiTs:
             self.read_dates = False
         else:
             self.read_dates = True
+
         self.dates = None
-        super(NetCDFGriddedTS, self).__init__(data_path, grid)
+        self.nc = None
+        super(GriddedTs, self).__init__(path, grid)
+
+    def __open_nc(self, gpi):
+        """
+        Open NetCDF file for a specific cell, which will be identfied through
+        the grid point index (gpi) and its association to the CellGrid.
+
+        Parameters
+        ----------
+        gpi : int
+            Grid point index.
+        """
+        cell = self.grid.gpi2cell(gpi)
+        filename = os.path.join(self.path, self.cell_fn.format(cell))
+
+        if self.mode == 'r':
+            if self.read_bulk:
+                if self.previous_cell != cell:
+                    print("Switching cell to {:} "
+                          "reading gpi {:}".format(cell, gpi))
+                    self.__close_nc()
+                    self.previous_cell = cell
+            else:
+                self.__close_nc()
+
+            self.nc = self.ioclass(filename, mode=self.mode,
+                                   read_bulk=self.read_bulk,
+                                   read_dates=self.read_dates)
+
+        if self.mode in ['w', 'a']:
+            if self.write_bulk:
+                if self.previous_cell != cell:
+                    print("Switching cell to {:} "
+                          "writing gpi {:}".format(cell, gpi))
+                    self.__flush_nc()
+                    self.__close_nc()
+                    self.previous_cell = cell
+            else:
+                self.__flush_nc()
+                self.__close_nc()
+
+            if os.path.exists(filename):
+                if not self.is_overwritten and self.mode == 'w':
+                    # print("file exists and will be overwritten {:}".format(
+                    #     filename))
+                    n_loc = self.grid.grid_points_for_cell(cell)[0].size
+                    self.nc = self.ioclass(filename, mode='w', n_loc=n_loc)
+                    self.is_overwritten = True
+                else:
+                    # print("file exists and will be appended {:}".format(
+                    #     filename))
+                    self.nc = self.ioclass(filename, mode='a')
+            else:
+                # print("file created {:}".format(filename))
+                n_loc = self.grid.grid_points_for_cell(cell)[0].size
+                self.nc = self.ioclass(filename, mode=self.mode,
+                                       n_loc=n_loc)
+                self.is_overwritten = True
+
+    def __flush_nc(self):
+        pass
+
+    def __close_nc(self):
+        if self.nc is not None:
+            self.nc.close()
+        self.nc = None
 
     def read_gp(self, gpi, period=None):
         """
@@ -1368,42 +1231,29 @@ class NetCDFGriddedTS(dsbase.DatasetTSBase):
 
         Parameters
         ----------
-        gpi : int
-            grid point index on dgg grid
+        gp : int
+            grid point index
         period : list
-            2 element array containing datetimes [start,end]
+            2 element array containing datetimes [start, end]
 
         Returns
         -------
         ts : pandas.DataFrame
             time series
         """
-        cell = self.grid.gpi2cell(gpi)
-        filename = os.path.join(self.path, self.cell_file_templ % cell)
-        if self.read_bulk:
-            if self.previous_cell != cell:
-                # print "Switching cell to %04d reading gpi %d" % (cell, gpi)
-                if self.netcdf_obj is not None:
-                    self.netcdf_obj.close()
-                    self.netcdf_obj = None
-                self.netcdf_obj = self.ioclass(filename,
-                                               read_bulk=self.read_bulk,
-                                               read_dates=self.read_dates)
-                self.previous_cell = cell
-        else:
-            if self.netcdf_obj is not None:
-                self.netcdf_obj.close()
-                self.netcdf_obj = None
-            self.netcdf_obj = self.ioclass(filename, read_bulk=self.read_bulk,
-                                           read_dates=self.read_dates)
+        if self.mode in ['w', 'a']:
+            raise IOError("trying to read file is in 'write/append' mode")
+
+        self.__open_nc(gpi)
 
         if self.parameters is None:
-            data = self.netcdf_obj.read_all_ts(gpi)
+            data = self.nc.read_all_ts(gpi)
         else:
-            data = self.netcdf_obj.read_ts(self.parameters, gpi)
+            data = self.nc.read_ts(self.parameters, gpi)
 
         if self.dates is None or self.read_dates:
-            self.dates = self.netcdf_obj.read_dates(gpi)
+            self.dates = self.nc.read_dates(gpi)
+
         time = self.dates
 
         # remove time column from dataframe, only index should contain time
@@ -1429,254 +1279,34 @@ class NetCDFGriddedTS(dsbase.DatasetTSBase):
                     ts[offset_column] += self.offsets[offset_column]
 
         if not self.read_bulk:
-            self.netcdf_obj.close()
-            self.netcdf_obj = None
+            self.__close_nc()
+
         return ts
 
-
-class netCDFImageStack(OrthoMultiTs):
-
-    """
-    Class for writing stacks of 1D images into netCDF.
-    1D image stacks are basically orthogonal multidimensional
-    array representation netCDF files.
-    """
-
-    def __init__(self, filename, grid=None, times=None,
-                 mode='r', name=''):
-        self.grid = grid
-        self.filename = filename
-        self.times = times
-        self.variables = []
-        self.time_var = 'time'
-        self.time_units = "days since 1900-01-01"
-        self.time_chunksize = 1
-        self.lon_chunksize = 1
-
-        if mode in ['a', 'r']:
-            super(netCDFImageStack, self).__init__(
-                filename, name=name, mode=mode, read_dates=False)
-            self._load_grid()
-            self._load_times()
-
-        if mode == 'w':
-            if grid is None:
-                raise IOError("grid needs to be defined")
-
-            super(netCDFImageStack, self).__init__(
-                filename, n_loc=len(self.grid.activegpis),
-                name=name, mode=mode, read_dates=False)
-
-            self.dataset.variables[self.lon_var][:] = self.grid.activearrlon
-            self.dataset.variables[self.lat_var][:] = self.grid.activearrlat
-            self.dataset.variables[self.loc_ids_name][:] = self.grid.activegpis
-
-        self.lat_chunksize = len(self.grid.activegpis)
-
-    def _load_grid(self):
-        lons = self.dataset.variables[self.lon_var][:]
-        lats = self.dataset.variables[self.lat_var][:]
-        self.grid = grids.BasicGrid(lons, lats)
-
-    def _load_times(self):
-        self.times = netCDF4.num2date(self.dataset.variables['time'][:],
-                                      self.time_units)
-
-    def write_ts(self, gpi, data):
+    def write_gp(self, gpi, data, **kwargs):
         """
-        write a time series into the imagestack
-        at the given gpi
+        Method writing data for given gpi.
 
         Parameters
         ----------
-        self: type
-            description
-        gpi: int or numpy.array
-            grid point indices to write to
-        data: dictionary
-            dictionary of int or numpy.array for each variable
-            that should be written
-            shape must be (len(gpi), len(times))
+        gp : int
+            Grid point index
+        data : pandas.DataFrame
+            Time series data to write. Index has to be pandas.DateTimeIndex.
         """
-        gpi = np.atleast_1d(gpi)
+        if self.mode == 'r':
+            raise IOError("trying to write but file is in 'read' mode")
 
-        for i, gp in enumerate(gpi):
-            for var in data:
-                super(netCDFImageStack, self).write_ts(
-                    gp, {var: np.atleast_1d(np.atleast_2d(data[var])[i, :])},
-                    np.array(self.times))
+        self.__open_nc(gpi)
+        lon, lat = self.grid.gpi2lonlat(gpi)
 
-    def __setitem__(self, gpi, data):
-        """
-        write a time series into the imagestack
-        at the given gpi
+        ds = data.to_dict('list')
+        for key in ds.iterkeys():
+            ds[key] = np.array(ds[key])
 
-        Parameters
-        ----------
-        self: type
-            description
-        gpi: int or numpy.array
-            grid point indices to write to
-        data: dictionary
-            dictionary of int or numpy.array for each variable
-            that should be written
-            shape must be (len(gpi), len(times))
-        """
-        self.write_ts(gpi, data)
+        self.nc.write_ts(gpi, ds, data.index.to_pydatetime(),
+                         lon=lon, lat=lat, **kwargs)
 
-    def __getitem__(self, key):
-
-        if type(key) == datetime.datetime:
-            index = netCDF4.date2index(
-                key, self.dataset.variables[self.time_var])
-            data = {}
-            for var in self._get_all_ts_variables():
-                data[var] = self.dataset.variables[var][:, index]
-            return data
-        else:
-            gpi = np.atleast_1d(key)
-            for i, gp in enumerate(gpi):
-                data = super(netCDFImageStack, self).read_all_ts(gp)
-
-            return pd.DataFrame(data, index=self.times)
-
-
-class netCDF2DImageStack(Dataset):
-
-    """
-    Class for writing stacks of 1D or 2D images into netCDF.
-    1D image stacks are basically orthogonal multidimensional
-    array representation netCDF files.
-    """
-
-    def __init__(self, filename, grid=None, times=None,
-                 mode='r', name=''):
-        self.grid = grid
-        self.filename = filename
-        self.times = times
-        self.variables = []
-        self.time_var = 'time'
-        self.time_units = "days since 1900-01-01"
-        self.time_chunksize = 1
-        self.lon_chunksize = 1
-        self.lat_chunksize = len(self.grid.latdim)
-        super(netCDF2DImageStack, self).__init__(filename, name=name,
-                                                 mode=mode)
-
-        if self.mode == 'w':
-            self._init_dimensions()
-            self._init_time()
-            self._init_location_variables()
-        elif self.mode in ['a', 'r']:
-            self._load_grid()
-            self._load_variables()
-
-    def _init_dimensions(self):
-        self.create_dim('lon', len(self.grid.londim))
-        self.create_dim('lat', len(self.grid.latdim))
-        self.create_dim('time', len(self.times))
-
-    def _load_grid(self):
-        lons = self.dataset.variables['lon'][:]
-        lats = self.dataset.variables['lat'][:]
-        self.grid = grids.gridfromdims(lons, lats)
-
-    def _load_variables(self):
-        for var in self.dataset.variables:
-            if self.dataset.variables[var].dimensions == ('time', 'lat', 'lon'):
-                self.variables.append(var)
-
-    def _load_times(self):
-        self.times = netCDF4.num2date(self.dataset.variables['time'][:],
-                                      self.time_units)
-
-    def _init_time(self):
-        """
-        initialize the dimensions and variables that are the basis of
-        the format
-        """
-        # initialize time variable
-        time_data = netCDF4.date2num(self.times, self.time_units)
-        self.write_var(self.time_var, data=time_data, dim='time',
-                       attr={'standard_name': 'time',
-                             'long_name': 'time of measurement',
-                             'units': self.time_units},
-                       dtype=np.double,
-                       chunksizes=[self.time_chunksize])
-
-    def _init_location_variables(self):
-        # write station information, longitude, latitude and altitude
-        self.write_var('lon', data=self.grid.londim, dim='lon',
-                       attr={'standard_name': 'longitude',
-                             'long_name': 'location longitude',
-                             'units': 'degrees_east',
-                             'valid_range': (-180.0, 180.0)},
-                       dtype=np.float)
-        self.write_var('lat', data=self.grid.latdim, dim='lat',
-                       attr={'standard_name': 'latitude',
-                             'long_name': 'location latitude',
-                             'units': 'degrees_north',
-                             'valid_range': (-90.0, 90.0)},
-                       dtype=np.float)
-
-    def init_variable(self, var):
-        self.write_var(var, data=None, dim=('time', 'lat', 'lon'),
-                       dtype=np.float,
-                       attr={'_FillValue': -9999.})
-
-    def write_ts(self, gpi, data):
-        """
-        write a time series into the imagestack
-        at the given gpi
-
-        Parameters
-        ----------
-        self: type
-            description
-        gpi: int or numpy.array
-            grid point indices to write to
-        data: dictionary
-            dictionary of int or numpy.array for each variable
-            that should be written
-            shape must be (len(gpi), len(times))
-        """
-        gpi = np.atleast_1d(gpi)
-
-        for i, gp in enumerate(gpi):
-            row, column = self.grid.gpi2rowcol(gp)
-            for var in data:
-                if var not in self.variables:
-                    self.variables.append(var)
-                    self.init_variable(var)
-                self.dataset.variables[var][
-                    :, row, column] = np.atleast_2d(data[var])[i, :]
-
-    def __setitem__(self, gpi, data):
-        """
-        write a time series into the imagestack
-        at the given gpi
-
-        Parameters
-        ----------
-        self: type
-            description
-        gpi: int or numpy.array
-            grid point indices to write to
-        data: dictionary
-            dictionary of int or numpy.array for each variable
-            that should be written
-            shape must be (len(gpi), len(times))
-        """
-        self.write_ts(gpi, data)
-
-    def __getitem__(self, key):
-
-        gpi = np.atleast_1d(key)
-        data = {}
-        for i, gp in enumerate(gpi):
-            row, column = self.grid.gpi2rowcol(gp)
-            for var in self.variables:
-                data[var] = self.dataset.variables[var][
-                    :, row, column]
-
-        return pd.DataFrame(data, index=self.times)
+        if not self.write_bulk:
+            self.__flush_nc()
+            self.__close_nc()
