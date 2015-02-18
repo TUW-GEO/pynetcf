@@ -4,25 +4,15 @@ pynetcf
 
 This is the documentation of **pynetcf**.
 
-.. note::
+Basic python classes that map to netCDF files on disk written according
+to the `Climate and Forecast metadata conventions <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html>`_
 
-    This is the main page of your project's `Sphinx <http://sphinx-doc.org/>`_
-    documentation. It is formatted in `reStructuredText
-    <http://sphinx-doc.org/rest.html>`__. Add additional pages by creating
-    rst-files in ``docs`` and adding them to the `toctree
-    <http://sphinx-doc.org/markup/toctree.html>`_ below. Use then
-    `references <http://sphinx-doc.org/markup/inline.html>`__ in order to link
-    them from this page. It is also possible to refer to the documentation of
-    other Python packages with the `Python domain syntax
-    <http://sphinx-doc.org/domains.html#the-python-domain>`__. By default you
-    can reference the documentation of `Sphinx <http://sphinx.pocoo.org>`__,
-    `Python <http://docs.python.org/>`__, `matplotlib
-    <http://matplotlib.sourceforge.net>`__, `NumPy
-    <http://docs.scipy.org/doc/numpy>`__, `Scikit-Learn
-    <http://scikit-learn.org/stable>`__, `Pandas
-    <http://pandas.pydata.org/pandas-docs/stable>`__, `SciPy
-    <http://docs.scipy.org/doc/scipy/reference/>`__. You can add more by
-    extending the ``intersphinx_mapping`` in your Sphinx's ``conf.py``.
+This is a first draft which has a lot of room for improvements, this is especially true for the time series based representations.
+
+How to use
+==========
+
+For now please see the tests for examples on how to use the classes.
 
 Contents
 ========
