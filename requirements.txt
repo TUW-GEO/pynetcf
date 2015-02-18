@@ -1,4 +1,4 @@
 # Add your requirements here like:
 numpy
 netCDF4
-pytesmo==0.2.3
+pytesmo>=0.2.3
