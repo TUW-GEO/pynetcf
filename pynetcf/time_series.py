@@ -140,6 +140,10 @@ class OrthoMultiTs(Dataset):
         self.dates = None
         self.read_dates_auto = read_dates
         self.read_bulk = read_bulk
+
+        # cache location id during reading
+        self.prev_loc_id = None
+
         # if read bulk is activated the arrays will
         # be read into the local variables dict
         # if it is not activated the data will be read
@@ -403,7 +407,13 @@ class OrthoMultiTs(Dataset):
         var : string
             name of variable to read
         """
-        index = self._get_index_of_ts(loc_id)
+        if self.prev_loc_id != loc_id:
+            index = self._get_index_of_ts(loc_id)
+            self.prev_loc_index = index
+        else:
+            index = self.prev_loc_index
+
+        self.prev_loc_id = loc_id
 
         if self.read_bulk:
             if var not in self.variables.keys():
@@ -1232,7 +1242,7 @@ class GriddedTs(dsbase.DatasetTSBase):
             time series
         """
         if self.mode in ['w', 'a']:
-            raise IOError("file is in 'write/append' mode")
+            raise IOError("trying to read file is in 'write/append' mode")
 
         self.__open_nc(gpi)
 
@@ -1284,9 +1294,8 @@ class GriddedTs(dsbase.DatasetTSBase):
         data : pandas.DataFrame
             Time series data to write. Index has to be pandas.DateTimeIndex.
         """
-
         if self.mode == 'r':
-            raise IOError("file is in 'read' mode")
+            raise IOError("trying to write but file is in 'read' mode")
 
         self.__open_nc(gpi)
         lon, lat = self.grid.gpi2lonlat(gpi)
