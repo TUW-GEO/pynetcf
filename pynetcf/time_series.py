@@ -479,7 +479,8 @@ class OrthoMultiTs(Dataset):
         time_series : dict
             keys of var and time with numpy.arrays as values
         """
-        ts = self.read_ts(self._get_all_ts_variables(), loc_id)
+        ts = self.read_ts(
+            self._get_all_ts_variables(), loc_id, dates_direct=dates_direct)
         return ts
 
         for variable in self._get_all_ts_variables():
@@ -1225,9 +1226,10 @@ class GriddedTs(dsbase.DatasetTSBase):
             self.nc.close()
         self.nc = None
 
-    def read_gp(self, gpi, period=None):
+    def read_gp(self, gpi, period=None, **kwargs):
         """
-        Method reads data for given gpi
+        Method reads data for given gpi, additional keyword arguments
+        are passed to ioclass.read_ts
 
         Parameters
         ----------
@@ -1247,12 +1249,15 @@ class GriddedTs(dsbase.DatasetTSBase):
         self.__open_nc(gpi)
 
         if self.parameters is None:
-            data = self.nc.read_all_ts(gpi)
+            data = self.nc.read_all_ts(gpi, **kwargs)
         else:
-            data = self.nc.read_ts(self.parameters, gpi)
+            data = self.nc.read_ts(self.parameters, gpi, **kwargs)
 
         if self.dates is None or self.read_dates:
-            self.dates = self.nc.read_dates(gpi)
+            if "dates_direct" in kwargs:
+                self.dates = self.nc.read_time(gpi)
+            else:
+                self.dates = self.nc.read_dates(gpi)
 
         time = self.dates
 
