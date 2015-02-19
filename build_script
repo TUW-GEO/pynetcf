@@ -1,0 +1,12 @@
+#!/bin/bash
+cd ~
+rm -r pynetcf
+source .virtualenvs/rsdata-readers_dev/bin/activate
+cp -r /media/sf_H/Development/python/workspace/pynetcf ~/
+cd ~/pynetcf/
+python setup.py docs
+python setup.py sdist
+tar xf dist/pynetcf-* -C ~/
+cd ~/pynetcf-*
+python setup.py test
+rm -rf ~/pynetcf-*

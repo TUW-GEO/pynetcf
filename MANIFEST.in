@@ -5,3 +5,4 @@ include *.md
 include tox.ini
 recursive-include pynetcf *.py *.c *.h *.pxd *.pyx
 recursive-include docs *.rst *.py
+recursive-include tests *.py
