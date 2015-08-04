@@ -1181,12 +1181,14 @@ class GriddedTs(dsbase.DatasetTSBase):
                           "reading gpi {:}".format(cell, gpi))
                     self.__close_nc()
                     self.previous_cell = cell
+                    self.nc = self.ioclass(filename, mode=self.mode,
+                                           read_bulk=self.read_bulk,
+                                           read_dates=self.read_dates)
             else:
                 self.__close_nc()
-
-            self.nc = self.ioclass(filename, mode=self.mode,
-                                   read_bulk=self.read_bulk,
-                                   read_dates=self.read_dates)
+                self.nc = self.ioclass(filename, mode=self.mode,
+                                       read_bulk=self.read_bulk,
+                                       read_dates=self.read_dates)
 
         if self.mode in ['w', 'a']:
             if self.write_bulk:
