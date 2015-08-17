@@ -1198,27 +1198,24 @@ class GriddedTs(dsbase.DatasetTSBase):
                     self.__flush_nc()
                     self.__close_nc()
                     self.previous_cell = cell
+                    self.__open_write(filename, cell)
             else:
                 self.__flush_nc()
                 self.__close_nc()
+                self.__open_write(filename, cell)
 
-            if os.path.exists(filename):
-                if not self.is_overwritten and self.mode == 'w':
-                    # print("file exists and will be overwritten {:}".format(
-                    #     filename))
-                    n_loc = self.grid.grid_points_for_cell(cell)[0].size
-                    self.nc = self.ioclass(filename, mode='w', n_loc=n_loc)
-                    self.is_overwritten = True
-                else:
-                    # print("file exists and will be appended {:}".format(
-                    #     filename))
-                    self.nc = self.ioclass(filename, mode='a')
-            else:
-                # print("file created {:}".format(filename))
+    def __open_write(self, filename, cell):
+        if os.path.exists(filename):
+            if not self.is_overwritten and self.mode == 'w':
                 n_loc = self.grid.grid_points_for_cell(cell)[0].size
-                self.nc = self.ioclass(filename, mode=self.mode,
-                                       n_loc=n_loc)
+                self.nc = self.ioclass(filename, mode='w', n_loc=n_loc)
                 self.is_overwritten = True
+            else:
+                self.nc = self.ioclass(filename, mode='a')
+        else:
+            n_loc = self.grid.grid_points_for_cell(cell)[0].size
+            self.nc = self.ioclass(filename, mode=self.mode, n_loc=n_loc)
+            self.is_overwritten = True
 
     def __flush_nc(self):
         pass
