@@ -1598,3 +1598,25 @@ class GriddedNcTs(GriddedTsBase):
             raise ValueError("Time field not found in data")
 
         self.fid.write_ts(gpi, ds, ds.pop('time'), lon=lon, lat=lat, **kwargs)
+
+
+class GriddedNcContiguousRaggedTs(GriddedNcTs):
+
+    """
+    Class for reading continous ragged time series NC data on a cell grid.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = ContiguousRaggedTs
+        super(GriddedNcContiguousRaggedTs, self).__init__(*args, **kwargs)
+
+
+class GriddedNcIndexedRaggedTs(GriddedNcTs):
+
+    """
+    Class for reading indexed ragged time series NC data on a cell grid.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = IndexedRaggedTs
+        super(GriddedNcIndexedRaggedTs, self).__init__(*args, **kwargs)
