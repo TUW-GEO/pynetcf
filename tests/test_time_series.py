@@ -397,5 +397,39 @@ class GriddedNcTsTests(unittest.TestCase):
                 ts.index.values, np.arange(len(dates)) + 39081)
 
 
+class GriddedNcIndexedRaggedTsTests(unittest.TestCase):
+
+    def setUp(self):
+        self.testdatapath = os.path.join(mkdtemp(), '')
+        self.testfilename = os.path.join(self.testdatapath, '0107.nc')
+        self.grid = grids.genreg_grid().to_cell_grid()
+
+    def test_writing_with_attributes(self):
+        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        ts = pd.DataFrame({'var1': np.arange(len(dates)),
+                           'var2': np.arange(len(dates))}, index=dates)
+
+        attributes = {'var1': {'testattribute': 'teststring'},
+                      'var2': {'testattribute2': 'teststring2'}}
+
+        dataset = nc.GriddedNcIndexedRaggedTs(self.testdatapath,
+                                              self.grid,
+                                              mode='w')
+        for gpi in [10, 11, 12]:
+            dataset.write_gp(gpi, ts, attributes=attributes)
+
+        dataset = nc.GriddedNcIndexedRaggedTs(self.testdatapath,
+                                              self.grid,
+                                              mode='a')
+        for gpi in [13, 10]:
+            dataset.write_gp(gpi, ts)
+
+        dataset = nc.GriddedNcIndexedRaggedTs(self.testdatapath,
+                                              self.grid)
+        for gpi in [11, 12]:
+            ts = dataset.read_gp(gpi)
+            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
+            nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
+
 if __name__ == "__main__":
     unittest.main()

@@ -1440,9 +1440,10 @@ class GriddedNcTs(GriddedTsBase):
 
     def __init__(self, path, grid, ioclass, mode='r', fn_format='{:04d}',
                  read_bulk=False, parameters=None, offsets=None,
-                 scale_factors=None):
+                 scale_factors=None, **kwargs):
 
-        super(GriddedNcTs, self).__init__(path, grid, ioclass, mode, fn_format)
+        super(GriddedNcTs, self).__init__(path, grid, ioclass,
+                                          mode, fn_format)
 
         self.parameters = parameters
         self.read_bulk = read_bulk
@@ -1598,17 +1599,6 @@ class GriddedNcTs(GriddedTsBase):
             raise ValueError("Time field not found in data")
 
         self.fid.write_ts(gpi, ds, ds.pop('time'), lon=lon, lat=lat, **kwargs)
-
-
-class GriddedNcContiguousRaggedTs(GriddedNcTs):
-
-    """
-    Class for reading continous ragged time series NC data on a cell grid.
-    """
-
-    def __init__(self, *args, **kwargs):
-        kwargs['ioclass'] = ContiguousRaggedTs
-        super(GriddedNcContiguousRaggedTs, self).__init__(*args, **kwargs)
 
 
 class GriddedNcIndexedRaggedTs(GriddedNcTs):
