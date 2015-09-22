@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 import pynetcf.time_series as nc
-import pytesmo.grid.grids as grids
+import pygeogrids.grids as grids
 
 
 class OrthoMultiTest(unittest.TestCase):
@@ -339,18 +339,23 @@ class GriddedNcTsTests(unittest.TestCase):
         attributes = {'var1': {'testattribute': 'teststring'},
                       'var2': {'testattribute2': 'teststring2'}}
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs,self.testdatapath,
-                                 self.grid, mode='w')
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs,
+                                 mode='w')
         for gpi in [10, 11, 12]:
             dataset.write_gp(gpi, ts, attributes=attributes)
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs, self.testdatapath,
-                                 self.grid, mode='a')
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs,
+                                 mode='a')
         for gpi in [13, 10]:
             dataset.write_gp(gpi, ts)
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs,self.testdatapath, 
-                               self.grid)
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs)
         for gpi in [11, 12]:
             ts = dataset.read_gp(gpi)
             nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
@@ -366,19 +371,24 @@ class GriddedNcTsTests(unittest.TestCase):
         attributes = {'var1': {'testattribute': 'teststring'},
                       'var2': {'testattribute2': 'teststring2'}}
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs, self.testdatapath,
-                                 self.grid, mode='w')
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs,
+                                 mode='w')
         for gpi in [10, 11, 12]:
             dataset.write_gp(gpi, ts, attributes=attributes)
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs, self.testdatapath,
-                                 self.grid, mode='a')
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs,
+                                 mode='a')
 
         for gpi in [13, 10]:
             dataset.write_gp(gpi, ts)
 
-        dataset = nc.GriddedNcTs(nc.IndexedRaggedTs,self.testdatapath, 
-                               self.grid)
+        dataset = nc.GriddedNcTs(self.testdatapath,
+                                 self.grid,
+                                 nc.IndexedRaggedTs)
         for gpi in [11, 12]:
             ts = dataset.read_gp(gpi, dates_direct=True)
             nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))

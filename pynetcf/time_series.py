@@ -41,6 +41,7 @@ import pandas as pd
 
 from pygeobase.io_base import GriddedTsBase
 
+
 class NcTsBaseError(Exception):
     pass
 
@@ -1108,7 +1109,7 @@ class ContiguousRaggedTs(OrthoMultiTs):
     def _get_index_of_ts(self, loc_id):
         """
         Get index of time series.
-        
+
         Parameters
         ----------
         loc_id : int
@@ -1278,7 +1279,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
     def _get_index_of_ts(self, loc_id):
         """
         Get index of time series.
-        
+
         Parameters
         ----------
         loc_id : int
@@ -1437,11 +1438,11 @@ class GriddedNcTs(GriddedTsBase):
         Scale factors to apply to a variable.
     """
 
-    def __init__(self, ioclass, path, grid, mode='r', cell_format='{:04d}',
+    def __init__(self, path, grid, ioclass, mode='r', fn_format='{:04d}',
                  read_bulk=False, parameters=None, offsets=None,
                  scale_factors=None):
 
-        super(GriddedNcTs, self).__init__(ioclass, path, grid, mode, cell_format)
+        super(GriddedNcTs, self).__init__(path, grid, ioclass, mode, fn_format)
 
         self.parameters = parameters
         self.read_bulk = read_bulk
@@ -1467,13 +1468,11 @@ class GriddedNcTs(GriddedTsBase):
             Grid point index.
         """
         cell = self.grid.gpi2cell(gpi)
-        filename = os.path.join(self.path, self.cell_format.format(cell))
+        filename = os.path.join(self.path, self.fn_format.format(cell))
 
         if self.mode == 'r':
             if self.read_bulk:
                 if self.previous_cell != cell:
-                    print("Switching cell to {:} "
-                          "reading gpi {:}".format(cell, gpi))
                     self.close()
                     self.previous_cell = cell
                     self.fid = self.ioclass(filename, mode=self.mode,
@@ -1486,14 +1485,11 @@ class GriddedNcTs(GriddedTsBase):
                                         read_dates=self.read_dates)
 
         if self.mode in ['w', 'a']:
-            if self.write_bulk:
-                if self.previous_cell != cell:
-                    print("Switching cell to {:} "
-                          "writing gpi {:}".format(cell, gpi))
-                    self.flush()
-                    self.close()
-                    self.previous_cell = cell
-                    self.__open_write(filename, cell)
+            if self.previous_cell != cell:
+                self.flush()
+                self.close()
+                self.previous_cell = cell
+                self.__open_write(filename, cell)
             else:
                 self.flush()
                 self.close()
@@ -1602,4 +1598,3 @@ class GriddedNcTs(GriddedTsBase):
             raise ValueError("Time field not found in data")
 
         self.fid.write_ts(gpi, ds, ds.pop('time'), lon=lon, lat=lat, **kwargs)
-

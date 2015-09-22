@@ -9,7 +9,7 @@ import numpy as np
 from datetime import datetime
 
 import pynetcf.image as ncdata
-import pytesmo.grid.grids as grids
+import pygeogrids.grids as grids
 
 
 def curpath():
