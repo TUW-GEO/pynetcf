@@ -1,5 +1,3 @@
-pandas
 numpy
 netCDF4
 pygeobase
-pygeogrids
