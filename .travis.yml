@@ -34,6 +34,7 @@ install:
 
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas statsmodels netCDF4  cython pytest pip matplotlib
   - source activate test-environment
+  - pip install pykdtree
   - pip install pygeogrids
   - pip install pytesmo
 
