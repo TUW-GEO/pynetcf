@@ -18,6 +18,9 @@ def curpath():
     pth, _ = os.path.split(os.path.abspath(__file__))
     return pth
 
+import sys
+if sys.version_info < (3, 0):
+    range = xrange
 
 class OrthoMultiTest(unittest.TestCase):
 
@@ -37,7 +40,7 @@ class OrthoMultiTest(unittest.TestCase):
                     data = {'test': np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array([base + timedelta(hours=i)
-                                      for i in xrange(n_data)])
+                                      for i in range(n_data)])
                     dataset.write_ts(
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5)
@@ -51,7 +54,7 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -65,7 +68,7 @@ class OrthoMultiTest(unittest.TestCase):
                     data = {'test': np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array([base + timedelta(hours=i)
-                                      for i in xrange(n_data)])
+                                      for i in range(n_data)])
                     dataset.write_ts(
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5, fill_values={'test': -1})
@@ -78,7 +81,7 @@ class OrthoMultiTest(unittest.TestCase):
                     data = {'test': np.arange(n_data) + n_data}
                     base = datetime(2007, 2, n_data)
                     dates = np.array([base + timedelta(hours=i)
-                                      for i in xrange(n_data)])
+                                      for i in range(n_data)])
                     dataset.write_ts(
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5, fill_values={'test': -1})
@@ -92,11 +95,11 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
                 base = datetime(2007, 2, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -109,7 +112,7 @@ class OrthoMultiTest(unittest.TestCase):
             data = {'test': np.arange(n_data * 3).reshape(3, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)])
+                              for i in range(n_data)])
             descriptions = np.repeat([str('station')], 3).tolist()
 
             dataset.write_ts_all_loc(locations, data, dates,
@@ -125,7 +128,7 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -138,7 +141,7 @@ class OrthoMultiTest(unittest.TestCase):
             data = {'test': np.arange(n_data).reshape(1, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)])
+                              for i in range(n_data)])
             descriptions = np.repeat([str('station')], 1).tolist()
 
             dataset.write_ts_all_loc(locations, data, dates,
@@ -154,7 +157,7 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -168,7 +171,7 @@ class OrthoMultiTest(unittest.TestCase):
                     'test2': np.arange(n_data * 3).reshape(3, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)])
+                              for i in range(n_data)])
             descriptions = np.repeat([str('station')], 3).tolist()
 
             dataset.write_ts_all_loc(locations, data, dates,
@@ -190,7 +193,7 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -207,7 +210,7 @@ class OrthoMultiTest(unittest.TestCase):
                     'test2': np.arange(n_data * 3).reshape(3, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)])
+                              for i in range(n_data)])
             descriptions = np.repeat([str('station')], 3).tolist()
 
             dataset.write_ts_all_loc(locations, data, dates,
@@ -232,7 +235,7 @@ class OrthoMultiTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -287,7 +290,7 @@ class DatasetIndexedTest(unittest.TestCase):
                     data = {'test': np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array([base + timedelta(hours=i)
-                                      for i in xrange(n_data)])
+                                      for i in range(n_data)])
                     dataset.write_ts(
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5)
@@ -303,7 +306,7 @@ class DatasetIndexedTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
@@ -317,7 +320,7 @@ class DatasetIndexedTest(unittest.TestCase):
                     data = {'test': np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array([base + timedelta(hours=i)
-                                      for i in xrange(n_data)])
+                                      for i in range(n_data)])
                     dataset.write_ts(location, data, dates,
                                      loc_descr='first station', lon=0, lat=0,
                                      alt=5,
@@ -337,7 +340,7 @@ class DatasetIndexedTest(unittest.TestCase):
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array([base + timedelta(hours=i)
-                              for i in xrange(n_data)]))
+                              for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 

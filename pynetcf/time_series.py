@@ -37,7 +37,7 @@ import pandas as pd
 import numpy as np
 import netCDF4
 
-from base import Dataset
+from pynetcf.base import Dataset
 import pytesmo.io.dataset_base as dsbase
 
 
@@ -1305,7 +1305,7 @@ class GriddedTs(dsbase.DatasetTSBase):
         lon, lat = self.grid.gpi2lonlat(gpi)
 
         ds = data.to_dict('list')
-        for key in ds.iterkeys():
+        for key in ds:
             ds[key] = np.array(ds[key])
 
         self.nc.write_ts(gpi, ds, data.index.to_pydatetime(),

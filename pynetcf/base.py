@@ -180,7 +180,8 @@ class Dataset(object):
         if data is not None:
             var[:] = data
 
-        for attr_name, attr_value in attr.iteritems():
+        for attr_name in attr:
+            attr_value = attr[attr_name]
             self.dataset.variables[name].setncattr(attr_name, attr_value)
 
     def append_var(self, name, data):
