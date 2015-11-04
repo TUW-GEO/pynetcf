@@ -11,7 +11,7 @@ import numpy as np
 import numpy.testing as nptest
 
 import pynetcf.time_series as nc
-import pytesmo.grid.grids as grids
+import pygeogrids.grids as grids
 
 
 def curpath():

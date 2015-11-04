@@ -37,7 +37,7 @@ import pandas as pd
 
 from pynetcf.time_series import OrthoMultiTs
 from pynetcf.base import Dataset
-import pytesmo.grid.grids as grids
+import pygeogrids.grids as grids
 
 
 class ArrayStack(OrthoMultiTs):
