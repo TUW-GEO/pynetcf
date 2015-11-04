@@ -16,7 +16,7 @@ from sphinx import apidoc
 import mock
 
 MOCK_MODULES = ['numpy', 'pandas', 'pytesmo',
-                'pytesmo.io.dataset_base', 'netCDF4',
+                'pytesmo.io', 'pytesmo.io.dataset_base', 'netCDF4',
                 'pygeogrids.grids']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -29,6 +29,7 @@ module_dir = os.path.join(__location__, "../pynetcf")
 cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
 cmd_line = cmd_line_template.format(outputdir=output_dir, moduledir=module_dir)
 apidoc.main(cmd_line.split(" "))
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -119,6 +120,8 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+    # add package path to python path
+    sys.path.append('..')
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
