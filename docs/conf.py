@@ -17,7 +17,7 @@ import mock
 
 MOCK_MODULES = ['numpy', 'pandas', 'pytesmo',
                 'pytesmo.io', 'pytesmo.io.dataset_base', 'netCDF4',
-                'pygeogrids.grids']
+                'pygeogrids', 'pygeogrids.grids']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
