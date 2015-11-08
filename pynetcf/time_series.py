@@ -101,19 +101,28 @@ class OrthoMultiTs(Dataset):
                  time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
                  unlim_chunksize=None, read_bulk=False, read_dates=True,
                  **kwargs):
+
         super(OrthoMultiTs, self).__init__(filename, **kwargs)
 
         self.n_loc = n_loc
+
+        # dimension names
         self.obs_dim_name = obs_dim_name
-        self.loc_ids_name = loc_ids_name
         self.loc_dim_name = loc_dim_name
+
+        # location names
+        self.loc_ids_name = loc_ids_name
         self.loc_descr_name = loc_descr_name
+
+        # time, time units and location
         self.time_var = time_var
+        self.time_units = time_units
         self.lat_var = lat_var
         self.lon_var = lon_var
         self.alt_var = alt_var
-        self.time_units = time_units
+
         self.unlim_chunksize = unlim_chunksize
+
         if unlim_chunksize is not None:
             self.unlim_chunksize = [unlim_chunksize]
 
@@ -146,9 +155,8 @@ class OrthoMultiTs(Dataset):
         # cache location id during reading
         self.prev_loc_id = None
 
-        # if read bulk is activated the arrays will
-        # be read into the local variables dict
-        # if it is not activated the data will be read
+        # if read bulk is activated the arrays will  be read into the
+        # local variables dict if it is not activated the data will be read
         # from the netCDF variables
         if not self.read_bulk:
             self.variables = self.dataset.variables
@@ -175,19 +183,23 @@ class OrthoMultiTs(Dataset):
         pass
 
     def _init_location_variables(self):
-        # write station information, longitude, latitude and altitude
+        """
+        Initialize location information: longitude, latitude and altitude.
+        """
         self.write_var(self.lon_var, data=None, dim=self.loc_dim_name,
                        attr={'standard_name': 'longitude',
                              'long_name': 'location longitude',
                              'units': 'degrees_east',
                              'valid_range': (-180.0, 180.0)},
-                       dtype=np.float)
+                       dtype=np.float32)
+
         self.write_var(self.lat_var, data=None, dim=self.loc_dim_name,
                        attr={'standard_name': 'latitude',
                              'long_name': 'location latitude',
                              'units': 'degrees_north',
                              'valid_range': (-90.0, 90.0)},
-                       dtype=np.float)
+                       dtype=np.float32)
+
         self.write_var(self.alt_var, data=None, dim=self.loc_dim_name,
                        attr={'standard_name': 'height',
                              'long_name': 'vertical distance above the '
@@ -195,23 +207,23 @@ class OrthoMultiTs(Dataset):
                              'units': 'm',
                              'positive': 'up',
                              'axis': 'Z'},
-                       dtype=np.float)
+                       dtype=np.float32)
 
     def _read_index(self):
         self.index = self.dataset.variables[self.loc_ids_name][:]
 
     def _find_free_index_pos(self):
         """
-        if the index is not yet filled completely this function
-        gets the id of the first free position
+        If the index is not yet filled completely this function
+        gets the id of the first free position.
 
         This function depends on the masked array being used if no
-        data is yet in the file
+        data is yet in the file.
 
         Returns
         -------
         idx : int
-            first free index position
+            First free index position.
 
         Raises
         ------
@@ -258,20 +270,26 @@ class OrthoMultiTs(Dataset):
         loc_descr : string or numpy.array
             location description
         """
+
         if type(loc_id) != np.ndarray:
             loc_id = np.array([loc_id])
+
         if type(lon) != np.ndarray:
             lon = np.array([lon])
+
         # netCDF library can not handle arrays of length 1 that contain only a
         # None value
         if lon.size == 1 and lon[0] is None:
             lon = None
+
         if type(lat) != np.ndarray:
             lat = np.array([lat])
+
         # netCDF library can not handle arrays of length 1 that contain only a
         # None value
         if lat.size == 1 and lat[0] is None:
             lat = None
+
         if alt is not None:
             if type(alt) != np.ndarray:
                 alt = np.array([alt])
@@ -283,6 +301,7 @@ class OrthoMultiTs(Dataset):
         # remove location id's that are already in the file
         locations = np.ma.compressed(
             self.dataset.variables[self.loc_ids_name][:])
+
         loc_count = len(locations)
         if loc_count > 0:
             loc_ids_new = np.invert(np.in1d(loc_id, locations))
@@ -291,18 +310,28 @@ class OrthoMultiTs(Dataset):
                 return None
         else:
             loc_ids_new = slice(None, None, None)
+
+        # find free index position for limited location dimension
         idx = self._find_free_index_pos()
+
         index = np.arange(len(loc_id[loc_ids_new])) + idx
+
         self.dataset.variables[self.loc_ids_name][index] = loc_id[loc_ids_new]
+
         if lon is not None:
             self.dataset.variables[self.lon_var][index] = lon[loc_ids_new]
+
         if lat is not None:
             self.dataset.variables[self.lat_var][index] = lat[loc_ids_new]
+
         if alt is not None:
             self.dataset.variables[self.alt_var][index] = alt[loc_ids_new]
+
         if loc_descr is not None:
+
             if type(loc_descr) != np.ndarray:
                 loc_descr = np.array(loc_descr)
+
             if len(index) == 1:
                 index = int(index[0])
                 loc_ids_new = 0
@@ -319,14 +348,14 @@ class OrthoMultiTs(Dataset):
 
     def _get_all_ts_variables(self):
         """
-        gets all variable names that have the self.obs_dim_name as only
+        Gets all variable names that have the self.obs_dim_name as only
         dimension indicating that they are time series observations. This
-        does not include the self.time_var variable
+        does not include the self.time_var variable.
 
         Returns
         -------
         variables : list
-            list of variable names
+            List of variable names.
         """
         ts_var = []
 
@@ -522,18 +551,19 @@ class OrthoMultiTs(Dataset):
                  loc_descr=None, lon=None, lat=None, alt=None,
                  fill_values=None, attributes=None, dates_direct=False):
         """
-        write time series data, if not yet existing also add location to file
+        Write time series data, if not yet existing also add location to file
         for this data format it is assumed that in each write/append cycle
         the same amount of data is added.
 
         Parameters
         ----------
         loc_id : int
-            location id
+            Location id.
         data : dict
-            dictionary with variable names as keys and numpy.arrays as values
-        dates: numpy.array
-            array of datetime objects
+            Dictionary with variable names as keys and
+            numpy.ndarrays as values.
+        dates: numpy.ndarray
+            Array of datetime objects.
         extend_time : string or boolean, optional
             one of 'first', True or False
             'first' : only extend the time variable on the first write
@@ -543,12 +573,12 @@ class OrthoMultiTs(Dataset):
                     the assumption is that the time variable already has the
                     correct length and content
         attributes : dict, optional
-            dictionary of attributes that should be added to the netCDF
+            Dictionary of attributes that should be added to the netCDF
             variables. can also be a dict of dicts for each variable name
             as in the data dict.
         dates_direct : boolean
-            if true the dates are already converted into floating
-            point number of correct magnitude
+            If true the dates are already converted into floating
+            point number of correct magnitude.
         """
         try:
             idx = self._get_loc_index(loc_id)
@@ -625,42 +655,41 @@ class OrthoMultiTs(Dataset):
                          lons=None, lats=None, alts=None, fill_values=None,
                          attributes=None, dates_direct=False):
         """
-        write time series data in bulk, for this the user has to provide
+        Write time series data in bulk, for this the user has to provide
         a 2D array with dimensions (self.nloc, dates) that is filled with
-        the time series of all grid points in the file
+        the time series of all grid points in the file.
 
         Parameters
         ----------
-        loc_ids : numpy.array
+        loc_ids : numpy.ndarray
             location ids along the first axis of the data array
         data : dict
             dictionary with variable names as keys and 2D numpy.arrays as
             values
-        dates: numpy.array
-            array of datetime objects with same size as second dimension of
-            data arrays
+        dates: numpy.ndarray
+            Array of datetime objects with same size as second dimension of
+            data arrays.
         attributes : dict, optional
-            dictionary of attributes that should be added to the netCDF
+            Dictionary of attributes that should be added to the netCDF
             variables. can also be a dict of dicts for each variable name as
             in the data dict.
         dates_direct : boolean
-            if true the dates are already converted into floating
+            If true the dates are already converted into floating
             point number of correct magnitude
         """
-
         if self.n_loc != loc_ids.size:
-            raise ValueError(''.join(('loc_ids is not the same number of ',
-                                      'locations in the file')))
+            raise ValueError("loc_ids is not the same number of "
+                             "locations in the file")
         for key in data:
+
             if data[key].shape[1] != dates.size:
-                raise DatasetError("".join(("timestamps and dataset ",
-                                            "second dimension %s must have ",
-                                            " the same size" % key)))
+                raise IOError("Timestamps and dataset second dimension "
+                              " {:} must have the same size".format(key))
+
             if data[key].shape[0] != self.n_loc:
-                raise DatasetError("".join(("datasets first dimension ",
-                                            "%s must have the same size as ",
-                                            "number of locations ",
-                                            "in the file" % key)))
+                raise IOError("Datasets first dimension {:} must have "
+                              "the same size as number of locations "
+                              "in the file".format(key))
 
         # make sure zip works even if one of the parameters is not given
         if lons is None:
@@ -717,11 +746,9 @@ class OrthoMultiTs(Dataset):
         if dates_direct:
             self.dataset.variables[self.time_var][self.write_offset:] = dates
         else:
+            units = self.dataset.variables[self.time_var].units
             self.dataset.variables[self.time_var][self.write_offset:] = \
-                netCDF4.date2num(dates,
-                                 units=self.dataset.variables[
-                                     self.time_var].units,
-                                 calendar='standard')
+                netCDF4.date2num(dates, units=units, calendar='standard')
 
 
 class ContiguousRaggedTs(OrthoMultiTs):
@@ -803,9 +830,17 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
     def _get_index_of_ts(self, loc_id):
         """
+        Get slice object for time series at location loc_id.
+
         Parameters
         ----------
-        loc_id: int
+        loc_id : int
+            Location id.
+
+        Returns
+        -------
+        slice_obj : slice
+            Slice object with start and end of time series.
 
         Raises
         ------
@@ -815,9 +850,8 @@ class ContiguousRaggedTs(OrthoMultiTs):
         try:
             loc_ix = self._get_loc_index(loc_id)
         except IOError:
-            msg = "".join(("Time series for Location #", loc_id.__str__(),
-                           " not found."))
-            raise IOError(msg)
+            raise ValueError("Index of time series for "
+                             "location id #{:} not found".format(loc_id))
 
         start = np.sum(self.variables[self.obs_loc_lut][:loc_ix])
         end = np.sum(self.variables[self.obs_loc_lut][:loc_ix + 1])
@@ -845,8 +879,13 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
     def read_time(self, loc_id):
         """
-        read the time stamps for the given location id
-        in this case it works like a normal time series variable
+        Read the time stamps for the given location id in this case it
+        works like a normal time series variable.
+
+        Returns
+        -------
+        time_var : np.float64
+            Time variable.
         """
         return self._read_var_ts(loc_id, self.time_var)
 
@@ -854,23 +893,24 @@ class ContiguousRaggedTs(OrthoMultiTs):
                  lat=None, alt=None, fill_values=None, attributes=None,
                  dates_direct=False):
         """
-        write time series data, if not yet existing also add location to file
+        Write time series data, if not yet existing also add location to file.
 
         Parameters
         ----------
         loc_id : int
-            location id
+            Location id.
         data : dict
-            dictionary with variable names as keys and numpy.arrays as values
+            Dictionary with variable names as keys and
+            numpy.ndarrays as values.
         dates: numpy.array
-            array of datetime objects
+            Array of datetime objects.
         attributes : dict, optional
-            dictionary of attributes that should be added to the netCDF
+            Dictionary of attributes that should be added to the netCDF
             variables. can also be a dict of dicts for each variable name
             as in the data dict.
         dates_direct : boolean
-            if true the dates are already converted into floating
-            point number of correct magnitude
+            If true the dates are already converted into floating
+            point number of correct magnitude.
         """
         try:
             idx = self._get_loc_index(loc_id)
@@ -886,8 +926,8 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
         for key in data:
             if data[key].size != dates.size:
-                raise DatasetError("".join(("timestamps and dataset %s ",
-                                            "must have the same size" % key)))
+                raise IOError("Timestamps and dataset {:}",
+                              "must have the same size".format(key))
 
         # add number of new elements to index_var
         self.dataset.variables[self.obs_loc_lut][idx] = dates.size
@@ -918,11 +958,9 @@ class ContiguousRaggedTs(OrthoMultiTs):
         if dates_direct:
             self.dataset.variables[self.time_var][index] = dates
         else:
+            units = self.dataset.variables[self.time_var].units
             self.dataset.variables[self.time_var][index] = \
-                netCDF4.date2num(dates,
-                                 units=self.dataset.variables[
-                                     self.time_var].units,
-                                 calendar='standard')
+                netCDF4.date2num(dates, units=units, calendar='standard')
 
 
 class IndexedRaggedTs(ContiguousRaggedTs):
@@ -1076,11 +1114,9 @@ class IndexedRaggedTs(ContiguousRaggedTs):
         if dates_direct:
             self.dataset.variables[self.time_var][index] = dates
         else:
+            units = self.dataset.variables[self.time_var].units
             self.dataset.variables[self.time_var][index] = \
-                netCDF4.date2num(dates,
-                                 units=self.dataset.variables[
-                                     self.time_var].units,
-                                 calendar='standard')
+                netCDF4.date2num(dates, units=units, calendar='standard')
 
 
 class GriddedTs(dsbase.DatasetTSBase):
