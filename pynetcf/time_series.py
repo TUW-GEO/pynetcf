@@ -127,7 +127,8 @@ class OrthoMultiTs(Dataset):
 
         # initialize dimensions and index_variable
         if self.mode == 'w':
-            self._init_dimensions_and_lookup()
+            self._init_dimensions()
+            self._init_lookup()
             self._init_location_variables()
             self._init_location_id_and_time()
 
@@ -154,35 +155,24 @@ class OrthoMultiTs(Dataset):
         else:
             self.variables = {}
 
-    def _init_dimensions_and_lookup(self):
+    def _init_dimensions(self):
         """
-        Initializes the dimensions and variables for the lookup
-        between locations and entries in the time series
+        Initializes the dimensions.
         """
         if self.n_loc is None:
-            raise ValueError('Number of locations '
-                             'have to be set for new file')
+            raise ValueError('Number of locations have to be set for'
+                             'new OrthoMultiTs file')
 
         self.create_dim(self.loc_dim_name, self.n_loc)
         self.create_dim(self.obs_dim_name, None)
 
-    def _init_location_id_and_time(self):
+    def _init_lookup(self):
         """
-        initialize the dimensions and variables that are the basis of
-        the format
+        Initializes variables for the lookup between locations and entries in
+        the time series.
         """
-        # make variable that contains the location id
-        self.write_var(self.loc_ids_name, data=None, dim=self.loc_dim_name,
-                       dtype=np.int)
-        self.write_var(self.loc_descr_name, data=None, dim=self.loc_dim_name,
-                       dtype='str')
-        # initialize time variable
-        self.write_var(self.time_var, data=None, dim=self.obs_dim_name,
-                       attr={'standard_name': 'time',
-                             'long_name': 'time of measurement',
-                             'units': self.time_units},
-                       dtype=np.double,
-                       chunksizes=self.unlim_chunksize)
+        # nothing to be done for OrthoMultiTs
+        pass
 
     def _init_location_variables(self):
         # write station information, longitude, latitude and altitude
@@ -789,26 +779,24 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
         super(ContiguousRaggedTs, self).__init__(filename, n_loc=n_loc,
                                                  obs_dim_name=obs_dim_name,
-                                                 ** kwargs)
+                                                 **kwargs)
         self.constant_dates = False
 
-    def _init_dimensions_and_lookup(self):
+    def _init_dimensions(self):
         """
-        Initializes the dimensions and variables for the lookup
-        between locations and entries in the time series
+        Initializes the dimensions.
         """
-        if self.n_loc is None:
-            raise ValueError('Number of locations '
-                             'have to be set for new file')
-        if self.n_obs is None:
-            raise ValueError('Number of observations have '
-                             'to be set for new file')
-
         self.create_dim(self.loc_dim_name, self.n_loc)
         self.create_dim(self.obs_dim_name, self.n_obs)
 
+    def _init_lookup(self):
+        """
+        Initializes variables for the lookup between locations and entries in
+        the time series.
+        """
         attr = {'long_name': 'number of observations at this location',
                 'sample_dimension': self.obs_dim_name}
+
         self.write_var(self.obs_loc_lut, data=None, dim=self.loc_dim_name,
                        dtype=np.int, attr=attr,
                        chunksizes=self.unlim_chunksize)
@@ -954,19 +942,14 @@ class IndexedRaggedTs(ContiguousRaggedTs):
         self.not_timeseries.append(self.obs_loc_lut)
         self.constant_dates = False
 
-    def _init_dimensions_and_lookup(self):
+    def _init_lookup(self):
         """
-        Initializes the dimensions and variables for the lookup
-        between locations and entries in the time series
+        Initializes variables for the lookup between locations and entries
+        in the time series.
         """
-        if self.n_loc is None:
-            raise ValueError('Number of locations '
-                             'have to be set for new file')
-
-        self.create_dim(self.loc_dim_name, self.n_loc)
-        self.create_dim(self.obs_dim_name, self.n_obs)
         attr = {'long_name': 'which location this observation is for',
                 'instance_dimension': self.loc_dim_name}
+
         self.write_var(self.obs_loc_lut, data=None, dim=self.obs_dim_name,
                        dtype=np.int, attr=attr,
                        chunksizes=self.unlim_chunksize)
