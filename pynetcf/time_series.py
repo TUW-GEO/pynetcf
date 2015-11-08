@@ -590,10 +590,8 @@ class OrthoMultiTs(Dataset):
         if direct:
             self.append_var(self.time_var, dates)
         else:
-            self.append_var(self.time_var,
-                            netCDF4.date2num(dates,
-                                             units=self.dataset.variables[
-                                                 self.time_var].units,
+            units = self.dataset.variables[self.time_var].units
+            self.append_var(self.time_var, netCDF4.date2num(dates, units=units,
                                              calendar='standard'))
 
     def write_ts(self, loc_id, data, dates, extend_time='first',
