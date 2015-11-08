@@ -143,8 +143,9 @@ class OrthoMultiTs(Dataset):
 
             self.global_attr['featureType'] = 'timeSeries'
 
-        # index, to be read upon first reading operation
-        self.index = None
+        # location ids, to be read upon first reading operation
+        self.loc_ids_var = None
+
         # date variables, for OrthogonalMulitTs it can be stored
         # since it is the same for all variables in a file
         self.constant_dates = True
@@ -209,8 +210,32 @@ class OrthoMultiTs(Dataset):
                              'axis': 'Z'},
                        dtype=np.float32)
 
-    def _read_index(self):
-        self.index = self.dataset.variables[self.loc_ids_name][:]
+    def _init_location_id_and_time(self):
+        """
+        Initialize the dimensions and variables that are the basis of
+        the format.
+        """
+        # make variable that contains the location id
+        self.write_var(self.loc_ids_name, data=None, dim=self.loc_dim_name,
+                       dtype=np.int)
+
+        self.write_var(self.loc_descr_name, data=None, dim=self.loc_dim_name,
+                       dtype='str')
+
+        # initialize time variable
+        self.write_var(self.time_var, data=None, dim=self.obs_dim_name,
+                       attr={'standard_name': 'time',
+                             'long_name': 'time of measurement',
+                             'units': self.time_units},
+                       dtype=np.float64, chunksizes=self.unlim_chunksize)
+
+    def _read_loc_ids(self, force=False):
+        """
+        Load location ids.
+        """
+        if self.loc_ids_var is None or force == True:
+            loc_ids_var = self.dataset.variables[self.loc_ids_name][:]
+            self.loc_ids_var = np.ma.masked_array(loc_ids_var)
 
     def _find_free_index_pos(self):
         """
@@ -227,31 +252,47 @@ class OrthoMultiTs(Dataset):
 
         Raises
         ------
-        DatasetError
-            if no free index is found
+        IOError
+            If no free index is found.
         """
-        if self.index is None:
-            self._read_index()
+        self._read_loc_ids()
 
-        masked = np.where(self.index.mask)[0]
+        masked = np.where(self.loc_ids_var.mask)[0]
+
         # all indexes already filled
         if len(masked) == 0:
-            raise DatasetError('No free index available')
+            if self.dataset.dimensions[self.loc_dim_name].isunlimited():
+                idx = self.loc_ids_var.size
+            else:
+                raise IOError('No free index available')
         else:
             idx = np.min(masked)
 
         return idx
 
-    def _get_loc_index(self, loc_id):
+    def _get_loc_id_index(self, loc_id):
         """
-        gets index of location id in index variable
+        Gets index of location id in location ids variable.
+
+        Parameters
+        ----------
+        loc_id : int
+            Location id.
+
+        Returns
+        -------
+        loc_id_index : int
+            Location id index.
         """
-        if self.index is None:
-            self._read_index()
-        loc_ix = np.where(loc_id == self.index)[0]
-        if loc_ix.size != 1:
-            raise IOError('Index problem %d elements found' % loc_ix.size)
-        return loc_ix[0]
+        self._read_loc_ids()
+
+        loc_id_index = np.where(loc_id == self.loc_ids_var)[0]
+
+        if loc_id_index.size != 1:
+            raise IOError('Index problem {:} elements '
+                          ' found'.format(loc_id_index.size))
+
+        return loc_id_index[0]
 
     def _add_location(self, loc_id, lon, lat, alt=None, loc_descr=None):
         """
@@ -341,8 +382,8 @@ class OrthoMultiTs(Dataset):
                 self.dataset.variables[self.loc_descr_name][
                     index] = loc_descr[loc_ids_new].astype(object)
 
-        # update index variable after adding location
-        self.index[index] = np.ma.asarray(loc_id)
+        # update location ids variable after adding location
+        self._read_loc_ids(force=True)
 
         return idx
 
@@ -369,17 +410,25 @@ class OrthoMultiTs(Dataset):
 
     def _get_index_of_ts(self, loc_id):
         """
-        get the indes of a time series
+        Get the indes of a time series.
+
+        Parameters
+        ----------
+        loc_id : int
+            Location id.
+
+        Returns
+        -------
+        loc_id_index : int
+            Location id index.
         """
         try:
-            loc_ix = self._get_loc_index(loc_id)
+            loc_id_index = self._get_loc_id_index(loc_id)
         except IOError:
-            msg = "".join(("Time series for Location #", loc_id.__str__(),
-                           " not found."))
+            msg = "Indexs for location id #{:} not found".format(loc_id)
             raise IOError(msg)
 
-        # [loc_ix,:]
-        _slice = (loc_ix, slice(None, None, None))
+        _slice = (loc_id_index, slice(None, None, None))
 
         return _slice
 
@@ -581,7 +630,7 @@ class OrthoMultiTs(Dataset):
             point number of correct magnitude.
         """
         try:
-            idx = self._get_loc_index(loc_id)
+            idx = self._get_loc_id_index(loc_id)
         except IOError:
             idx = self._add_location(loc_id, lon, lat, alt, loc_descr)
 
@@ -594,8 +643,8 @@ class OrthoMultiTs(Dataset):
 
         for key in data:
             if data[key].size != dates.size:
-                raise DatasetError("".join(("timestamps and dataset %s ",
-                                            "must have the same size" % key)))
+                raise IOError("Timestamps and dataset {:} "
+                              "must have the same size".format(key))
 
         # add to time variable only on the first write operation
         if ((self.write_operations == 0 and extend_time == 'first') or
@@ -637,7 +686,7 @@ class OrthoMultiTs(Dataset):
                         self.dataset.variables[key][idx, _slice_new].mask)[0]
                 # all indexes already filled
                 if len(masked) == 0:
-                    raise DatasetError('No free data slots available')
+                    raise IOError("No free data slots available")
                 else:
                     self.write_offset = np.min(
                         masked) + self.length_before_extend
@@ -844,17 +893,17 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
         Raises
         ------
-        IOError
-            if location id could not be found
+        ValueError
+            If location id could not be found.
         """
         try:
-            loc_ix = self._get_loc_index(loc_id)
+            loc_id_index = self._get_loc_id_index(loc_id)
         except IOError:
             raise ValueError("Index of time series for "
                              "location id #{:} not found".format(loc_id))
 
-        start = np.sum(self.variables[self.obs_loc_lut][:loc_ix])
-        end = np.sum(self.variables[self.obs_loc_lut][:loc_ix + 1])
+        start = np.sum(self.variables[self.obs_loc_lut][:loc_id_index])
+        end = np.sum(self.variables[self.obs_loc_lut][:loc_id_index + 1])
 
         return slice(start, end)
 
@@ -869,13 +918,13 @@ class ContiguousRaggedTs(OrthoMultiTs):
 
         Returns
         -------
-        loc_ix : int
-            Location index.
+        loc_id_index : int
+            Location id index.
         """
         bins = np.hstack((0, np.cumsum(self.variables[self.obs_loc_lut])))
-        loc_ix = np.digitize(obs_ix, bins) - 1
+        loc_id_index = np.digitize(obs_ix, bins) - 1
 
-        return loc_ix
+        return loc_id_index
 
     def read_time(self, loc_id):
         """
@@ -913,7 +962,7 @@ class ContiguousRaggedTs(OrthoMultiTs):
             point number of correct magnitude.
         """
         try:
-            idx = self._get_loc_index(loc_id)
+            idx = self._get_loc_id_index(loc_id)
         except IOError:
             idx = self._add_location(loc_id, lon, lat, alt, loc_descr)
 
