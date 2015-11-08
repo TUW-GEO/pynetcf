@@ -39,6 +39,7 @@ import netCDF4
 
 from pynetcf.base import Dataset
 import pytesmo.io.dataset_base as dsbase
+from pygeobase.io_base import GriddedTsBase
 
 
 class OrthoMultiTs(Dataset):
@@ -1314,3 +1315,133 @@ class GriddedTs(dsbase.DatasetTSBase):
         if not self.write_bulk:
             self.__flush_nc()
             self.__close_nc()
+
+
+class GriddedNcTs(GriddedTsBase):
+
+    def __init__(self, *args, **kwargs):
+
+        super(GriddedNcTs, self).__init__(*args, **kwargs)
+
+        self.parameters = None
+        if 'parameters' in kwargs:
+            self.parameters = kwargs['parameters']
+
+        self.offsets = None
+        if 'offsets' in kwargs:
+            self.offsets = kwargs['offsets']
+
+        self.scale_factors = None
+        if 'scale_factors' in kwargs:
+            self.scale_factors = kwargs['scale_factors']
+
+        self.dates = None
+
+        if self.ioclass == OrthoMultiTs:
+            self.read_dates = False
+        else:
+            self.read_dates = True
+
+    def read_gp(self, gpi, period=None, **kwargs):
+        """
+        Method reads data for given gpi, additional keyword arguments
+        are passed to ioclass.read_ts
+
+        Parameters
+        ----------
+        gp : int
+            grid point index
+        period : list
+            2 element array containing datetimes [start, end]
+
+        Returns
+        -------
+        ts : pandas.DataFrame
+            time series
+        """
+        if self.mode in ['w', 'a']:
+            raise IOError("trying to read file is in 'write/append' mode")
+
+        self._open(gpi)
+
+        if self.parameters is None:
+            data = self.fid.read_all_ts(gpi, **kwargs)
+        else:
+            data = self.fid.read_ts(self.parameters, gpi, **kwargs)
+
+        if self.dates is None or self.read_dates:
+            if "dates_direct" in kwargs:
+                self.dates = self.fid.read_time(gpi)
+            else:
+                self.dates = self.fid.read_dates(gpi)
+
+        time = self.dates
+
+        # remove time column from dataframe, only index should contain time
+        try:
+            data.pop('time')
+        except KeyError:
+            # if the time value is not found then do nothing
+            pass
+
+        ts = pd.DataFrame(data, index=time)
+
+        if period is not None:
+            ts = ts[period[0]:period[1]]
+
+        if self.scale_factors is not None:
+            for scale_column in self.scale_factors:
+                if scale_column in ts.columns:
+                    ts[scale_column] *= self.scale_factors[scale_column]
+
+        if self.offsets is not None:
+            for offset_column in self.offsets:
+                if offset_column in ts.columns:
+                    ts[offset_column] += self.offsets[offset_column]
+
+        if not self._read_bulk:
+            self.close()
+
+        return ts
+
+    def write_gp(self, gpi, data, **kwargs):
+        """
+        Method writing data for given gpi.
+
+        Parameters
+        ----------
+        gp : int
+            Grid point index
+        data : pandas.DataFrame
+            Time series data to write. Index has to be pandas.DateTimeIndex.
+        """
+        if self.mode == 'r':
+            raise IOError("trying to write but file is in 'read' mode")
+
+        self._open(gpi)
+        lon, lat = self.grid.gpi2lonlat(gpi)
+
+        ds = data.to_dict('list')
+        for key in ds:
+            ds[key] = np.array(ds[key])
+
+        self.fid.write_ts(gpi, ds, data.index.to_pydatetime(),
+                          lon=lon, lat=lat, **kwargs)
+
+        if not self._write_bulk:
+            self.flush()
+            self.close()
+
+
+class GriddedNcContiguousRaggedTs(GriddedNcTs):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = ContiguousRaggedTs
+        super(GriddedNcContiguousRaggedTs, self).__init__(*args, **kwargs)
+
+
+class GriddedNcIndexedRaggedTs(GriddedNcTs):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = IndexedRaggedTs
+        super(GriddedNcIndexedRaggedTs, self).__init__(*args, **kwargs)
