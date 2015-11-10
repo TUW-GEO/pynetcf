@@ -1052,7 +1052,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             if location id could not be found
         """
         try:
-            loc_ix = self._get_loc_index(loc_id)
+            loc_ix = self._get_loc_id_index(loc_id)
         except IOError:
             msg = "".join(("Time series for Location #", loc_id.__str__(),
                            " not found."))
@@ -1106,7 +1106,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             point number of correct magnitude
         """
         try:
-            idx = self._get_loc_index(loc_id)
+            idx = self._get_loc_id_index(loc_id)
         except IOError:
             idx = self._add_location(loc_id, lon, lat, alt, loc_descr)
 
