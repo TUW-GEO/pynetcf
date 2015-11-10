@@ -2,21 +2,18 @@
 Testing time series classes of pynetcf.
 """
 
+
 import os
 import unittest
-import pandas as pd
+from tempfile import mkdtemp
 
+import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 import numpy.testing as nptest
 
 import pynetcf.time_series as nc
 import pytesmo.grid.grids as grids
-
-
-def curpath():
-    pth, _ = os.path.split(os.path.abspath(__file__))
-    return pth
 
 import sys
 if sys.version_info < (3, 0):
@@ -26,7 +23,7 @@ if sys.version_info < (3, 0):
 class OrthoMultiTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -244,7 +241,7 @@ class OrthoMultiTest(unittest.TestCase):
 class DatasetContiguousTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -276,7 +273,7 @@ class DatasetContiguousTest(unittest.TestCase):
 class DatasetIndexedTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -349,7 +346,7 @@ class DatasetIndexedTest(unittest.TestCase):
 class DatasetGriddedTsTests(unittest.TestCase):
 
     def setUp(self):
-        self.testdatapath = os.path.join(curpath(), 'data', '')
+        self.testdatapath = os.path.join(mkdtemp())
         self.testfilename = os.path.join(self.testdatapath, '0107.nc')
         self.grid = grids.genreg_grid().to_cell_grid()
 
