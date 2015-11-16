@@ -1,11 +1,40 @@
+# Copyright (c) 2015, Vienna University of Technology,
+# Department of Geodesy and Geoinformation
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the Vienna University of Technology,
+#     Department of Geodesy and Geoinformation nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL VIENNA UNIVERSITY OF TECHNOLOGY,
+# DEPARTMENT OF GEODESY AND GEOINFORMATION BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 """
-Testing time series classes of pynetcf.
+Testing time series class.
 """
 
 import os
 import unittest
-import pandas as pd
+from tempfile import mkdtemp
 
+import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 import numpy.testing as nptest
@@ -13,19 +42,15 @@ import numpy.testing as nptest
 import pynetcf.time_series as nc
 import pygeogrids.grids as grids
 
-
-def curpath():
-    pth, _ = os.path.split(os.path.abspath(__file__))
-    return pth
-
 import sys
 if sys.version_info < (3, 0):
     range = xrange
 
+
 class OrthoMultiTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -243,39 +268,75 @@ class OrthoMultiTest(unittest.TestCase):
 class DatasetContiguousTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
 
     def test_file_writing(self):
 
+        dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
+                datetime(2007, 3, 1)])
+
         with nc.ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, n_obs=9, mode='w') as dataset:
             data = {'test': np.arange(3)}
-            dates = np.array(
-                [datetime(2007, 1, 1), datetime(2007, 2, 1),
-                 datetime(2007, 3, 1)])
-            dataset.write_ts(
-                1, data, dates, loc_descr='first station', lon=0, lat=0, alt=5)
-            dataset.write_ts(
-                2, data, dates, loc_descr='first station', lon=0, lat=0, alt=5)
-            dataset.write_ts(
-                3, data, dates, loc_descr='first station', lon=0, lat=0, alt=5)
+            dataset.write_ts(1, data, dates, loc_descr='first station',
+                             lon=1, lat=1, alt=1)
+            dataset.write_ts(2, data, dates, loc_descr='second station',
+                             lon=2, lat=2, alt=2)
+            dataset.write_ts(3, data, dates, loc_descr='third station',
+                             lon=3, lat=3, alt=3)
 
         with nc.ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(data['test'], np.arange(3))
-            dates = np.array(
-                [datetime(2007, 1, 1), datetime(2007, 2, 1),
+            nptest.assert_array_equal(data['time'], dates)
+
+    def test_unlim_obs_file_writing(self):
+
+        dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
                  datetime(2007, 3, 1)])
+
+        with nc.ContiguousRaggedTs(self.testfilename,
+                                   n_loc=3, mode='w') as dataset:
+            data = {'test': np.arange(3)}
+            dataset.write_ts(1, data, dates, loc_descr='first station',
+                             lon=1, lat=1, alt=1)
+            dataset.write_ts(2, data, dates, loc_descr='second station',
+                             lon=2, lat=2, alt=2)
+            dataset.write_ts(3, data, dates, loc_descr='third station',
+                             lon=3, lat=3, alt=3)
+
+        with nc.ContiguousRaggedTs(self.testfilename) as dataset:
+            data = dataset.read_all_ts(1)
+            nptest.assert_array_equal(data['test'], np.arange(3))
+            nptest.assert_array_equal(data['time'], dates)
+
+    def test_unlim_loc_file_writing(self):
+
+        dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
+                 datetime(2007, 3, 1)])
+
+        with nc.ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
+            data = {'test': np.arange(3)}
+            dataset.write_ts(1, data, dates, loc_descr='first station',
+                             lon=1, lat=1, alt=1)
+            dataset.write_ts(2, data, dates, loc_descr='second station',
+                             lon=2, lat=2, alt=2)
+            dataset.write_ts(3, data, dates, loc_descr='third station',
+                             lon=3, lat=3, alt=3)
+
+        with nc.ContiguousRaggedTs(self.testfilename) as dataset:
+            data = dataset.read_all_ts(1)
+            nptest.assert_array_equal(data['test'], np.arange(3))
             nptest.assert_array_equal(data['time'], dates)
 
 
 class DatasetIndexedTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(curpath(), 'data', 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -286,21 +347,48 @@ class DatasetIndexedTest(unittest.TestCase):
                                 mode='w') as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
-
                     data = {'test': np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array([base + timedelta(hours=i)
                                       for i in range(n_data)])
-                    dataset.write_ts(
-                        location, data, dates, loc_descr='first station',
-                        lon=0, lat=0, alt=5)
+                    dataset.write_ts(location, data, dates,
+                                     loc_descr='first station',
+                                     lon=location, lat=location,
+                                     alt=location)
 
         with nc.IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(
                 data['test'], np.concatenate([np.arange(2), np.arange(5),
                                               np.arange(6)]))
+            test_dates = []
+            for n_data in [2, 5, 6]:
+                base = datetime(2007, 1, n_data)
+                test_dates.append(
+                    np.array([base + timedelta(hours=i)
+                              for i in range(n_data)]))
+            dates = np.concatenate(test_dates)
+            nptest.assert_array_equal(data['time'], dates)
 
+    def test_unlim_loc_file_writing(self):
+
+        with nc.IndexedRaggedTs(self.testfilename, mode='w') as dataset:
+            for n_data in [2, 5, 6]:
+                for location in [1, 2, 3]:
+                    data = {'test': np.arange(n_data)}
+                    base = datetime(2007, 1, n_data)
+                    dates = np.array([base + timedelta(hours=i)
+                                      for i in range(n_data)])
+                    dataset.write_ts(location, data, dates,
+                                     loc_descr='first station',
+                                     lon=location, lat=location,
+                                     alt=location)
+
+        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+            data = dataset.read_all_ts(1)
+            nptest.assert_array_equal(
+                data['test'], np.concatenate([np.arange(2), np.arange(5),
+                                              np.arange(6)]))
             test_dates = []
             for n_data in [2, 5, 6]:
                 base = datetime(2007, 1, n_data)
@@ -348,7 +436,7 @@ class DatasetIndexedTest(unittest.TestCase):
 class DatasetGriddedTsTests(unittest.TestCase):
 
     def setUp(self):
-        self.testdatapath = os.path.join(curpath(), 'data', '')
+        self.testdatapath = os.path.join(mkdtemp())
         self.testfilename = os.path.join(self.testdatapath, '0107.nc')
         self.grid = grids.genreg_grid().to_cell_grid()
 

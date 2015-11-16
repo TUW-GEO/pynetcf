@@ -1,3 +1,5 @@
 numpy
 netCDF4
 pygeogrids
+pytesmo>=0.2.4
+pygeobase
