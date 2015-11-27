@@ -592,7 +592,7 @@ class OrthoMultiTs(Dataset):
         else:
             units = self.dataset.variables[self.time_var].units
             self.append_var(self.time_var, netCDF4.date2num(dates, units=units,
-                                             calendar='standard'))
+                                                            calendar='standard'))
 
     def write_ts(self, loc_id, data, dates, extend_time='first',
                  loc_descr=None, lon=None, lat=None, alt=None,
@@ -1408,7 +1408,35 @@ class GriddedNcTs(GriddedTsBase):
         else:
             self.read_dates = True
 
-    def read_gp(self, gpi, period=None, **kwargs):
+    def _open(self, gp):
+        """
+        Open file.
+
+        Parameters
+        ----------
+        gp : int
+            Grid point.
+        """
+        cell = self.grid.gpi2cell(gp)
+        filename = os.path.join(self.path,
+                                '{:}.nc'.format(self.fn_format.format(cell)))
+
+        if self.mode == 'r':
+            if self.previous_cell != cell:
+                self.close()
+                self.previous_cell = cell
+                self.fid = self.ioclass(filename, mode=self.mode,
+                                        **self.ioclass_kws)
+
+        if self.mode in ['w', 'a']:
+            if self.previous_cell != cell:
+                self.flush()
+                self.close()
+                self.previous_cell = cell
+                self.fid = self.ioclass(filename, mode=self.mode,
+                                        **self.ioclass_kws)
+
+    def _read_gp(self, gpi, period=None, **kwargs):
         """
         Method reads data for given gpi, additional keyword arguments
         are passed to ioclass.read_ts
@@ -1416,14 +1444,14 @@ class GriddedNcTs(GriddedTsBase):
         Parameters
         ----------
         gp : int
-            grid point index
+            Grid point.
         period : list
             2 element array containing datetimes [start, end]
 
         Returns
         -------
         ts : pandas.DataFrame
-            time series
+            Time series data.
         """
         if self.mode in ['w', 'a']:
             raise IOError("trying to read file is in 'write/append' mode")
@@ -1465,38 +1493,31 @@ class GriddedNcTs(GriddedTsBase):
                 if offset_column in ts.columns:
                     ts[offset_column] += self.offsets[offset_column]
 
-        if not self._read_bulk:
-            self.close()
-
         return ts
 
-    def write_gp(self, gpi, data, **kwargs):
+    def _write_gp(self, gp, data, **kwargs):
         """
         Method writing data for given gpi.
 
         Parameters
         ----------
         gp : int
-            Grid point index
+            Grid point.
         data : pandas.DataFrame
             Time series data to write. Index has to be pandas.DateTimeIndex.
         """
         if self.mode == 'r':
             raise IOError("trying to write but file is in 'read' mode")
 
-        self._open(gpi)
-        lon, lat = self.grid.gpi2lonlat(gpi)
+        self._open(gp)
+        lon, lat = self.grid.gpi2lonlat(gp)
 
         ds = data.to_dict('list')
         for key in ds:
             ds[key] = np.array(ds[key])
 
-        self.fid.write_ts(gpi, ds, data.index.to_pydatetime(),
+        self.fid.write_ts(gp, ds, data.index.to_pydatetime(),
                           lon=lon, lat=lat, **kwargs)
-
-        if not self._write_bulk:
-            self.flush()
-            self.close()
 
 
 class GriddedNcContiguousRaggedTs(GriddedNcTs):
