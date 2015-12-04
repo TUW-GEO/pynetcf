@@ -1520,6 +1520,13 @@ class GriddedNcTs(GriddedTsBase):
                           lon=lon, lat=lat, **kwargs)
 
 
+class GriddedNcOrthoMultiTs(GriddedNcTs):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = OrthoMultiTs
+        super(GriddedNcOrthoMultiTs, self).__init__(*args, **kwargs)
+
+
 class GriddedNcContiguousRaggedTs(GriddedNcTs):
 
     def __init__(self, *args, **kwargs):
