@@ -62,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pynetcf'
-copyright = u'2014, TU Wien'
+copyright = u'2014, '
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
