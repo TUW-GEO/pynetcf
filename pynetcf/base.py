@@ -184,16 +184,16 @@ class Dataset(object):
             attr_value = attr[attr_name]
             self.dataset.variables[name].setncattr(attr_name, attr_value)
 
-    def append_var(self, name, data):
+    def append_var(self, name, data, **kwargs):
         """
         append data along unlimited dimension(s) of variable
 
         Parameters
         ----------
         name : string
-            name of variable to append to
+            Name of variable to append to.
         data : numpy.array
-            numpy array of correct dimension
+            Numpy array of correct dimension.
 
         Raises
         ------
@@ -225,6 +225,8 @@ class Dataset(object):
             else:
                 raise IOError(''.join(('Cannot append to variable that ',
                                        'has no unlimited dimension')))
+        else:
+            self.write_var(name, data, **kwargs)
 
     def read_var(self, name):
         """
