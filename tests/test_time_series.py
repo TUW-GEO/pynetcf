@@ -276,7 +276,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, n_obs=9, mode='w') as dataset:
@@ -296,7 +296,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_unlim_obs_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                 datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, mode='w') as dataset:
@@ -316,7 +316,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_unlim_loc_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                 datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
             data = {'test': np.arange(3)}
