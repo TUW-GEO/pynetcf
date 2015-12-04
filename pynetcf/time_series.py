@@ -1433,6 +1433,10 @@ class GriddedNcTs(GriddedTsBase):
                 self.flush()
                 self.close()
                 self.previous_cell = cell
+                if self.mode == 'w':
+                    if 'n_loc' not in self.ioclass_kws:
+                        n_loc = self.grid.grid_points_for_cell(cell)[0].size
+                        self.ioclass_kws['n_loc'] = n_loc
                 self.fid = self.ioclass(filename, mode=self.mode,
                                         **self.ioclass_kws)
 
