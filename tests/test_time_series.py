@@ -504,6 +504,11 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def test_writing_with_attributes_GriddedIndexed(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcIndexedRaggedTs)
+
+    def test_writing_with_attributes_GriddedOrthoMulti(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs)
+
     def test_rw_dates_direct(self):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
