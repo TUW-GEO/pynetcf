@@ -276,7 +276,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, n_obs=9, mode='w') as dataset:
@@ -296,7 +296,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_unlim_obs_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                 datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, mode='w') as dataset:
@@ -316,7 +316,7 @@ class DatasetContiguousTest(unittest.TestCase):
     def test_unlim_loc_file_writing(self):
 
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
-                 datetime(2007, 3, 1)])
+                          datetime(2007, 3, 1)])
 
         with nc.ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
             data = {'test': np.arange(3)}
@@ -443,7 +443,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def tearDown(self):
         os.remove(self.testfilename)
 
-    def test_writing_with_attributes(self):
+    def _test_writing_with_attributes(self, ioclass):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
 
@@ -453,22 +453,61 @@ class DatasetGriddedTsTests(unittest.TestCase):
         attributes = {'var1': {'testattribute': 'teststring'},
                       'var2': {'testattribute2': 'teststring2'}}
 
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               mode='w', grid=self.grid)
+        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+                          mode='w', grid=self.grid)
         for gpi in [10, 11, 12]:
             dataset.write_gp(gpi, ts, attributes=attributes)
 
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               mode='a', grid=self.grid)
+        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+                          mode='a', grid=self.grid)
         for gpi in [13, 10]:
             dataset.write_gp(gpi, ts)
 
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               grid=self.grid)
+        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+                          grid=self.grid)
         for gpi in [11, 12]:
             ts = dataset.read_gp(gpi)
             nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
             nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
+
+    def _test_writing_with_attributes_prepared_classes(self, ioclass):
+
+        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+
+        ts = pd.DataFrame({'var1': np.arange(len(dates)),
+                           'var2': np.arange(len(dates))}, index=dates)
+
+        attributes = {'var1': {'testattribute': 'teststring'},
+                      'var2': {'testattribute2': 'teststring2'}}
+
+        dataset = ioclass(self.testdatapath, self.grid, mode='w')
+        for gpi in [10, 11, 12]:
+            dataset.write(gpi, ts, attributes=attributes)
+
+        dataset = ioclass(self.testdatapath, self.grid, mode='a')
+        for gpi in [13, 10]:
+            dataset.write(gpi, ts)
+
+        dataset = ioclass(self.testdatapath, self.grid, mode='r')
+        for gpi in [11, 12]:
+            ts = dataset.read(gpi)
+            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
+            nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
+
+    def test_writing_with_attributes_GriddedTs(self):
+        self._test_writing_with_attributes(nc.GriddedTs)
+
+    def test_writing_with_attributes_GriddedContigious(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcContiguousRaggedTs)
+
+    def test_writing_with_attributes_GriddedIndexed(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcIndexedRaggedTs)
+
+    def test_writing_with_attributes_GriddedOrthoMulti(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs)
 
     def test_rw_dates_direct(self):
 
