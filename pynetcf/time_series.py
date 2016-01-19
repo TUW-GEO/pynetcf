@@ -220,7 +220,7 @@ class OrthoMultiTs(Dataset):
                        dtype=np.int)
 
         self.write_var(self.loc_descr_name, data=None, dim=self.loc_dim_name,
-                       dtype='str')
+                       dtype=str)
 
         # initialize time variable
         self.write_var(self.time_var, data=None, dim=self.obs_dim_name,
