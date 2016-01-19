@@ -126,8 +126,6 @@ class OrthoMultiTs(Dataset):
         if unlim_chunksize is not None:
             self.unlim_chunksize = [unlim_chunksize]
 
-        # variable to track write operations
-        self.write_operations = 0
         self.write_offset = None
 
         # variable which lists the variables that should not be
@@ -594,7 +592,41 @@ class OrthoMultiTs(Dataset):
             self.append_var(self.time_var, netCDF4.date2num(dates, units=units,
                                                             calendar='standard'))
 
-    def write_ts(self, loc_id, data, dates, extend_time='first',
+    def get_time_variable_overlap(self, dates):
+        """Figure out if a new date array has a overlap with the already existing time
+        variable.
+
+        Return the index of the existing time variable where the new dates
+        should be located.
+
+        At the moment this only handles cases where all dates are new or none
+        are new.
+
+        Parameters
+        ----------
+        dates: list
+            list of datetime objects
+
+
+        Returns
+        -------
+        indexes: np.ndarray
+           Array of indexes that overlap
+
+        """
+        timevar = self.dataset.variables[self.time_var]
+        if timevar.size == 0:
+            indexes = np.array([0])
+        else:
+            try:
+                indexes = netCDF4.date2index(
+                    dates, timevar)
+            except ValueError as e:
+                indexes = np.array([timevar.size])
+
+        return indexes
+
+    def write_ts(self, loc_id, data, dates,
                  loc_descr=None, lon=None, lat=None, alt=None,
                  fill_values=None, attributes=None, dates_direct=False):
         """
@@ -611,14 +643,6 @@ class OrthoMultiTs(Dataset):
             numpy.ndarrays as values.
         dates: numpy.ndarray
             Array of datetime objects.
-        extend_time : string or boolean, optional
-            one of 'first', True or False
-            'first' : only extend the time variable on the first write
-                      operation after opening the file
-            True : extend the time variable when writing
-            False : only write variable and ignore dates
-                    the assumption is that the time variable already has the
-                    correct length and content
         attributes : dict, optional
             Dictionary of attributes that should be added to the netCDF
             variables. can also be a dict of dicts for each variable name
@@ -644,12 +668,12 @@ class OrthoMultiTs(Dataset):
                 raise IOError("Timestamps and dataset {:} "
                               "must have the same size".format(key))
 
-        # add to time variable only on the first write operation
-        if ((self.write_operations == 0 and extend_time == 'first') or
-                (type(extend_time) == bool and extend_time)):
-            self.length_before_extend = self.dataset.variables[
-                self.time_var].size
+        overlap_indexes = self.get_time_variable_overlap(dates)
+        if len(dates) != len(overlap_indexes):
             self.extend_time(dates, direct=dates_direct)
+            self.length_before_extend = overlap_indexes[-1]
+        else:
+            self.length_before_extend = 0
 
         for key in data:
 
@@ -695,8 +719,6 @@ class OrthoMultiTs(Dataset):
             # might be a bug in netCDF?
             self.dataset.variables[key][idx, _slice] = \
                 data[key].reshape(1, data[key].size)
-
-        self.write_operations += 1
 
     def write_ts_all_loc(self, loc_ids, data, dates, loc_descrs=None,
                          lons=None, lats=None, alts=None, fill_values=None,
