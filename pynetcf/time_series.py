@@ -149,7 +149,10 @@ class OrthoMultiTs(Dataset):
         self.constant_dates = True
         self.dates = None
         self.read_dates_auto = read_dates
-        self.read_bulk = read_bulk
+        if self.mode == 'r':
+            self.read_bulk = read_bulk
+        else:
+            self.read_bulk = False
 
         # cache location id during reading
         self.prev_loc_id = None
@@ -922,6 +925,9 @@ class ContiguousRaggedTs(OrthoMultiTs):
             raise ValueError("Index of time series for "
                              "location id #{:} not found".format(loc_id))
 
+        if self.read_bulk and self.obs_loc_lut not in self.variables:
+            self.variables[self.obs_loc_lut] = self.dataset.variables[
+                self.obs_loc_lut][:]
         start = np.sum(self.variables[self.obs_loc_lut][:loc_id_index])
         end = np.sum(self.variables[self.obs_loc_lut][:loc_id_index + 1])
 
@@ -1080,6 +1086,9 @@ class IndexedRaggedTs(ContiguousRaggedTs):
                            " not found."))
             raise IOError(msg)
 
+        if self.read_bulk and self.obs_loc_lut not in self.variables:
+            self.variables[self.obs_loc_lut] = self.dataset.variables[
+                self.obs_loc_lut][:]
         index = np.where(self.variables[self.obs_loc_lut] == loc_ix)[0]
 
         if len(index) == 0:
