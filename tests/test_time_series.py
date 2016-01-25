@@ -470,7 +470,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
             nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
             nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
 
-    def _test_writing_with_attributes_prepared_classes(self, ioclass):
+    def _test_writing_with_attributes_prepared_classes(self, ioclass, read_bulk=False):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
 
@@ -480,15 +480,18 @@ class DatasetGriddedTsTests(unittest.TestCase):
         attributes = {'var1': {'testattribute': 'teststring'},
                       'var2': {'testattribute2': 'teststring2'}}
 
-        dataset = ioclass(self.testdatapath, self.grid, mode='w')
+        dataset = ioclass(self.testdatapath, self.grid,
+                          mode='w', ioclass_kws={"read_bulk": read_bulk})
         for gpi in [10, 11, 12]:
             dataset.write(gpi, ts, attributes=attributes)
 
-        dataset = ioclass(self.testdatapath, self.grid, mode='a')
+        dataset = ioclass(self.testdatapath, self.grid,
+                          mode='a', ioclass_kws={"read_bulk": read_bulk})
         for gpi in [13, 10]:
             dataset.write(gpi, ts)
 
-        dataset = ioclass(self.testdatapath, self.grid, mode='r')
+        dataset = ioclass(self.testdatapath, self.grid,
+                          mode='r', ioclass_kws={"read_bulk": read_bulk})
         for gpi in [11, 12]:
             ts = dataset.read(gpi)
             nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
@@ -508,6 +511,18 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def test_writing_with_attributes_GriddedOrthoMulti(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs)
+
+    def test_writing_with_attributes_GriddedContigious_read_bulk(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcContiguousRaggedTs, read_bulk=True)
+
+    def test_writing_with_attributes_GriddedIndexed_read_bulk(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcIndexedRaggedTs, read_bulk=True)
+
+    def test_writing_with_attributes_GriddedOrthoMulti_read_bulk(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs, read_bulk=True)
 
     def test_rw_dates_direct(self):
 
