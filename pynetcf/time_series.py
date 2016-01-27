@@ -1418,19 +1418,19 @@ class GriddedNcTs(GriddedTsBase):
 
     def __init__(self, *args, **kwargs):
 
-        super(GriddedNcTs, self).__init__(*args, **kwargs)
-
         self.parameters = None
         if 'parameters' in kwargs:
-            self.parameters = kwargs['parameters']
+            self.parameters = kwargs.pop('parameters')
 
         self.offsets = None
         if 'offsets' in kwargs:
-            self.offsets = kwargs['offsets']
+            self.offsets = kwargs.pop('offsets')
 
         self.scale_factors = None
         if 'scale_factors' in kwargs:
-            self.scale_factors = kwargs['scale_factors']
+            self.scale_factors = kwargs.pop('scale_factors')
+
+        super(GriddedNcTs, self).__init__(*args, **kwargs)
 
         self.dates = None
 
