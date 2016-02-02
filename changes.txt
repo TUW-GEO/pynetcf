@@ -13,3 +13,5 @@ v0.1.5 - 2016-01-27
 - improve test coverage
 - make compatible with newest netCDF4 releases
 - support read_bulk keyword for all dataset types
+v0.1.6 - unrealeased
+- Add support for disabling automatic scaling in base netCDF4 library.
