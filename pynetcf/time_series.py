@@ -1232,11 +1232,17 @@ class GriddedTs(dsbase.DatasetTSBase):
         specified in the netCDF file
     scale_factors : dict, optional
         scale factors to apply to a variable
+    autoscale : bool, optional
+        The netCDF library can apply scale_factor and offset from the netcdf
+        attributes. This is done before offsets and scale_factors in this class
+        are applied. To have full control over scaling and offsets turn this
+        off.
     """
 
     def __init__(self, path, ioclass, mode='r', grid=None, read_bulk=False,
                  write_bulk=False, parameters=None,
-                 cell_fn='{:04d}.nc', offsets=None, scale_factors=None):
+                 cell_fn='{:04d}.nc', offsets=None, scale_factors=None,
+                 autoscale=True):
 
         self.ioclass = ioclass
         self.mode = mode
@@ -1247,6 +1253,7 @@ class GriddedTs(dsbase.DatasetTSBase):
         self.previous_cell = None
         self.offsets = offsets
         self.scale_factors = scale_factors
+        self.autoscale = autoscale
 
         self.is_overwritten = False
 
@@ -1281,12 +1288,14 @@ class GriddedTs(dsbase.DatasetTSBase):
                     self.previous_cell = cell
                     self.nc = self.ioclass(filename, mode=self.mode,
                                            read_bulk=self.read_bulk,
-                                           read_dates=self.read_dates)
+                                           read_dates=self.read_dates,
+                                           autoscale=self.autoscale)
             else:
                 self.__close_nc()
                 self.nc = self.ioclass(filename, mode=self.mode,
                                        read_bulk=self.read_bulk,
-                                       read_dates=self.read_dates)
+                                       read_dates=self.read_dates,
+                                       autoscale=self.autoscale)
 
         if self.mode in ['w', 'a']:
             if self.write_bulk:
@@ -1306,13 +1315,16 @@ class GriddedTs(dsbase.DatasetTSBase):
         if os.path.exists(filename):
             if not self.is_overwritten and self.mode == 'w':
                 n_loc = self.grid.grid_points_for_cell(cell)[0].size
-                self.nc = self.ioclass(filename, mode='w', n_loc=n_loc)
+                self.nc = self.ioclass(filename, mode='w', n_loc=n_loc,
+                                       autoscale=self.autoscale)
                 self.is_overwritten = True
             else:
-                self.nc = self.ioclass(filename, mode='a')
+                self.nc = self.ioclass(filename, mode='a',
+                                       autoscale=self.autoscale)
         else:
             n_loc = self.grid.grid_points_for_cell(cell)[0].size
-            self.nc = self.ioclass(filename, mode=self.mode, n_loc=n_loc)
+            self.nc = self.ioclass(filename, mode=self.mode, n_loc=n_loc,
+                                   autoscale=self.autoscale)
             self.is_overwritten = True
 
     def __flush_nc(self):
@@ -1430,8 +1442,13 @@ class GriddedNcTs(GriddedTsBase):
         if 'scale_factors' in kwargs:
             self.scale_factors = kwargs.pop('scale_factors')
 
+        self.autoscale = True
+        if 'autoscale' in kwargs:
+            self.autoscale = kwargs.pop('autoscale')
+
         super(GriddedNcTs, self).__init__(*args, **kwargs)
 
+        self.ioclass_kws.update({'autoscale': self.autoscale})
         self.dates = None
 
         if self.ioclass == OrthoMultiTs:
