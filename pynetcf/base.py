@@ -76,10 +76,14 @@ class Dataset(object):
     complevel : int, optional
         Default 4
         compression level used from 1(low compression) to 9(high compression)
+    autoscale : bool, optional
+        If disabled data will not be automatically scaled when reading and
+        writing
     """
 
     def __init__(self, filename, name=None, file_format="NETCDF4",
-                 mode='r', zlib=True, complevel=4):
+                 mode='r', zlib=True, complevel=4,
+                 autoscale=True):
 
         self.dataset_name = name
         self.filename = filename
@@ -95,6 +99,7 @@ class Dataset(object):
         self.zlib = zlib
         self.complevel = complevel
         self.mode = mode
+        self.autoscale = autoscale
 
         if self.mode == "a" and not os.path.exists(self.filename):
             self.mode = "w"
@@ -105,6 +110,7 @@ class Dataset(object):
 
         self.dataset = netCDF4.Dataset(self.filename, self.mode,
                                        format=self.file_format)
+        self.dataset.set_auto_scale(self.autoscale)
 
     def _set_global_attr(self):
         """
@@ -177,12 +183,14 @@ class Dataset(object):
                                               dim, fill_value=fill_value,
                                               zlib=zlib, complevel=complevel,
                                               chunksizes=chunksizes, **kwargs)
-        if data is not None:
-            var[:] = data
 
         for attr_name in attr:
             attr_value = attr[attr_name]
-            self.dataset.variables[name].setncattr(attr_name, attr_value)
+            var.setncattr(attr_name, attr_value)
+
+        var.set_auto_scale(self.autoscale)
+        if data is not None:
+            var[:] = data
 
     def append_var(self, name, data, **kwargs):
         """
