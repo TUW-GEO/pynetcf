@@ -1,4 +1,4 @@
-## v0.1.6 - unrealeased
+## v0.1.6 - 2016-02-03
 - Add support for disabling automatic scaling in base netCDF4 library.
 - Add support for dtype conversion before scaling and offset.
 
