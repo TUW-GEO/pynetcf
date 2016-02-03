@@ -443,7 +443,10 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def tearDown(self):
         os.remove(self.testfilename)
 
-    def _test_writing_with_attributes(self, ioclass, autoscale=True):
+    def _test_writing_with_attributes(self, ioclass, autoscale=True,
+                                      dtypes=None,
+                                      scale_factors=None,
+                                      offsets=None):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
 
@@ -467,13 +470,43 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
         dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
                           grid=self.grid,
-                          autoscale=autoscale)
-        for gpi in [11, 12]:
-            ts = dataset.read_gp(gpi)
-            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
-            nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
+                          autoscale=autoscale,
+                          dtypes=dtypes,
+                          scale_factors=scale_factors,
+                          offsets=offsets)
 
-    def _test_writing_with_attributes_prepared_classes(self, ioclass, read_bulk=False):
+        for gpi in [11, 12]:
+            ts = dataset.read_ts(gpi)
+            ts_should = {'var1': np.arange(len(dates)),
+                         'var2': np.arange(len(dates))}
+
+            if dtypes is not None:
+                for dtype_column in dtypes:
+                    if dtype_column in ts.columns:
+                        ts_should[dtype_column] = ts_should[dtype_column].astype(
+                            dtypes[dtype_column])
+
+            if scale_factors is not None:
+                for scale_column in scale_factors:
+                    if scale_column in ts.columns:
+                        ts_should[scale_column] *= scale_factors[scale_column]
+
+            if offsets is not None:
+                for offset_column in offsets:
+                    if offset_column in ts.columns:
+                        ts_should[offset_column] += offsets[offset_column]
+
+            nptest.assert_array_equal(ts['var1'], ts_should['var1'])
+            nptest.assert_array_equal(ts['var2'], ts_should['var2'])
+
+    def _test_writing_with_attributes_prepared_classes(self, ioclass,
+                                                       parameters=[
+                                                           'var1', 'var2'],
+                                                       read_bulk=False,
+                                                       dtypes=None,
+                                                       scale_factors=None,
+                                                       offsets=None,
+                                                       autoscale=True):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
 
@@ -484,27 +517,61 @@ class DatasetGriddedTsTests(unittest.TestCase):
                       'var2': {'testattribute2': 'teststring2'}}
 
         dataset = ioclass(self.testdatapath, self.grid,
-                          mode='w', ioclass_kws={"read_bulk": read_bulk})
+                          mode='w', ioclass_kws={"read_bulk": read_bulk},
+                          autoscale=autoscale)
         for gpi in [10, 11, 12]:
             dataset.write(gpi, ts, attributes=attributes)
 
         dataset = ioclass(self.testdatapath, self.grid,
-                          mode='a', ioclass_kws={"read_bulk": read_bulk})
+                          mode='a', ioclass_kws={"read_bulk": read_bulk},
+                          autoscale=autoscale)
         for gpi in [13, 10]:
             dataset.write(gpi, ts)
 
         dataset = ioclass(self.testdatapath, self.grid,
-                          mode='r', ioclass_kws={"read_bulk": read_bulk})
+                          mode='r', ioclass_kws={"read_bulk": read_bulk},
+                          parameters=parameters,
+                          autoscale=autoscale,
+                          dtypes=dtypes,
+                          scale_factors=scale_factors,
+                          offsets=offsets)
+
         for gpi in [11, 12]:
             ts = dataset.read(gpi)
-            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
-            nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
+            ts_should = {'var1': np.arange(len(dates)),
+                         'var2': np.arange(len(dates))}
+
+            if dtypes is not None:
+                for dtype_column in dtypes:
+                    if dtype_column in ts.columns:
+                        ts_should[dtype_column] = ts_should[dtype_column].astype(
+                            dtypes[dtype_column])
+
+            if scale_factors is not None:
+                for scale_column in scale_factors:
+                    if scale_column in ts.columns:
+                        ts_should[scale_column] *= scale_factors[scale_column]
+
+            if offsets is not None:
+                for offset_column in offsets:
+                    if offset_column in ts.columns:
+                        ts_should[offset_column] += offsets[offset_column]
+
+            for parameter in parameters:
+                nptest.assert_array_equal(ts[parameter], ts_should[parameter])
 
     def test_writing_with_attributes_GriddedTs(self):
         self._test_writing_with_attributes(nc.GriddedTs)
 
     def test_writing_with_attributes_GriddedTs_autoscale_false(self):
         self._test_writing_with_attributes(nc.GriddedTs, autoscale=False)
+
+    def test_writing_with_attributes_GriddedTs_conversion(self):
+        self._test_writing_with_attributes(nc.GriddedTs,
+                                           dtypes={'var1': np.ubyte},
+                                           offsets={'var1': 10},
+                                           scale_factors={'var1': 2},
+                                           autoscale=False)
 
     def test_writing_with_attributes_GriddedContigious(self):
         self._test_writing_with_attributes_prepared_classes(
@@ -530,61 +597,64 @@ class DatasetGriddedTsTests(unittest.TestCase):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, read_bulk=True)
 
-    def _test_writing_with_attributes_prepared_classes_read_parameters(self, ioclass,
-                                                                       read_bulk=False,
-                                                                       autoscale=True):
+    def test_writing_GriddedContigious_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2})
 
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+    def test_writing_GriddedIndexed_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2})
 
-        ts = pd.DataFrame({'var1': np.arange(len(dates)),
-                           'var2': np.arange(len(dates))}, index=dates)
-
-        attributes = {'var1': {'testattribute': 'teststring',
-                               'scale_factor': 0.5},
-                      'var2': {'testattribute2': 'teststring2'}}
-
-        dataset = ioclass(self.testdatapath, self.grid,
-                          mode='w', ioclass_kws={"read_bulk": read_bulk},
-                          autoscale=autoscale)
-        for gpi in [10, 11, 12]:
-            dataset.write(gpi, ts, attributes=attributes)
-
-        dataset = ioclass(self.testdatapath, self.grid,
-                          mode='a', ioclass_kws={"read_bulk": read_bulk},
-                          autoscale=autoscale)
-        for gpi in [13, 10]:
-            dataset.write(gpi, ts)
-
-        dataset = ioclass(self.testdatapath, self.grid, parameters=['var1'],
-                          mode='r', ioclass_kws={"read_bulk": read_bulk},
-                          autoscale=autoscale)
-        for gpi in [11, 12]:
-            ts = dataset.read(gpi)
-            assert sorted(list(ts.keys())) == ['var1']
-            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
+    def test_writing_GriddedOrthoMulti_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2})
 
     def test_writing_parameters_GriddedContigious_read_bulk(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
-            nc.GriddedNcContiguousRaggedTs, read_bulk=True)
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcContiguousRaggedTs, read_bulk=True,
+            parameters=['var1'])
 
     def test_writing_parameters_GriddedIndexed_read_bulk(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
-            nc.GriddedNcIndexedRaggedTs, read_bulk=True)
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcIndexedRaggedTs, read_bulk=True,
+            parameters=['var1'])
 
     def test_writing_parameters_GriddedOrthoMulti_read_bulk(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
-            nc.GriddedNcOrthoMultiTs, read_bulk=True)
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs, read_bulk=True,
+            parameters=['var1'])
+
+    def test_writing_parameters_GriddedContigious_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            autoscale=False, parameters=['var1'])
+
+    def test_writing_parameters_GriddedIndexed_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            autoscale=False, parameters=['var1'])
+
+    def test_writing_parameters_GriddedOrthoMulti_conversion(self):
+        self._test_writing_with_attributes_prepared_classes(
+            nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            autoscale=False, parameters=['var1'])
 
     def test_writing_parameters_GriddedContigious_autoscale_false(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
+        self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcContiguousRaggedTs, autoscale=False)
 
     def test_writing_parameters_GriddedIndexed_autoscale_false(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
+        self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcIndexedRaggedTs, autoscale=False)
 
     def test_writing_parameters_GriddedOrthoMulti_autoscale_false(self):
-        self._test_writing_with_attributes_prepared_classes_read_parameters(
+        self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, autoscale=False)
 
     def test_rw_dates_direct(self):
