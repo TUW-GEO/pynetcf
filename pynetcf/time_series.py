@@ -1232,6 +1232,11 @@ class GriddedTs(dsbase.DatasetTSBase):
         specified in the netCDF file
     scale_factors : dict, optional
         scale factors to apply to a variable
+    dtypes : dict, optional
+        dtypes to convert the data to before scale factor or offset is applied.
+        This can be used in cases when the netCDF library is not capable of
+        scaling into the correct datatype. For example having a byte datatype
+        and a scale factor of 2.
     autoscale : bool, optional
         The netCDF library can apply scale_factor and offset from the netcdf
         attributes. This is done before offsets and scale_factors in this class
@@ -1240,9 +1245,8 @@ class GriddedTs(dsbase.DatasetTSBase):
     """
 
     def __init__(self, path, ioclass, mode='r', grid=None, read_bulk=False,
-                 write_bulk=False, parameters=None,
-                 cell_fn='{:04d}.nc', offsets=None, scale_factors=None,
-                 autoscale=True):
+                 write_bulk=False, parameters=None, cell_fn='{:04d}.nc',
+                 offsets=None, scale_factors=None, dtypes=None, autoscale=True):
 
         self.ioclass = ioclass
         self.mode = mode
@@ -1253,6 +1257,7 @@ class GriddedTs(dsbase.DatasetTSBase):
         self.previous_cell = None
         self.offsets = offsets
         self.scale_factors = scale_factors
+        self.dtypes = dtypes
         self.autoscale = autoscale
 
         self.is_overwritten = False
@@ -1382,6 +1387,12 @@ class GriddedTs(dsbase.DatasetTSBase):
         if period is not None:
             ts = ts[period[0]:period[1]]
 
+        if self.dtypes is not None:
+            for dtype_column in self.dtypes:
+                if dtype_column in ts.columns:
+                    ts[dtype_column] = ts[dtype_column].astype(
+                        self.dtypes[dtype_column])
+
         if self.scale_factors is not None:
             for scale_column in self.scale_factors:
                 if scale_column in ts.columns:
@@ -1441,6 +1452,10 @@ class GriddedNcTs(GriddedTsBase):
         self.scale_factors = None
         if 'scale_factors' in kwargs:
             self.scale_factors = kwargs.pop('scale_factors')
+
+        self.dtypes = None
+        if 'dtypes' in kwargs:
+            self.dtypes = kwargs.pop('dtypes')
 
         self.autoscale = True
         if 'autoscale' in kwargs:
@@ -1534,6 +1549,12 @@ class GriddedNcTs(GriddedTsBase):
 
         if period is not None:
             ts = ts[period[0]:period[1]]
+
+        if self.dtypes is not None:
+            for dtype_column in self.dtypes:
+                if dtype_column in ts.columns:
+                    ts[dtype_column] = ts[dtype_column].astype(
+                        self.dtypes[dtype_column])
 
         if self.scale_factors is not None:
             for scale_column in self.scale_factors:
