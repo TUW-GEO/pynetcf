@@ -36,237 +36,103 @@ import datetime
 import netCDF4
 
 
-class AccessItem(object):
+class PointData(object):
 
-    def __init__(self, nc, var_name, **kwargs):
-        self.nc = nc
-        self.var_name = var_name
-        self.kwargs = kwargs
+    """
+    PointData class description.
+    """
 
-    def __getitem__(self, item):
-        if isinstance(self.var_name, list):
-            data = {}
-            for name in self.var_name:
-                data[name] = self.nc.data.variables[name][item]
-        else:
-            data = self.nc.data.variables[self.var_name][item]
+    def __init__(self, filename, mode='r', file_format='NETCDF4', zlib=True,
+                 complevel=4, n_obs=None, obs_dim='obs', loc_id_var='location_id',
+                 time_units="days since 1900-01-01 00:00:00",
+                 time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
+                 unlim_chunksize=None, **kwargs):
 
-        return data
+        if mode == 'a' and not os.path.exists(filename):
+            mode = 'w'
 
-    def __setitem__(self, idx, value):
-
-        if self.var_name in self.nc.data.variables.keys():
-            var = self.nc.data.variables[self.var_name]
-        else:
-            fill_value = None
-
-            if 'attr' in self.kwargs:
-                if '_FillValue' in self.kwargs['attr']:
-                    fill_value = self.kwargs['attr'].pop('_FillValue')
-
-            if 'dtype' in self.kwargs:
-                dtype = self.kwargs['dtype']
-            else:
-                try:
-                    dtype = value.dtype
-                except AttributeError:
-                    dtype = type(value)
-
-            if 'zlib' in self.kwargs:
-                zlib = self.kwargs['zlib']
-            else:
-                zlib = self.nc.zlib
-
-            if 'complevel' in self.kwargs:
-                complevel = self.kwargs['complevel']
-            else:
-                complevel = self.nc.complevel
-
-            if 'chunksizes' in self.kwargs:
-                chunksizes = self.kwargs['chunksizes']
-            else:
-                chunksizes = None
-
-            dim = self.kwargs['dim']
-
-            var = self.nc.data.createVariable(
-                self.var_name, dtype, dim, fill_value=fill_value,
-                zlib=zlib, complevel=complevel, chunksizes=chunksizes)
-
-        var[idx] = value
-
-
-class AccessMultipleItems(object):
-
-    def __init__(self, obj, names, **kwargs):
-        self.obj = obj
-        self.names = names
-        self.kwargs = kwargs
-
-    def __getitem__(self, item):
-
-        data = []
-        for name in self.names:
-            data.append(self.obj.data.variables[name][item])
-
-        return data
-
-    def __setitem__(self, idx, value):
-
-        for name in self.names:
-
-            if name in self.obj.data.variables.keys():
-                var = self.obj.data.variables[name]
-            else:
-                fill_value = None
-
-                if 'attr' in self.kwargs:
-                    if '_FillValue' in self.kwargs['attr']:
-                        fill_value = self.kwargs['attr'].pop('_FillValue')
-
-                if 'dtype' in self.kwargs:
-                    dtype = self.kwargs['dtype']
-                else:
-                    dtype = value.dtype
-
-                if 'zlib' in self.kwargs:
-                    zlib = self.kwargs['zlib']
-                else:
-                    zlib = self.obj.zlib
-
-                if 'complevel' in self.kwargs:
-                    complevel = self.kwargs['complevel']
-                else:
-                    complevel = self.obj.complevel
-
-                if 'chunksizes' in self.kwargs:
-                    chunksizes = self.kwargs['chunksizes']
-                else:
-                    chunksizes = None
-
-                dim = self.kwargs['dim']
-
-                var = self.obj.data.createVariable(
-                    name, dtype, dim, fill_value=fill_value, zlib=zlib,
-                    complevel=complevel, chunksizes=chunksizes)
-
-            var[idx] = value[name]
-
-
-class NcData(object):
-
-    def __init__(self, filename, dims=None, file_format="NETCDF4", mode='r',
-                 zlib=True, complevel=4):
-
-        self.filename = filename
-
-        self.gattr = {}
-        self.gattr['id'] = os.path.split(self.filename)[1]
-
-        s = "%Y-%m-%d %H:%M:%S"
-        self.gattr['date_created'] = datetime.datetime.now().strftime(s)
-
-        self.zlib = zlib
-        self.complevel = complevel
-        self.mode = mode
-
-        if self.mode == "a" and not os.path.exists(self.filename):
-            self.mode = "w"
-
-        if self.mode == 'w':
-            path = os.path.dirname(self.filename)
+        if mode == 'w':
+            path = os.path.dirname(filename)
             if not os.path.exists(path):
                 os.makedirs(path)
 
-        self.data = netCDF4.Dataset(self.filename, self.mode,
-                                    format=file_format)
+        self.nc_finfo = {'filename': filename, 'mode': mode,
+                         'format': file_format, 'zlib': zlib,
+                         'complevel': 4, 'unlim_chunksize': unlim_chunksize}
 
-        if self.mode == 'w':
-            if dims is None:
-                raise ValueError("Dimensions not defined.")
-            else:
-                self._create_dims(dims)
+        self.nc = netCDF4.Dataset(**self.nc_finfo)
 
-    def _create_dims(self, dims):
-        """
-        Create dimension for NetCDF file.
+        loc_id_attr = {'standard_name': 'location_id'}
 
-        Parameters
-        ----------
-        dims : dict
-            NetCDF dimension.
-        """
-        for name, size in dims.iteritems():
-            self.data.createDimension(name, size=size)
+        lon_attr = {'standard_name': 'longitude',
+                    'long_name': 'location longitude',
+                    'units': 'degrees_east',
+                    'valid_range': (-180.0, 180.0)}
 
-    def _setncatts(self):
-        """
-        Write global attributes to NetCDF file.
-        """
-        self.data.setncatts(self.gattr)
+        lat_attr = {'standard_name': 'latitude',
+                    'long_name': 'location latitude',
+                    'units': 'degrees_north', 'valid_range': (-90.0, 90.0)}
 
-    def __getitem__(self, item):
-        """
+        alt_attr = {'standard_name': 'height',
+                    'long_name': 'vertical distance above the '
+                    'surface', 'units': 'm', 'positive': 'up', 'axis': 'Z'}
 
-        """
-        if isinstance(item, dict):
-            if item['name'] not in self.data.variables.keys():
-                var = self.data.createVariable(item['name'], item['dtype'],
-                                               item['dim'])
-            else:
-                var = self.data.variables[item['name']]
+        time_attr = {'standard_name': 'time'}
 
+        self.dim = {obs_dim: n_obs}
+
+        self.var = {'loc_id': {'name': loc_id_var, 'dim': obs_dim,
+                               'attr': loc_id_attr, 'dtype': np.int32},
+                    'lon': {'name': lon_var, 'dim': obs_dim,
+                            'attr': lon_attr, 'dtype': np.float32},
+                    'lat': {'name': lat_var, 'dim': obs_dim,
+                            'attr': lat_attr, 'dtype': np.float32},
+                    'alt': {'name': alt_var, 'dim': obs_dim,
+                            'attr': alt_attr, 'dtype': np.float32},
+                    'time': {'name': time_var, 'dim': obs_dim,
+                             'unit': time_units, 'dtype': np.float64,
+                             'attr': time_attr}}
+
+        if self.nc_finfo['mode'] == 'w':
+
+            s = "%Y-%m-%d %H:%M:%S"
+            attr = {'id': os.path.split(self.nc_finfo['filename'])[1],
+                    'date_created': datetime.datetime.now().strftime(s),
+                    'featureType': 'point'}
+
+            self.nc.setncatts(attr)
+            self._create_dims(self.dim)
+            self._init_loc_var()
+
+      # find next free position, i.e. next empty loc_id
+        self.loc_idx = 0
+        if self.nc_finfo['mode'] in ['r+', 'a']:
+            self.loc_idx = 0
+
+    def __str__(self):
+        if self.nc is not None:
+            str = self.nc.__str__()
         else:
-            var = self.data.variables[item]
+            str = "File not opened."
 
-        return var
-
-    def write(self, name, data, **kwargs):
-        """
-        Write data.
-
-        Parameters
-        ----------
-        name : str
-            Variable name.
-        data :
-            Variable data.
-        dim : tuple
-            Variable dimensions.
-        """
-        if self.mode in ['w', 'r+', 'a']:
-            var = {'name': name, 'dtype': kwargs['dtype'],
-                   'dim': kwargs['dim']}
-            self[var][:] = data
-
-    def read(self, name, **kwargs):
-        """
-        reads variable from netCDF file
-
-        Parameters
-        ----------
-        name : str
-            Name of the variable.
-        """
-        return self[name][:]
+        return str
 
     def flush(self):
         """
         Flush data.
         """
-        if self.data is not None:
-            if self.mode in ['w', 'r+']:
-                self._setncatts()
-                self.data.sync()
+        if self.nc is not None:
+            if self.nc_finfo['mode'] in ['w', 'r+']:
+                self.nc.sync()
 
     def close(self):
         """
         Close file.
         """
-        if self.data is not None:
+        if self.nc is not None:
             self.flush()
-            self.data.close()
-            self.data = None
+            self.nc.close()
+            self.nc = None
 
     def __enter__(self):
         """
@@ -280,90 +146,26 @@ class NcData(object):
         """
         self.close()
 
-
-class PointData(NcData):
-
-    """
-    PointData class description.
-    """
-
-    def __init__(self, filename, dims=None, obs_dim_name='obs',
-                 loc_id_var='location_id',
-                 time_units="days since 1900-01-01 00:00:00",
-                 time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
-                 unlim_chunksize=None, read_bulk=False, **kwargs):
-
-        self.dims = {}
-
-        if dims is None:
-            self.dims[obs_dim_name] = None
-        else:
-            self.dims = dims
-
-        self.obs_dim_name = obs_dim_name
-
-        self.loc_id_var = loc_id_var
-        self.lat_var = lat_var
-        self.lon_var = lon_var
-        self.alt_var = alt_var
-        self.time_var = time_var
-        self.time_units = time_units
-
-        self.unlim_chunksize = unlim_chunksize
-
-        if unlim_chunksize is not None:
-            self.unlim_chunksize = [unlim_chunksize]
-
-        super(PointData, self).__init__(filename, dims=self.dims, **kwargs)
-
-        self.var_pos = 0
-
-        if self.mode == 'w':
-            self._init_location_variables()
-            self.gattr['featureType'] = 'point'
-
-        # find next free position
-        if self.mode in ['r+', 'a']:
-            self.var_pos = 0
-
-    def _init_location_variables(self):
+    def _create_dims(self, dims):
         """
-        Initialize location information: longitude, latitude and altitude.
+        Create dimension for NetCDF file.
+
+        Parameters
+        ----------
+        dims : dict
+            NetCDF dimension.
         """
+        for name, size in dims.iteritems():
+            self.nc.createDimension(name, size=size)
 
-        super(PointData, self).write(self.loc_id_var, 0,
-                                     dim=self.obs_dim_name,
-                                     attr={'standard_name': 'location_id'},
-                                     dtype=np.int32)
-
-        super(PointData, self).write(self.lon_var, None,
-                                     dim=self.obs_dim_name,
-                                     attr={'standard_name': 'longitude',
-                                           'long_name': 'location longitude',
-                                           'units': 'degrees_east',
-                                           'valid_range': (-180.0, 180.0)},
-                                     dtype=np.float32)
-
-        super(PointData, self).write(self.lat_var, None,
-                                     dim=self.obs_dim_name,
-                                     attr={'standard_name': 'latitude',
-                                           'long_name': 'location latitude',
-                                           'units': 'degrees_north',
-                                           'valid_range': (-90.0, 90.0)},
-                                     dtype=np.float32)
-
-        attr = {'standard_name': 'height',
-                'long_name': 'vertical distance above the '
-                'surface', 'units': 'm', 'positive': 'up', 'axis': 'Z'}
-
-        super(PointData, self).write(self.alt_var, None,
-                                     dim=self.obs_dim_name, attr=attr,
-                                     dtype=np.float32)
-
-        super(PointData, self).write(self.time_var, None,
-                                     dim=self.obs_dim_name,
-                                     attr={'standard_name': 'time'},
-                                     dtype=np.float64)
+    def _init_loc_var(self):
+        """
+        Initialize location information.
+        """
+        for var in self.var.itervalues():
+            self.nc.createVariable(var['name'], var['dtype'],
+                                   dimensions=var['dim'])
+            self.nc.variables[var['name']].setncatts(var['attr'])
 
     def write(self, loc_id, data, **kwargs):
         """
@@ -374,25 +176,35 @@ class PointData(NcData):
         loc_id : int
             Location id.
         data : dict
-            Dictionary containing variable name and data.
+            Dictionary containing variable names as keys and data as items.
         """
-        if self.mode in ['w', 'r+', 'a']:
-            kwargs['dim'] = self.obs_dim_name
+        if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
+
+            kwargs['dim'] = self.dim
             var_names = list(set(data.keys()) |
-                             set(self.data.variables.keys()))
+                             set(self.nc.variables.keys()))
 
             for var_name in var_names:
                 if var_name in data:
-                    self.io(var_name, **kwargs)[self.var_pos] = data[var_name]
-                if var_name == self.loc_id_var:
-                    self.io(var_name)[self.var_pos] = loc_id
+                    if var_name not in self.nc.variables:
 
-            self.var_pos += 1
+                        try:
+                            dtype = data[var_name].dtype
+                        except AttributeError:
+                            dtype = type(data[var_name])
+
+                        self.nc.createVariable(var_name, dtype,
+                                               dimensions=self.dim.keys())
+
+                    self.nc.variables[var_name][self.loc_idx] = data[var_name]
+
+            self.nc.variables[var_name][self.loc_idx] = loc_id
+            self.loc_idx += 1
         else:
             raise IOError("Write operations failed. "
                           "File not open for writing.")
 
-    def read(self, loc_id, **kwargs):
+    def read(self, loc_id):
         """
         reads variable from netCDF file
 
@@ -403,17 +215,19 @@ class PointData(NcData):
 
         Returns
         -------
-        var : numpy.ndarray
-            Data stored in variable.
+        data : dict
+            Dictionary containing variable names as a key and data as items.
         """
-
         data = None
 
-        if self.mode in ['r', 'r+']:
-            pos = np.where(self.io(self.loc_id_var)[:] == loc_id)[0]
+        if self.nc_finfo['mode'] in ['r', 'r+']:
+            loc_id_var = self.nc.variables[self.var['loc_id']['name']][:]
+            pos = np.where(loc_id_var == loc_id)[0]
 
             if pos.size > 0:
-                data = self.io(self.data.variables.keys())[pos]
+                data = {}
+                for var_name in self.nc.variables.keys():
+                    data[var_name] = self.nc.variables[var_name][pos]
 
         else:
             raise IOError("Read operations failed. "
@@ -421,82 +235,36 @@ class PointData(NcData):
 
         return data
 
-    def var(self, name, **kwargs):
-        """
-        Description.
-
-        Parameters
-        ----------
-        name : str or list of str
-            Name of the variable.
-
-        Returns
-        -------
-        var : numpy.ndarray
-            Data stored in variable.
-        """
-        return AccessMultipleItems(self, name, **kwargs)
-
 
 import os
 import unittest
 from tempfile import mkdtemp
 
 
-class NcDataTest(unittest.TestCase):
+class NcPointDataTest(unittest.TestCase):
 
     def setUp(self):
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join('/home', 'shahn', 'test.nc')
 
     def tearDown(self):
-        os.remove(self.fn)
+        pass
+        # os.remove(self.fn)
 
     def test_read_write(self):
 
-        dims = {'obs': 10}
+        with PointData(self.fn,  mode='w') as nc:
+            for loc_id, data in zip(range(5), range(5, 10)):
+                if loc_id == 1:
+                    nc.write(loc_id, {'var1': data, 'var2': data})
+                elif loc_id == 3:
+                    nc.write(loc_id, {'var1': data, 'var3': data})
+                else:
+                    nc.write(loc_id, {'var1': data})
 
-        with NcData(self.fn, dims, mode='w') as nc:
-            var = np.arange(10)
-
-            nc.write('myvar1', var, dtype=var.dtype, dim=('obs',))
-            nc.write('myvar2', var, dtype=var.dtype, dim=('obs',))
-
-            myvar3_data = np.arange(5)
-            myvar3 = {'name': 'myvar3',
-                      'dtype': myvar3_data.dtype, 'dim': ('obs', )}
-
-            nc[myvar3][0:5] = myvar3_data
-            nc[myvar3][8] = 8
-
-        with NcData(self.fn) as nc:
-            print nc['myvar1'][0:4]
-            print nc['myvar3'][:]
-            print nc[myvar3]
-
-
-# class NcPointDataTest(unittest.TestCase):
-
-#     def setUp(self):
-#         self.fn = os.path.join('/home', 'shahn', 'test.nc')
-
-#     def tearDown(self):
-#         pass
-#         # os.remove(self.fn)
-
-#     def test_read_write(self):
-
-#         with PointData(self.fn, {'obs': 5}, mode='w') as nc:
-#             for loc_id, data in zip(range(5), range(5, 10)):
-#                 if loc_id == 1:
-#                     nc.write(loc_id, {'var1': data, 'var2': data})
-#                 elif loc_id == 3:
-#                     nc.write(loc_id, {'var1': data, 'var3': data})
-#                 else:
-#                     nc.write(loc_id, {'var1': data})
-
-#         with PointData(self.fn) as nc:
-#             print(nc.read(4))
-#             print(nc.read(10))
+        with PointData(self.fn) as nc:
+            print(nc.read(4)['var1'])
+            print(nc.read(10))
+            print(nc)
 
 
 if __name__ == "__main__":
