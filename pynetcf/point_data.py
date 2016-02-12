@@ -180,25 +180,22 @@ class PointData(object):
         """
         if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
 
-            kwargs['dim'] = self.dim
-            var_names = list(set(data.keys()) |
-                             set(self.nc.variables.keys()))
+            for var_name, var_data in data.iteritems():
+                if var_name not in self.nc.variables:
 
-            for var_name in var_names:
-                if var_name in data:
-                    if var_name not in self.nc.variables:
+                    try:
+                        dtype = var_data.dtype
+                    except AttributeError:
+                        dtype = type(var_data)
 
-                        try:
-                            dtype = data[var_name].dtype
-                        except AttributeError:
-                            dtype = type(data[var_name])
+                    self.nc.createVariable(var_name, dtype,
+                                           dimensions=self.dim.keys())
 
-                        self.nc.createVariable(var_name, dtype,
-                                               dimensions=self.dim.keys())
+                self.nc.variables[var_name][self.loc_idx] = var_data
 
-                    self.nc.variables[var_name][self.loc_idx] = data[var_name]
+            var_loc_id = self.var['loc_id']['name']
+            self.nc.variables[var_loc_id][self.loc_idx] = loc_id
 
-            self.nc.variables[var_name][self.loc_idx] = loc_id
             self.loc_idx += 1
         else:
             raise IOError("Write operations failed. "
@@ -236,35 +233,69 @@ class PointData(object):
         return data
 
 
+from pygeobase.io_base import GriddedBase
+
+
+class GriddedNcPointData(GriddedBase):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['ioclass'] = PointData
+        super(GriddedNcPointData, self).__init__(*args, **kwargs)
+
+
 import os
 import unittest
 from tempfile import mkdtemp
+
+import pygeogrids.grids as grids
 
 
 class NcPointDataTest(unittest.TestCase):
 
     def setUp(self):
-        self.fn = os.path.join('/home', 'shahn', 'test.nc')
+        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        # self.fn = os.path.join('/home', 'shahn', 'test.nc')
 
     def tearDown(self):
-        pass
-        # os.remove(self.fn)
+        os.remove(self.fn)
 
     def test_read_write(self):
 
-        with PointData(self.fn,  mode='w') as nc:
+        with PointData(self.fn, mode='w', n_obs=5) as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 if loc_id == 1:
                     nc.write(loc_id, {'var1': data, 'var2': data})
-                elif loc_id == 3:
+                elif loc_id == 4:
                     nc.write(loc_id, {'var1': data, 'var3': data})
                 else:
                     nc.write(loc_id, {'var1': data})
 
         with PointData(self.fn) as nc:
-            print(nc.read(4)['var1'])
-            print(nc.read(10))
-            print(nc)
+            # print(nc.read(4))
+            # print(nc.read(10))
+            # print(nc)
+            pass
+
+
+class GriddedNcPointDataTest(unittest.TestCase):
+
+    def setUp(self):
+        # self.testdatapath = os.path.join(mkdtemp())
+        self.testdatapath = os.path.join('/home', 'shahn')
+        # self.testfilename = os.path.join(self.testdatapath, '0107.nc')
+        self.grid = grids.genreg_grid().to_cell_grid()
+
+    def tearDown(self):
+        # os.remove(self.testfilename)
+        pass
+
+    def test_read_write(self):
+
+        dataset = GriddedNcPointData(self.testdatapath, mode='w',
+                                     grid=self.grid)
+
+        for loc_id, data in zip([10, 11, 12], [1, 2, 3]):
+            dataset.write(loc_id, {'var1': data})
 
 
 if __name__ == "__main__":
