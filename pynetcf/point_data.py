@@ -31,9 +31,14 @@ Classes for reading and writing point data in NetCDF files according to
 the Climate Forecast Metadata Conventions (http://cfconventions.org/).
 """
 
+import os
+
 import numpy as np
 import datetime
 import netCDF4
+
+
+from pygeobase.io_base import GriddedBase
 
 
 class PointData(object):
@@ -245,72 +250,19 @@ class PointData(object):
 
         return data
 
+    def __getitem__(self, item):
+        """
 
-from pygeobase.io_base import GriddedBase
+        """
+        return self.nc.variables[item]
 
 
-class GriddedNcPointData(GriddedBase):
+class GriddedPointData(GriddedBase):
+
+    """
+    The class GriddedPointData ...
+    """
 
     def __init__(self, *args, **kwargs):
         kwargs['ioclass'] = PointData
-        super(GriddedNcPointData, self).__init__(*args, **kwargs)
-
-
-import os
-import unittest
-from tempfile import mkdtemp
-
-import pygeogrids.grids as grids
-
-
-class NcPointDataTest(unittest.TestCase):
-
-    def setUp(self):
-        # self.fn = os.path.join(mkdtemp(), 'test.nc')
-        self.fn = os.path.join('/home', 'shahn', 'test.nc')
-
-    def tearDown(self):
-        pass
-        # os.remove(self.fn)
-
-    def test_read_write(self):
-
-        with PointData(self.fn, mode='w', n_obs=5) as nc:
-            for loc_id, data in zip(range(5), range(5, 10)):
-                if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
-                elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
-                else:
-                    nc.write(loc_id, {'var1': data})
-
-        with PointData(self.fn) as nc:
-            # print(nc.read(4))
-            # print(nc.read(10))
-            # print(nc)
-            pass
-
-
-class GriddedNcPointDataTest(unittest.TestCase):
-
-    def setUp(self):
-        # self.testdatapath = os.path.join(mkdtemp())
-        self.testdatapath = os.path.join('/home', 'shahn')
-        # self.testfilename = os.path.join(self.testdatapath, '0107.nc')
-        self.grid = grids.genreg_grid().to_cell_grid()
-
-    def tearDown(self):
-        # os.remove(self.testfilename)
-        pass
-
-    def test_read_write(self):
-
-        dataset = GriddedNcPointData(self.testdatapath, mode='w',
-                                     grid=self.grid)
-
-        for loc_id, data in zip([10, 11, 12], [1, 2, 3]):
-            dataset.write(loc_id, {'var1': data})
-
-
-if __name__ == "__main__":
-    unittest.main()
+        super(GriddedPointData, self).__init__(*args, **kwargs)
