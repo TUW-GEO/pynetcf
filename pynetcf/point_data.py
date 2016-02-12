@@ -62,7 +62,7 @@ class PointData(object):
 
         self.nc = netCDF4.Dataset(**self.nc_finfo)
 
-        loc_id_attr = {'standard_name': 'location_id'}
+        loc_id_attr = {'long_name': 'location_id'}
 
         lon_attr = {'standard_name': 'longitude',
                     'long_name': 'location longitude',
@@ -113,7 +113,7 @@ class PointData(object):
         if self.nc is not None:
             str = self.nc.__str__()
         else:
-            str = "File not opened."
+            str = 'NetCDF file closed.'
 
         return str
 
@@ -167,7 +167,8 @@ class PointData(object):
                                    dimensions=var['dim'])
             self.nc.variables[var['name']].setncatts(var['attr'])
 
-    def write(self, loc_id, data, **kwargs):
+    def write(self, loc_id, data, lon=None, lat=None, alt=None,
+              time=None, **kwargs):
         """
         Write.
 
@@ -195,6 +196,18 @@ class PointData(object):
 
             var_loc_id = self.var['loc_id']['name']
             self.nc.variables[var_loc_id][self.loc_idx] = loc_id
+
+            var_lon = self.var['lon']['name']
+            self.nc.variables[var_lon][self.loc_idx] = lon
+
+            var_lat = self.var['lat']['name']
+            self.nc.variables[var_lat][self.loc_idx] = lat
+
+            var_alt = self.var['alt']['name']
+            self.nc.variables[var_alt][self.loc_idx] = alt
+
+            var_time = self.var['time']['name']
+            self.nc.variables[var_time][self.loc_idx] = time
 
             self.loc_idx += 1
         else:
@@ -253,11 +266,12 @@ import pygeogrids.grids as grids
 class NcPointDataTest(unittest.TestCase):
 
     def setUp(self):
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
-        # self.fn = os.path.join('/home', 'shahn', 'test.nc')
+        # self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join('/home', 'shahn', 'test.nc')
 
     def tearDown(self):
-        os.remove(self.fn)
+        pass
+        # os.remove(self.fn)
 
     def test_read_write(self):
 
