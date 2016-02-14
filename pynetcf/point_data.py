@@ -48,10 +48,11 @@ class PointData(object):
     """
 
     def __init__(self, filename, mode='r', file_format='NETCDF4', zlib=True,
-                 complevel=4, n_obs=None, obs_dim='obs', loc_id_var='location_id',
+                 complevel=4, n_obs=None, obs_dim='obs', add_dims=None,
+                 loc_id_var='location_id',
                  time_units="days since 1900-01-01 00:00:00",
                  time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
-                 unlim_chunksize=None, **kwargs):
+                 **kwargs):
 
         if mode == 'a' and not os.path.exists(filename):
             mode = 'w'
@@ -63,7 +64,7 @@ class PointData(object):
 
         self.nc_finfo = {'filename': filename, 'mode': mode,
                          'format': file_format, 'zlib': zlib,
-                         'complevel': 4, 'unlim_chunksize': unlim_chunksize}
+                         'complevel': 4}
 
         self.nc = netCDF4.Dataset(**self.nc_finfo)
 
@@ -84,7 +85,13 @@ class PointData(object):
 
         time_attr = {'standard_name': 'time'}
 
-        self.dim = {obs_dim: n_obs}
+        self.obs_dim = obs_dim
+
+        if add_dims is not None:
+            self.dim = add_dims.copy()
+            self.dim.update({obs_dim: n_obs})
+        else:
+            self.dim = {obs_dim: n_obs}
 
         self.var = {'loc_id': {'name': loc_id_var, 'dim': obs_dim,
                                'attr': loc_id_attr, 'dtype': np.int32},
@@ -112,7 +119,11 @@ class PointData(object):
       # find next free position, i.e. next empty loc_id
         self.loc_idx = 0
         if self.nc_finfo['mode'] in ['r+', 'a']:
-            self.loc_idx = 0
+            loc_id = self.nc.variables[self.var['loc_id']['name']]
+            if self.nc.dimensions[obs_dim].isunlimited():
+                self.loc_idx = loc_id.shape[0]
+            else:
+                self.loc_idx = np.where(loc_id[:].mask)[0][0]
 
     def __str__(self):
         if self.nc is not None:
@@ -194,8 +205,14 @@ class PointData(object):
                     except AttributeError:
                         dtype = type(var_data)
 
+                    if hasattr(var_data, 'dtype'):
+                        if 'dims' in var_data.dtype.metadata:
+                            dimensions = var_data.dtype.metadata['dims']
+                    else:
+                        dimensions = (self.obs_dim,)
+
                     self.nc.createVariable(var_name, dtype,
-                                           dimensions=self.dim.keys())
+                                           dimensions=dimensions)
 
                 self.nc.variables[var_name][self.loc_idx] = var_data
 
