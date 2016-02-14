@@ -44,7 +44,51 @@ from pygeobase.io_base import GriddedBase
 class PointData(object):
 
     """
-    PointData class description.
+    PointData class for reading and writing netCDF files following the
+    CF conventions for point data.
+
+    Parameters
+    ----------
+    filename : str
+        Filename of netCDF file. If already exiting then it will be opened
+        as read only unless the append keyword is set.
+    mode : str, optional
+        access mode. default 'r'
+        'r' means read-only; no data can be modified.
+        'w' means write; a new file is created, an existing file with the
+            same name is deleted.
+        'a' and 'r+' mean append (in analogy with serial files); an existing
+            file is opened for reading and writing.
+        Appending s to modes w, r+ or a will enable unbuffered shared access
+        to NETCDF3_CLASSIC or NETCDF3_64BIT formatted files. Unbuffered
+        access may be useful even if you don't need shared access, since it
+        may be faster for programs that don't access data sequentially.
+        This option is ignored for NETCDF4 and NETCDF4_CLASSIC
+        formatted files.
+    zlib : boolean, optional
+        If set netCDF compression will be used. Default True
+    complevel : int, optional
+        Compression level used from 1(low compression) to 9(high compression).
+        Default: 4
+    n_obs : int, optional
+        Number of observations. If None, unlimited dimension will be used.
+        Default: None
+    obs_dim : str, optional
+        Observation dimension name. Default: 'obs'
+    add_dims : dict, optional
+        Additional dimensions. Default: None
+    loc_id_var : str, optional
+        Location id variable name. Default: 'location id'
+    time_units : str, optional
+        Time unit.
+    time_var : str, optional
+        Time variable name. Default 'time'
+    lat_var : str, optional
+        Latitude variable name. Default 'lat'
+    lon_var : str, optional
+        Longitude variable name. Default: 'lon'
+    alt_var : str, optional
+        Altitude variable name. Default: 'alt'
     """
 
     def __init__(self, filename, mode='r', file_format='NETCDF4', zlib=True,
@@ -151,15 +195,9 @@ class PointData(object):
             self.nc = None
 
     def __enter__(self):
-        """
-        Description.
-        """
         return self
 
     def __exit__(self, value_type, value, traceback):
-        """
-        Description.
-        """
         self.close()
 
     def _create_dims(self, dims):
@@ -269,7 +307,17 @@ class PointData(object):
 
     def __getitem__(self, item):
         """
+        Access netCDF variable.
 
+        Parameters
+        ----------
+        item : str
+            Variable name.
+
+        Returns
+        -------
+        var : netcdf4.variable
+            NetCDF variable.
         """
         return self.nc.variables[item]
 
@@ -277,7 +325,7 @@ class PointData(object):
 class GriddedPointData(GriddedBase):
 
     """
-    The class GriddedPointData ...
+    GriddedPointData class.
     """
 
     def __init__(self, *args, **kwargs):
