@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-Classes for reading and writing point data in NetCDF files according to
+Module for reading and writing point data in NetCDF format according to
 the Climate Forecast Metadata Conventions (http://cfconventions.org/).
 """
 
@@ -170,6 +170,9 @@ class PointData(object):
                 self.loc_idx = np.where(loc_id[:].mask)[0][0]
 
     def __str__(self):
+        """
+        String representation of class instance.
+        """
         if self.nc is not None:
             str = self.nc.__str__()
         else:
@@ -202,7 +205,7 @@ class PointData(object):
 
     def _create_dims(self, dims):
         """
-        Create dimension for NetCDF file.
+        Create dimensions in NetCDF file.
 
         Parameters
         ----------
@@ -214,7 +217,7 @@ class PointData(object):
 
     def _init_loc_var(self):
         """
-        Initialize location information.
+        Initialize location information (lon, lat, etc.).
         """
         for var in self.var.itervalues():
             self.nc.createVariable(var['name'], var['dtype'],
@@ -224,7 +227,7 @@ class PointData(object):
     def write(self, loc_id, data, lon=None, lat=None, alt=None,
               time=None, **kwargs):
         """
-        Write.
+        Write data for specified location id.
 
         Parameters
         ----------
@@ -232,6 +235,14 @@ class PointData(object):
             Location id.
         data : dict
             Dictionary containing variable names as keys and data as items.
+        lon : float32, optional
+            Longitude information. Default: None
+        lat : float32, optional
+            Latitude information. Default: None
+        alt : float32, optional
+            Altitude information. Default: None
+        time : float64, optional
+            Time information. Default: None
         """
         if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
 
@@ -278,7 +289,7 @@ class PointData(object):
 
     def read(self, loc_id):
         """
-        reads variable from netCDF file
+        Read variable from netCDF file for given location id.
 
         Parameters
         ----------
@@ -309,7 +320,7 @@ class PointData(object):
 
     def __getitem__(self, item):
         """
-        Access netCDF variable.
+        Accessing netCDF variable.
 
         Parameters
         ----------
@@ -327,7 +338,8 @@ class PointData(object):
 class GriddedPointData(GriddedBase):
 
     """
-    GriddedPointData class.
+    GriddedPointData class using GriddedBase class as parent and
+    PointData as i/o class.
     """
 
     def __init__(self, *args, **kwargs):
@@ -336,13 +348,12 @@ class GriddedPointData(GriddedBase):
 
     def to_point_data(self, filename, **kwargs):
         """
-        Convert from gridded point data to a global file.
+        Re-write gridded point data into single file.
 
         Parameters
         ----------
         filename : str
             File name.
-
         """
         with PointData(filename, mode='w', **kwargs) as nc:
             for data, gp in self.iter_gp():
