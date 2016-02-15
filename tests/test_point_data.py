@@ -9,7 +9,7 @@ from pynetcf.point_data import PointData, GriddedPointData
 import pygeogrids.grids as grids
 
 
-class PointDataReadWrite(unittest.TestCase):
+class PointDataReadWriteTest(unittest.TestCase):
 
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
@@ -34,7 +34,7 @@ class PointDataReadWrite(unittest.TestCase):
             nptest.assert_array_equal(nc['var3'][4], np.array([9]))
 
 
-class PointDataAppend(unittest.TestCase):
+class PointDataAppendTest(unittest.TestCase):
 
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
@@ -69,7 +69,7 @@ class PointDataAppend(unittest.TestCase):
             nptest.assert_array_equal(nc.read(4)['var3'], np.array([9, 9]))
 
 
-class PointDataAppendUnlim(unittest.TestCase):
+class PointDataAppendUnlimTest(unittest.TestCase):
 
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
@@ -104,7 +104,7 @@ class PointDataAppendUnlim(unittest.TestCase):
             nptest.assert_array_equal(nc.read(4)['var3'], np.array([9, 9]))
 
 
-class PointDataMultiDim(unittest.TestCase):
+class PointDataMultiDimTest(unittest.TestCase):
 
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
@@ -162,13 +162,16 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
         nc.close()
 
 
-class GriddedPointData2PointData(unittest.TestCase):
+class GriddedPointData2PointDataTest(unittest.TestCase):
 
     def setUp(self):
+        self.gpis = [10, 11, 12, 10000, 10001, 10002, 20000, 20001, 20002]
+        self.grid = grids.genreg_grid().to_cell_grid().\
+            subgrid_from_gpis(self.gpis)
         # self.testdatapath = os.path.join(mkdtemp())
-        self.testdatapath = os.path.join('/home', 'shahn')
-        self.testfilename = os.path.join(self.testdatapath, '0107.nc')
-        self.grid = grids.genreg_grid().to_cell_grid()
+        self.path = os.path.join('/home', 'shahn')
+        self.fn_test = os.path.join(self.path, '0107.nc')
+        self.fn_global = os.path.join(self.path, 'global.nc')
 
     def tearDown(self):
         # os.remove(self.testfilename)
@@ -176,26 +179,18 @@ class GriddedPointData2PointData(unittest.TestCase):
 
     def test_read_write(self):
 
-        nc = GriddedPointData(self.testdatapath, mode='w', grid=self.grid,
-                              fn_format='{:04d}.nc')
+        loc_ids = self.gpis
 
-        loc_ids = [10, 11, 12]
-        dataset = [1, 2, 3]
+        with GriddedPointData(self.path, mode='w', grid=self.grid,
+                              fn_format='{:04d}.nc') as nc:
 
-        for loc_id, data in zip(loc_ids, dataset):
-            nc.write(loc_id, {'var1': data})
+            for loc_id in loc_ids:
+                nc.write(loc_id, {'var1': loc_id})
 
-        nc.close()
+        with GriddedPointData(self.path, grid=self.grid,
+                              fn_format='{:04d}.nc') as nc:
 
-        nc = GriddedPointData(self.testdatapath, grid=self.grid,
-                              fn_format='{:04d}.nc')
-
-        for i, loc_id in enumerate(loc_ids):
-            data = nc.read(loc_id)
-            nptest.assert_equal(data['var1'], i + 1)
-
-        nc.close()
-
+            nc.to_point_data(self.fn_global)
 
 if __name__ == "__main__":
     unittest.main()

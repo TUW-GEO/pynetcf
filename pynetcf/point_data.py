@@ -243,11 +243,13 @@ class PointData(object):
                     except AttributeError:
                         dtype = type(var_data)
 
+                    dimensions = (self.obs_dim,)
+
+                    # overwrite dimensions if they are stored in dtype.metdata
                     if hasattr(var_data, 'dtype'):
-                        if 'dims' in var_data.dtype.metadata:
-                            dimensions = var_data.dtype.metadata['dims']
-                    else:
-                        dimensions = (self.obs_dim,)
+                        if var_data.dtype.metadata is not None:
+                            if 'dims' in var_data.dtype.metadata:
+                                dimensions = var_data.dtype.metadata['dims']
 
                     self.nc.createVariable(var_name, dtype,
                                            dimensions=dimensions)
@@ -331,3 +333,18 @@ class GriddedPointData(GriddedBase):
     def __init__(self, *args, **kwargs):
         kwargs['ioclass'] = PointData
         super(GriddedPointData, self).__init__(*args, **kwargs)
+
+    def to_point_data(self, filename, **kwargs):
+        """
+        Convert from gridded point data to a global file.
+
+        Parameters
+        ----------
+        filename : str
+            File name.
+
+        """
+        with PointData(filename, mode='w', **kwargs) as nc:
+            for data, gp in self.iter_gp():
+                nc.write(gp, data, lon=data['lon'], lat=data['lat'],
+                         alt=data['alt'], time=data['time'])
