@@ -11,6 +11,10 @@ import pygeogrids.grids as grids
 
 class PointDataReadWriteTest(unittest.TestCase):
 
+    """
+    Test writing and reading PointData.
+    """
+
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
@@ -35,6 +39,10 @@ class PointDataReadWriteTest(unittest.TestCase):
 
 
 class PointDataAppendTest(unittest.TestCase):
+
+    """
+    Test appending to pre-existing point data file.
+    """
 
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
@@ -71,6 +79,11 @@ class PointDataAppendTest(unittest.TestCase):
 
 class PointDataAppendUnlimTest(unittest.TestCase):
 
+    """
+    Test appending to pre-existing point data file with
+    unlimited observation dimension.
+    """
+
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
@@ -106,6 +119,10 @@ class PointDataAppendUnlimTest(unittest.TestCase):
 
 class PointDataMultiDimTest(unittest.TestCase):
 
+    """
+    Test support of multi-dimensional arrays using numpy.dtype.metadata field.
+    """
+
     def setUp(self):
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
@@ -130,6 +147,10 @@ class PointDataMultiDimTest(unittest.TestCase):
 
 
 class GriddedPointDataReadWriteTest(unittest.TestCase):
+
+    """
+    Test writing and reading of gridded PointData.
+    """
 
     def setUp(self):
         self.testdatapath = os.path.join(mkdtemp())
@@ -164,18 +185,21 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
 
 class GriddedPointData2PointDataTest(unittest.TestCase):
 
+    """
+    Test re-writing gridded PointData into single file.
+    """
+
     def setUp(self):
         self.gpis = [10, 11, 12, 10000, 10001, 10002, 20000, 20001, 20002]
         self.grid = grids.genreg_grid().to_cell_grid().\
             subgrid_from_gpis(self.gpis)
-        # self.testdatapath = os.path.join(mkdtemp())
-        self.path = os.path.join('/home', 'shahn')
-        self.fn_test = os.path.join(self.path, '0107.nc')
+        self.path = mkdtemp()
         self.fn_global = os.path.join(self.path, 'global.nc')
 
     def tearDown(self):
-        # os.remove(self.testfilename)
-        pass
+        os.remove(os.path.join(self.path, '0107.nc'))
+        os.remove(os.path.join(self.path, '1464.nc'))
+        os.remove(os.path.join(self.path, '2046.nc'))
 
     def test_read_write(self):
 
@@ -191,6 +215,9 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
                               fn_format='{:04d}.nc') as nc:
 
             nc.to_point_data(self.fn_global)
+
+        with PointData(self.fn_global) as nc:
+            nptest.assert_equal(nc['var1'][:].sort(), loc_ids.sort())
 
 if __name__ == "__main__":
     unittest.main()
