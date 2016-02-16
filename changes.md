@@ -1,3 +1,6 @@
+## v0.1.x - 2016-02-160
+- Add support of read/write netCDF point data following CF conventions
+
 ## v0.1.6 - 2016-02-03
 - Add support for disabling automatic scaling in base netCDF4 library.
 - Add support for dtype conversion before scaling and offset.
