@@ -212,7 +212,7 @@ class PointData(object):
         dims : dict
             NetCDF dimension.
         """
-        for name, size in dims.iteritems():
+        for name, size in dims.items():
             self.nc.createDimension(name, size=size)
 
     def _init_loc_var(self):
@@ -246,7 +246,7 @@ class PointData(object):
         """
         if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
 
-            for var_name, var_data in data.iteritems():
+            for var_name, var_data in data.items():
                 if var_name not in self.nc.variables:
 
                     try:
