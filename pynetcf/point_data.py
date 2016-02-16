@@ -219,7 +219,7 @@ class PointData(object):
         """
         Initialize location information (lon, lat, etc.).
         """
-        for var in self.var.itervalues():
+        for k, var in self.var.items():
             self.nc.createVariable(var['name'], var['dtype'],
                                    dimensions=var['dim'])
             self.nc.variables[var['name']].setncatts(var['attr'])
