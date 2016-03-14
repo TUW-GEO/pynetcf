@@ -624,7 +624,7 @@ class OrthoMultiTs(Dataset):
             try:
                 indexes = netCDF4.date2index(
                     dates, timevar)
-            except ValueError as e:
+            except ValueError:
                 indexes = np.array([timevar.size])
 
         return indexes
@@ -922,8 +922,8 @@ class ContiguousRaggedTs(OrthoMultiTs):
         try:
             loc_id_index = self._get_loc_id_index(loc_id)
         except IOError:
-            raise ValueError("Index of time series for "
-                             "location id #{:} not found".format(loc_id))
+            raise IOError("Index of time series for "
+                          "location id #{:} not found".format(loc_id))
 
         if self.read_bulk and self.obs_loc_lut not in self.variables:
             self.variables[self.obs_loc_lut] = self.dataset.variables[
