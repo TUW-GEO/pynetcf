@@ -79,11 +79,14 @@ class Dataset(object):
     autoscale : bool, optional
         If disabled data will not be automatically scaled when reading and
         writing
+    automask : bool, optional
+        If disabled data will not be masked during reading.
+        This means Fill Values will be used instead of NaN.
     """
 
     def __init__(self, filename, name=None, file_format="NETCDF4",
                  mode='r', zlib=True, complevel=4,
-                 autoscale=True):
+                 autoscale=True, automask=True):
 
         self.dataset_name = name
         self.filename = filename
@@ -100,6 +103,7 @@ class Dataset(object):
         self.complevel = complevel
         self.mode = mode
         self.autoscale = autoscale
+        self.automask = automask
 
         if self.mode == "a" and not os.path.exists(self.filename):
             self.mode = "w"
@@ -111,6 +115,7 @@ class Dataset(object):
         self.dataset = netCDF4.Dataset(self.filename, self.mode,
                                        format=self.file_format)
         self.dataset.set_auto_scale(self.autoscale)
+        self.dataset.set_auto_mask(self.automask)
 
     def _set_global_attr(self):
         """

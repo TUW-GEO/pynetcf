@@ -33,6 +33,7 @@ Testing time series class.
 import os
 import unittest
 from tempfile import mkdtemp
+import pytest
 
 import pandas as pd
 from datetime import datetime, timedelta
@@ -446,7 +447,8 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def _test_writing_with_attributes(self, ioclass, autoscale=True,
                                       dtypes=None,
                                       scale_factors=None,
-                                      offsets=None):
+                                      offsets=None,
+                                      automask=True):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
 
@@ -460,7 +462,9 @@ class DatasetGriddedTsTests(unittest.TestCase):
         dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
                           mode='w', grid=self.grid, autoscale=autoscale)
         for gpi in [10, 11, 12]:
-            dataset.write_gp(gpi, ts, attributes=attributes)
+            dataset.write_gp(gpi, ts, attributes=attributes,
+                             fill_values={'var1': 5,
+                                          'var2': 5})
 
         dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
                           mode='a', grid=self.grid,
@@ -471,14 +475,21 @@ class DatasetGriddedTsTests(unittest.TestCase):
         dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
                           grid=self.grid,
                           autoscale=autoscale,
+                          automask=automask,
                           dtypes=dtypes,
                           scale_factors=scale_factors,
                           offsets=offsets)
 
         for gpi in [11, 12]:
             ts = dataset.read_ts(gpi)
-            ts_should = {'var1': np.arange(len(dates)),
-                         'var2': np.arange(len(dates))}
+            dtype = np.int
+            if automask:
+                dtype = np.float
+            ts_should = {'var1': np.arange(len(dates), dtype=dtype),
+                         'var2': np.arange(len(dates), dtype=dtype)}
+            if automask:
+                ts_should['var1'][5] = np.nan
+                ts_should['var2'][5] = np.nan
 
             if dtypes is not None:
                 for dtype_column in dtypes:
@@ -506,6 +517,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
                                                        dtypes=None,
                                                        scale_factors=None,
                                                        offsets=None,
+                                                       automask=True,
                                                        autoscale=True):
 
         dates = pd.date_range(start='2007-01-01', end='2007-02-01')
@@ -520,7 +532,9 @@ class DatasetGriddedTsTests(unittest.TestCase):
                           mode='w', ioclass_kws={"read_bulk": read_bulk},
                           autoscale=autoscale)
         for gpi in [10, 11, 12]:
-            dataset.write(gpi, ts, attributes=attributes)
+            dataset.write(gpi, ts, attributes=attributes,
+                          fill_values={'var1': 5,
+                                       'var2': 5})
 
         dataset = ioclass(self.testdatapath, self.grid,
                           mode='a', ioclass_kws={"read_bulk": read_bulk},
@@ -532,14 +546,21 @@ class DatasetGriddedTsTests(unittest.TestCase):
                           mode='r', ioclass_kws={"read_bulk": read_bulk},
                           parameters=parameters,
                           autoscale=autoscale,
+                          automask=automask,
                           dtypes=dtypes,
                           scale_factors=scale_factors,
                           offsets=offsets)
 
         for gpi in [11, 12]:
             ts = dataset.read(gpi)
-            ts_should = {'var1': np.arange(len(dates)),
-                         'var2': np.arange(len(dates))}
+            dtype = np.int
+            if automask:
+                dtype = np.float
+            ts_should = {'var1': np.arange(len(dates), dtype=dtype),
+                         'var2': np.arange(len(dates), dtype=dtype)}
+            if automask:
+                ts_should['var1'][5] = np.nan
+                ts_should['var2'][5] = np.nan
 
             if dtypes is not None:
                 for dtype_column in dtypes:
@@ -571,7 +592,21 @@ class DatasetGriddedTsTests(unittest.TestCase):
                                            dtypes={'var1': np.ubyte},
                                            offsets={'var1': 10},
                                            scale_factors={'var1': 2},
-                                           autoscale=False)
+                                           autoscale=False,
+                                           automask=False)
+
+    def test_writing_with_attributes_GriddedTs_conversion_masking_error(self):
+        """
+        Masking during reading does not work if the dtypes are set to a datatype
+        that does not support NaN values.
+        """
+        with pytest.raises(ValueError):
+            self._test_writing_with_attributes(nc.GriddedTs,
+                                               dtypes={'var1': np.ubyte},
+                                               offsets={'var1': 10},
+                                               scale_factors={'var1': 2},
+                                               autoscale=False,
+                                               automask=True)
 
     def test_writing_with_attributes_GriddedContigious(self):
         self._test_writing_with_attributes_prepared_classes(
@@ -600,17 +635,20 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def test_writing_GriddedContigious_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
-            offsets={'var1': 10}, scale_factors={'var1': 2})
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            automask=False)
 
     def test_writing_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
-            offsets={'var1': 10}, scale_factors={'var1': 2})
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            automask=False)
 
     def test_writing_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
-            offsets={'var1': 10}, scale_factors={'var1': 2})
+            offsets={'var1': 10}, scale_factors={'var1': 2},
+            automask=False)
 
     def test_writing_parameters_GriddedContigious_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
@@ -631,19 +669,22 @@ class DatasetGriddedTsTests(unittest.TestCase):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
-            autoscale=False, parameters=['var1'])
+            autoscale=False, parameters=['var1'],
+            automask=False)
 
     def test_writing_parameters_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
-            autoscale=False, parameters=['var1'])
+            autoscale=False, parameters=['var1'],
+            automask=False)
 
     def test_writing_parameters_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
-            autoscale=False, parameters=['var1'])
+            autoscale=False, parameters=['var1'],
+            automask=False)
 
     def test_writing_parameters_GriddedContigious_autoscale_false(self):
         self._test_writing_with_attributes_prepared_classes(
