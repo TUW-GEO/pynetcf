@@ -1242,11 +1242,15 @@ class GriddedTs(dsbase.DatasetTSBase):
         attributes. This is done before offsets and scale_factors in this class
         are applied. To have full control over scaling and offsets turn this
         off.
+    automask : bool, optional
+        If disabled data will not be masked during reading.
+        This means Fill Values will be used instead of NaN.
     """
 
     def __init__(self, path, ioclass, mode='r', grid=None, read_bulk=False,
                  write_bulk=False, parameters=None, cell_fn='{:04d}.nc',
-                 offsets=None, scale_factors=None, dtypes=None, autoscale=True):
+                 offsets=None, scale_factors=None, dtypes=None, autoscale=True,
+                 automask=True):
 
         self.ioclass = ioclass
         self.mode = mode
@@ -1259,6 +1263,7 @@ class GriddedTs(dsbase.DatasetTSBase):
         self.scale_factors = scale_factors
         self.dtypes = dtypes
         self.autoscale = autoscale
+        self.automask = automask
 
         self.is_overwritten = False
 
@@ -1294,13 +1299,15 @@ class GriddedTs(dsbase.DatasetTSBase):
                     self.nc = self.ioclass(filename, mode=self.mode,
                                            read_bulk=self.read_bulk,
                                            read_dates=self.read_dates,
-                                           autoscale=self.autoscale)
+                                           autoscale=self.autoscale,
+                                           automask=self.automask)
             else:
                 self.__close_nc()
                 self.nc = self.ioclass(filename, mode=self.mode,
                                        read_bulk=self.read_bulk,
                                        read_dates=self.read_dates,
-                                       autoscale=self.autoscale)
+                                       autoscale=self.autoscale,
+                                       automask=self.automask)
 
         if self.mode in ['w', 'a']:
             if self.write_bulk:
@@ -1321,15 +1328,18 @@ class GriddedTs(dsbase.DatasetTSBase):
             if not self.is_overwritten and self.mode == 'w':
                 n_loc = self.grid.grid_points_for_cell(cell)[0].size
                 self.nc = self.ioclass(filename, mode='w', n_loc=n_loc,
-                                       autoscale=self.autoscale)
+                                       autoscale=self.autoscale,
+                                       automask=self.automask)
                 self.is_overwritten = True
             else:
                 self.nc = self.ioclass(filename, mode='a',
-                                       autoscale=self.autoscale)
+                                       autoscale=self.autoscale,
+                                       automask=self.automask)
         else:
             n_loc = self.grid.grid_points_for_cell(cell)[0].size
             self.nc = self.ioclass(filename, mode=self.mode, n_loc=n_loc,
-                                   autoscale=self.autoscale)
+                                   autoscale=self.autoscale,
+                                   automask=self.automask)
             self.is_overwritten = True
 
     def __flush_nc(self):
@@ -1390,8 +1400,12 @@ class GriddedTs(dsbase.DatasetTSBase):
         if self.dtypes is not None:
             for dtype_column in self.dtypes:
                 if dtype_column in ts.columns:
-                    ts[dtype_column] = ts[dtype_column].astype(
-                        self.dtypes[dtype_column])
+                    try:
+                        ts[dtype_column] = ts[dtype_column].astype(
+                            self.dtypes[dtype_column])
+                    except ValueError:
+                        raise ValueError(
+                            "Dtype conversion did not work. Try turning off automatic masking.")
 
         if self.scale_factors is not None:
             for scale_column in self.scale_factors:
@@ -1461,9 +1475,14 @@ class GriddedNcTs(GriddedTsBase):
         if 'autoscale' in kwargs:
             self.autoscale = kwargs.pop('autoscale')
 
+        self.automask = True
+        if 'automask' in kwargs:
+            self.automask = kwargs.pop('automask')
+
         super(GriddedNcTs, self).__init__(*args, **kwargs)
 
-        self.ioclass_kws.update({'autoscale': self.autoscale})
+        self.ioclass_kws.update({'autoscale': self.autoscale,
+                                 'automask': self.automask})
         self.dates = None
 
         if self.ioclass == OrthoMultiTs:
@@ -1553,8 +1572,12 @@ class GriddedNcTs(GriddedTsBase):
         if self.dtypes is not None:
             for dtype_column in self.dtypes:
                 if dtype_column in ts.columns:
-                    ts[dtype_column] = ts[dtype_column].astype(
-                        self.dtypes[dtype_column])
+                    try:
+                        ts[dtype_column] = ts[dtype_column].astype(
+                            self.dtypes[dtype_column])
+                    except ValueError:
+                        raise ValueError(
+                            "Dtype conversion did not work. Try turning off automatic masking.")
 
         if self.scale_factors is not None:
             for scale_column in self.scale_factors:
