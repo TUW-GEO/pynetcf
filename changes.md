@@ -1,4 +1,4 @@
-## v0.1.x - 2016-02-160
+## v0.1.7 - 2016-04-12
 - Add support of read/write netCDF point data following CF conventions
 - Add support for disabling automatic masking during reading. Useful if the data
   has fill values but needs to be scaled to a datatype that does not support NaN
