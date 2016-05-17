@@ -163,7 +163,7 @@ class ImageStack(Dataset):
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
-        self.lat_chunksize = self.grid.lat2d.shape[1]
+        self.lat_chunksize = 1#self.grid.lat2d.shape[1]
         super(ImageStack, self).__init__(filename, name=name, mode=mode)
 
         if self.mode == 'w':
@@ -209,13 +209,13 @@ class ImageStack(Dataset):
 
     def _init_location_variables(self):
         # write station information, longitude, latitude and altitude
-        self.write_var('lon', data=self.grid.lon2d[:, 0], dim='lon',
+        self.write_var('lon', data=self.grid.lon2d[:2,:].ravel(), dim='lon',
                        attr={'standard_name': 'longitude',
                              'long_name': 'location longitude',
                              'units': 'degrees_east',
                              'valid_range': (-180.0, 180.0)},
                        dtype=np.float)
-        self.write_var('lat', data=self.grid.lat2d[0, :], dim='lat',
+        self.write_var('lat', data=self.grid.lat2d[:,0][::2], dim='lat',
                        attr={'standard_name': 'latitude',
                              'long_name': 'location latitude',
                              'units': 'degrees_north',
@@ -253,6 +253,42 @@ class ImageStack(Dataset):
                     self.init_variable(var)
                 self.dataset.variables[var][
                     :, row, column] = np.atleast_2d(data[var])[i, :]
+
+    def write_ts_all_loc(self,loc_ids, data):
+        """
+        Write Image data in bulk, for this the user has to provide
+        a 2D array with dimensions (self.grid.gpis.size, dates) that is filled with
+        the time series of all grid points in the file.
+
+        Parameters
+        ----------
+        loc_ids : numpy.ndarray
+            location ids along the first axis of the data array
+        data : dict
+            dictionary with variable names as keys and 2D numpy.arrays as
+            values
+        """
+
+        if self.grid.activegpis.size != loc_ids.size:
+            raise ValueError("loc_ids is not the same number of "
+                             "locations in the file")
+        for key in data:
+
+            if data[key].shape[1] != len(self.times):
+                raise IOError("Timestamps and dataset second dimension "
+                              " {:} must have the same size".format(key))
+
+            if data[key].shape[0] != self.grid.n_gpi:
+                raise IOError("Datasets first dimension {:} must have "
+                              "the same size as number of locations "
+                              "in the file".format(key))
+
+        for var in data:
+            if var not in self.variables:
+                self.variables.append(var)
+                self.init_variable(var)
+            self.dataset.variables[var][:,:,:] = \
+                np.atleast_2d(data[var]).transpose().reshape(len(self.times),self.grid.shape[0],self.grid.shape[1])
 
     def __setitem__(self, gpi, data):
         """
