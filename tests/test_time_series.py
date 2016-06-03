@@ -581,33 +581,6 @@ class DatasetGriddedTsTests(unittest.TestCase):
             for parameter in parameters:
                 nptest.assert_array_equal(ts[parameter], ts_should[parameter])
 
-    def test_writing_with_attributes_GriddedTs(self):
-        self._test_writing_with_attributes(nc.GriddedTs)
-
-    def test_writing_with_attributes_GriddedTs_autoscale_false(self):
-        self._test_writing_with_attributes(nc.GriddedTs, autoscale=False)
-
-    def test_writing_with_attributes_GriddedTs_conversion(self):
-        self._test_writing_with_attributes(nc.GriddedTs,
-                                           dtypes={'var1': np.ubyte},
-                                           offsets={'var1': 10},
-                                           scale_factors={'var1': 2},
-                                           autoscale=False,
-                                           automask=False)
-
-    def test_writing_with_attributes_GriddedTs_conversion_masking_error(self):
-        """
-        Masking during reading does not work if the dtypes are set to a datatype
-        that does not support NaN values.
-        """
-        with pytest.raises(ValueError):
-            self._test_writing_with_attributes(nc.GriddedTs,
-                                               dtypes={'var1': np.ubyte},
-                                               offsets={'var1': 10},
-                                               scale_factors={'var1': 2},
-                                               autoscale=False,
-                                               automask=True)
-
     def test_writing_with_attributes_GriddedContigious(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcContiguousRaggedTs)
@@ -697,36 +670,6 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def test_writing_parameters_GriddedOrthoMulti_autoscale_false(self):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, autoscale=False)
-
-    def test_rw_dates_direct(self):
-
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
-
-        ts = pd.DataFrame({'var1': np.arange(len(dates)),
-                           'var2': np.arange(len(dates))}, index=dates)
-
-        attributes = {'var1': {'testattribute': 'teststring'},
-                      'var2': {'testattribute2': 'teststring2'}}
-
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               mode='w', grid=self.grid)
-        for gpi in [10, 11, 12]:
-            dataset.write_gp(gpi, ts, attributes=attributes)
-
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               mode='a', grid=self.grid)
-        for gpi in [13, 10]:
-            dataset.write_gp(gpi, ts)
-
-        dataset = nc.GriddedTs(self.testdatapath, nc.IndexedRaggedTs,
-                               grid=self.grid)
-        for gpi in [11, 12]:
-            ts = dataset.read_gp(gpi, dates_direct=True)
-            nptest.assert_array_equal(ts['var1'], np.arange(len(dates)))
-            nptest.assert_array_equal(ts['var2'], np.arange(len(dates)))
-            nptest.assert_array_equal(
-                ts.index.values, np.arange(len(dates)) + 39081)
-
 
 if __name__ == "__main__":
     unittest.main()
