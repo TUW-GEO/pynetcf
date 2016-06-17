@@ -15,8 +15,7 @@ from sphinx import apidoc
 
 import mock
 
-MOCK_MODULES = ['numpy', 'pandas', 'pytesmo',
-                'pytesmo.io', 'pytesmo.io.dataset_base', 'netCDF4',
+MOCK_MODULES = ['numpy', 'pandas', 'netCDF4',
                 'pygeogrids', 'pygeogrids.grids']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
