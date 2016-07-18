@@ -1,11 +1,13 @@
+## v0.1.8 - 2016-07-18
+- Deprecate pynetcf.time_series.GriddedTs please use
+  pynetcf.time_series.GriddedNcTs in the future. Be aware that the __init__
+  arguments have changed slightly to path, grid, ioclass.
+
 ## v0.1.7 - 2016-04-12
 - Add support of read/write netCDF point data following CF conventions
 - Add support for disabling automatic masking during reading. Useful if the data
   has fill values but needs to be scaled to a datatype that does not support NaN
   values.
-- Deprecate pynetcf.time_series.GriddedTs please use
-  pynetcf.time_series.GriddedNcTs in the future. Be aware that the __init__
-  arguments have changed slightly to path, grid, ioclass.
 
 ## v0.1.6 - 2016-02-03
 - Add support for disabling automatic scaling in base netCDF4 library.
