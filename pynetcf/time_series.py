@@ -1266,6 +1266,7 @@ class GriddedNcTs(GriddedTsBase):
                         self.ioclass_kws['n_loc'] = n_loc
                 self.fid = self.ioclass(filename, mode=self.mode,
                                         **self.ioclass_kws)
+                self.ioclass_kws.pop('n_loc', None)
 
     def _read_gp(self, gpi, period=None, **kwargs):
         """
