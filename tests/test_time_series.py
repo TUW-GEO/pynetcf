@@ -671,5 +671,44 @@ class DatasetGriddedTsTests(unittest.TestCase):
         self._test_writing_with_attributes_prepared_classes(
             nc.GriddedNcOrthoMultiTs, autoscale=False)
 
+
+class GriddedNcTsTests(unittest.TestCase):
+
+    def setUp(self):
+        """
+        Create grid and temporary location for files.
+        """
+        self.testdatapath = os.path.join(mkdtemp())
+        self.testfilenames = [os.path.join(self.testdatapath, '0035.nc'),
+                              os.path.join(self.testdatapath, '0107.nc')]
+
+        self.gpis = [1, 10, 11, 12]
+        reg_grid = grids.genreg_grid().to_cell_grid()
+        self.grid = reg_grid.subgrid_from_gpis(self.gpis)
+
+    def tearDown(self):
+        """
+        Remove temporary files.
+        """
+        for filename in self.testfilenames:
+            os.remove(filename)
+
+    def test_n_loc(self):
+        """
+        Test whether the number of location is correctly reset if the cell
+        needs to be changed within a loop of grid points.
+        """
+        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+
+        ts = pd.DataFrame({'var1': np.arange(len(dates)),
+                           'var2': np.arange(len(dates))}, index=dates)
+
+        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+                                                 self.grid, mode='w')
+        fill_values = {'var1': 5, 'var2': 5}
+
+        for gpi in self.gpis:
+            dataset.write(gpi, ts, fill_values=fill_values)
+
 if __name__ == "__main__":
     unittest.main()
