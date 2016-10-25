@@ -33,6 +33,7 @@ the Climate Forecast Metadata Conventions (http://cfconventions.org/).
 
 import os
 
+import pandas as pd
 import numpy as np
 import datetime
 import netCDF4
@@ -224,65 +225,71 @@ class PointData(object):
                                    dimensions=var['dim'])
             self.nc.variables[var['name']].setncatts(var['attr'])
 
-    def write(self, loc_id, data, lon=None, lat=None, alt=None,
-              time=None, **kwargs):
+    def write(self, loc_id, data, lon=None, lat=None, alt=None, time=None,
+              **kwargs):
         """
-        Write data for specified location id.
+        Write data for specified location ids.
 
         Parameters
         ----------
-        loc_id : int
+        loc_id : numpy.ndarray
             Location id.
-        data : dict
+        data : dict of numpy.ndarray or numpy.recarray
             Dictionary containing variable names as keys and data as items.
-        lon : float32, optional
+        lon : numpy.ndarray, optional
             Longitude information. Default: None
-        lat : float32, optional
+        lat : numpy.ndarray, optional
             Latitude information. Default: None
-        alt : float32, optional
+        alt : numpy.ndarray, optional
             Altitude information. Default: None
-        time : float64, optional
+        time : numpy.ndarray, optional
             Time information. Default: None
         """
         if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
 
-            for var_name, var_data in data.items():
-                if var_name not in self.nc.variables:
+            num = np.array(loc_id).size
+            idx = slice(self.loc_idx, self.loc_idx + num)
 
+            if isinstance(data, dict):
+                data = pd.DataFrame(data).to_records()
+
+            for var_data in data.dtype.names:
+                if var_data not in self.nc.variables:
                     try:
-                        dtype = var_data.dtype
+                        dtype = data[var_data].dtype
                     except AttributeError:
-                        dtype = type(var_data)
+                        dtype = type(data[var_data])
 
                     dimensions = (self.obs_dim,)
 
                     # overwrite dimensions if they are stored in dtype.metdata
-                    if hasattr(var_data, 'dtype'):
-                        if var_data.dtype.metadata is not None:
-                            if 'dims' in var_data.dtype.metadata:
-                                dimensions = var_data.dtype.metadata['dims']
+                    if hasattr(data[var_data], 'dtype'):
+                        if data[var_data].dtype.metadata is not None:
+                            if 'dims' in data[var_data].dtype.metadata:
+                                dimensions = data[var_data
+                                                  ].dtype.metadata['dims']
 
-                    self.nc.createVariable(var_name, dtype,
-                                           dimensions=dimensions)
+                    self.nc.createVariable(
+                        var_data, dtype, dimensions=dimensions)
 
-                self.nc.variables[var_name][self.loc_idx] = var_data
+                self.nc.variables[var_data][idx] = data[var_data]
 
             var_loc_id = self.var['loc_id']['name']
-            self.nc.variables[var_loc_id][self.loc_idx] = loc_id
+            self.nc.variables[var_loc_id][idx] = loc_id
 
             var_lon = self.var['lon']['name']
-            self.nc.variables[var_lon][self.loc_idx] = lon
+            self.nc.variables[var_lon][idx] = lon
 
             var_lat = self.var['lat']['name']
-            self.nc.variables[var_lat][self.loc_idx] = lat
+            self.nc.variables[var_lat][idx] = lat
 
             var_alt = self.var['alt']['name']
-            self.nc.variables[var_alt][self.loc_idx] = alt
+            self.nc.variables[var_alt][idx] = alt
 
             var_time = self.var['time']['name']
-            self.nc.variables[var_time][self.loc_idx] = time
+            self.nc.variables[var_time][idx] = time
 
-            self.loc_idx += 1
+            self.loc_idx += num
         else:
             raise IOError("Write operations failed. "
                           "File not open for writing.")
