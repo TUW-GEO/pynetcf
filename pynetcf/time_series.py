@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Vienna University of Technology,
+# Copyright (c) 2016, Vienna University of Technology,
 # Department of Geodesy and Geoinformation
 # All rights reserved.
 
@@ -148,6 +148,7 @@ class OrthoMultiTs(Dataset):
         self.constant_dates = True
         self.dates = None
         self.read_dates_auto = read_dates
+
         if self.mode == 'r':
             self.read_bulk = read_bulk
         else:
@@ -550,29 +551,6 @@ class OrthoMultiTs(Dataset):
         """
         ts = self.read_ts(
             self._get_all_ts_variables(), loc_id, dates_direct=dates_direct)
-        return ts
-
-        for variable in self._get_all_ts_variables():
-            data = self._read_var_ts(loc_id, variable)
-            ts[variable] = data
-
-        if not dates_direct:
-            # only read dates if they should be read automatically
-            if self.read_dates_auto:
-                # only read dates if they have not been read
-                # or if they are different for each location id which is i
-                # the case if self.constant_dates is set to False
-                if self.dates is None:
-                    self.read_dates(loc_id)
-                if not self.constant_dates:
-                    self.read_dates(loc_id)
-            ts['time'] = self.dates
-        else:
-            if self.read_dates_auto:
-                # only read dates if they have not been read
-                # or if they are different for each location id which is
-                # the case if self.constant_dates is set to False
-                ts['time'] = self.read_time(loc_id)
 
         return ts
 

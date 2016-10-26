@@ -1,3 +1,31 @@
+# Copyright (c) 2016, Vienna University of Technology,
+# Department of Geodesy and Geoinformation
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#   * Neither the name of the Vienna University of Technology,
+#     Department of Geodesy and Geoinformation nor the
+#     names of its contributors may be used to endorse or promote products
+#     derived from this software without specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL VIENNA UNIVERSITY OF TECHNOLOGY,
+# DEPARTMENT OF GEODESY AND GEOINFORMATION BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import os
 import unittest
 from tempfile import mkdtemp
@@ -11,49 +39,57 @@ import pygeogrids.grids as grids
 
 class PointDataReadWriteTest(unittest.TestCase):
 
-    """
-    Test writing and reading PointData.
-    """
-
     def setUp(self):
+        """
+        Define test file.
+        """
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
+        """
+        Delete test file.
+        """
         os.remove(self.fn)
 
-    def test_read_write(self):
+    def test_io(self):
+        """
+        Write/read test.
+        """
+        loc_ids = np.arange(0, 5)
+        data1 = np.arange(5, 10)
+        data2 = np.arange(10, 15)
 
         with PointData(self.fn, mode='w', n_obs=5) as nc:
-            for loc_id, data in zip(range(5), range(5, 10)):
-                if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
-                elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
-                else:
-                    nc.write(loc_id, {'var1': data})
+            for loc_id, d1, d2 in zip(loc_ids, data1, data2):
+                nc.write(loc_id, {'var1': np.array(d1),
+                                  'var2': np.array(d2)})
 
         with PointData(self.fn) as nc:
             nptest.assert_array_equal(nc['var1'], range(5, 10))
-            nptest.assert_array_equal(nc['var2'][1], np.array([6]))
-            nptest.assert_array_equal(nc['var3'][4], np.array([9]))
+            nptest.assert_array_equal(nc['var2'][1], np.array([11]))
 
 
 class PointDataAppendTest(unittest.TestCase):
 
-    """
-    Test appending to pre-existing point data file.
-    """
-
     def setUp(self):
+        """
+        Define test file.
+        """
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
+        """
+        Delete test file.
+        """
         os.remove(self.fn)
 
     def test_append(self):
-
+        """
+        Test appending data.
+        """
         with PointData(self.fn, mode='w', n_obs=10) as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
+                data = np.array(data)
                 if loc_id == 1:
                     nc.write(loc_id, {'var1': data, 'var2': data})
                 elif loc_id == 4:
@@ -63,6 +99,7 @@ class PointDataAppendTest(unittest.TestCase):
 
         with PointData(self.fn, mode='a') as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
+                data = np.array(data)
                 if loc_id == 1:
                     nc.write(loc_id, {'var1': data, 'var2': data})
                 elif loc_id == 4:
@@ -79,21 +116,26 @@ class PointDataAppendTest(unittest.TestCase):
 
 class PointDataAppendUnlimTest(unittest.TestCase):
 
-    """
-    Test appending to pre-existing point data file with
-    unlimited observation dimension.
-    """
-
     def setUp(self):
+        """
+        Define test file.
+        """
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
+        """
+        Delete test file.
+        """
         os.remove(self.fn)
 
     def test_append_unlim(self):
-
+        """
+        Test appending to pre - existing point data file with
+        unlimited observation dimension.
+        """
         with PointData(self.fn, mode='w') as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
+                data = np.array(data)
                 if loc_id == 1:
                     nc.write(loc_id, {'var1': data, 'var2': data})
                 elif loc_id == 4:
@@ -103,6 +145,7 @@ class PointDataAppendUnlimTest(unittest.TestCase):
 
         with PointData(self.fn, mode='a') as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
+                data = np.array(data)
                 if loc_id == 1:
                     nc.write(loc_id, {'var1': data, 'var2': data})
                 elif loc_id == 4:
@@ -119,49 +162,58 @@ class PointDataAppendUnlimTest(unittest.TestCase):
 
 class PointDataMultiDimTest(unittest.TestCase):
 
-    """
-    Test support of multi-dimensional arrays using numpy.dtype.metadata field.
-    """
-
     def setUp(self):
+        """
+        Define test file.
+        """
         self.fn = os.path.join(mkdtemp(), 'test.nc')
 
     def tearDown(self):
+        """
+        Delete test file.
+        """
         os.remove(self.fn)
 
     def test_read_write_multi_dim(self):
+        """
+        Test support of multi - dimensional arrays using
+        numpy.dtype.metadata field.
+        """
+        dim_info = {'dims': {'var': ('obs', 'coef', 'config')}}
+        data = np.zeros(4, dtype=np.dtype(
+            [('var', np.float32, (3, 13))], metadata=dim_info))
 
-        dims = {'dims': ('obs', 'coef', 'config')}
-        data = np.ones((1, 3, 13), dtype=np.dtype(np.float32, metadata=dims))
-
-        add_dims = {'coef': 3, 'config': None}
+        add_dims = {'coef': 3, 'config': 13}
 
         with PointData(self.fn, mode='w', add_dims=add_dims) as nc:
-            for loc_id in range(5):
-                nc.write(loc_id, {'var1': data, 'var2': 5})
+            nc.write(np.arange(4), data)
 
         with PointData(self.fn) as nc:
-            for loc_id in range(5):
-                nptest.assert_array_equal(nc.read(loc_id)['var1'], data)
-                nptest.assert_array_equal(nc.read(loc_id)['var2'], 5)
+            for loc_id in range(4):
+                nptest.assert_array_equal(nc.read(loc_id)['var'][0, :],
+                                          data['var'][0])
 
 
 class GriddedPointDataReadWriteTest(unittest.TestCase):
 
-    """
-    Test writing and reading of gridded PointData.
-    """
-
     def setUp(self):
+        """
+        Define test file.
+        """
         self.testdatapath = os.path.join(mkdtemp())
         self.testfilename = os.path.join(self.testdatapath, '0107.nc')
         self.grid = grids.genreg_grid().to_cell_grid()
 
     def tearDown(self):
+        """
+        Delete test file.
+        """
         os.remove(self.testfilename)
 
     def test_read_write(self):
-
+        """
+        Test writing and reading of gridded PointData.
+        """
         nc = GriddedPointData(self.testdatapath, mode='w', grid=self.grid,
                               fn_format='{:04d}.nc')
 
@@ -185,11 +237,10 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
 
 class GriddedPointData2PointDataTest(unittest.TestCase):
 
-    """
-    Test re-writing gridded PointData into single file.
-    """
-
     def setUp(self):
+        """
+        Define test file, grid and grid points.
+        """
         self.gpis = [10, 11, 12, 10000, 10001, 10002, 20000, 20001, 20002]
         self.grid = grids.genreg_grid().to_cell_grid().\
             subgrid_from_gpis(self.gpis)
@@ -197,12 +248,17 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
         self.fn_global = os.path.join(self.path, 'global.nc')
 
     def tearDown(self):
+        """
+        Delete test files.
+        """
         os.remove(os.path.join(self.path, '0107.nc'))
         os.remove(os.path.join(self.path, '1464.nc'))
         os.remove(os.path.join(self.path, '2046.nc'))
 
     def test_read_write(self):
-
+        """
+        Test re - writing gridded PointData into single file.
+        """
         loc_ids = self.gpis
 
         with GriddedPointData(self.path, mode='w', grid=self.grid,

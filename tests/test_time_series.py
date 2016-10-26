@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Vienna University of Technology,
+# Copyright (c) 2016, Vienna University of Technology,
 # Department of Geodesy and Geoinformation
 # All rights reserved.
 
@@ -33,7 +33,6 @@ Testing time series class.
 import os
 import unittest
 from tempfile import mkdtemp
-import pytest
 
 import pandas as pd
 from datetime import datetime, timedelta
