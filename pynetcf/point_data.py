@@ -251,7 +251,8 @@ class PointData(object):
             idx = slice(self.loc_idx, self.loc_idx + num)
 
             if isinstance(data, dict):
-                data = pd.DataFrame(data).to_records()
+                data = pd.DataFrame(data, index=np.arange(num)).to_records(
+                    index=False)
 
             for var_data in data.dtype.names:
                 if var_data not in self.nc.variables:
@@ -262,32 +263,37 @@ class PointData(object):
 
                     dimensions = (self.obs_dim,)
 
-                    # overwrite dimensions if they are stored in dtype.metdata
-                    if hasattr(data[var_data], 'dtype'):
-                        if data[var_data].dtype.metadata is not None:
-                            if 'dims' in data[var_data].dtype.metadata:
-                                dimensions = data[var_data
-                                                  ].dtype.metadata['dims']
+                    if data.dtype.metadata is not None:
+                        metadata = data.dtype.metadata
+                        if 'dims' in metadata:
+                            dimensions = metadata['dims'][var_data]
 
-                    self.nc.createVariable(
-                        var_data, dtype, dimensions=dimensions)
+                    self.nc.createVariable(var_data, dtype,
+                                           dimensions=dimensions)
 
-                self.nc.variables[var_data][idx] = data[var_data]
+                try:
+                    self.nc.variables[var_data][idx, ] = data[var_data]
+                except ValueError:
+                    pass
 
             var_loc_id = self.var['loc_id']['name']
             self.nc.variables[var_loc_id][idx] = loc_id
 
-            var_lon = self.var['lon']['name']
-            self.nc.variables[var_lon][idx] = lon
+            if lon is not None:
+                var_lon = self.var['lon']['name']
+                self.nc.variables[var_lon][idx] = lon
 
-            var_lat = self.var['lat']['name']
-            self.nc.variables[var_lat][idx] = lat
+            if lat is not None:
+                var_lat = self.var['lat']['name']
+                self.nc.variables[var_lat][idx] = lat
 
-            var_alt = self.var['alt']['name']
-            self.nc.variables[var_alt][idx] = alt
+            if alt is not None:
+                var_alt = self.var['alt']['name']
+                self.nc.variables[var_alt][idx] = alt
 
-            var_time = self.var['time']['name']
-            self.nc.variables[var_time][idx] = time
+            if time is not None:
+                var_time = self.var['time']['name']
+                self.nc.variables[var_time][idx] = time
 
             self.loc_idx += num
         else:
