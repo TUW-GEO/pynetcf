@@ -61,7 +61,7 @@ class ArrayStack(OrthoMultiTs):
 
         if mode in ['a', 'r']:
             super(ArrayStack, self).__init__(
-                filename, name=name, mode=mode, read_dates=False)
+                filename, name=name, mode=mode)
             self._load_grid()
             self._load_times()
 
@@ -71,7 +71,7 @@ class ArrayStack(OrthoMultiTs):
 
             super(ArrayStack, self).__init__(
                 filename, n_loc=len(self.grid.activegpis),
-                name=name, mode=mode, read_dates=False)
+                name=name, mode=mode)
 
             self.dataset.variables[self.lon_var][:] = self.grid.activearrlon
             self.dataset.variables[self.lat_var][:] = self.grid.activearrlat
