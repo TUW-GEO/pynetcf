@@ -33,11 +33,9 @@ the Climate Forecast Metadata Conventions (http://cfconventions.org/).
 
 import os
 
-import pandas as pd
 import numpy as np
 import datetime
 import netCDF4
-
 
 from pygeobase.io_base import GriddedBase
 
@@ -161,7 +159,7 @@ class PointData(object):
             self._create_dims(self.dim)
             self._init_loc_var()
 
-      # find next free position, i.e. next empty loc_id
+        # find next free position, i.e. next empty loc_id
         self.loc_idx = 0
         if self.nc_finfo['mode'] in ['r+', 'a']:
             loc_id = self.nc.variables[self.var['loc_id']['name']]
@@ -250,31 +248,42 @@ class PointData(object):
             num = np.array(loc_id).size
             idx = slice(self.loc_idx, self.loc_idx + num)
 
+            # convert dict to recarray
             if isinstance(data, dict):
-                data = pd.DataFrame(data, index=np.arange(num)).to_records(
-                    index=False)
+
+                # collect metadata info
+                sub_md_list = [v.dtype.metadata for v in data.values()]
+
+                # collect dtype info
+                dtype_list = [(k.encode('utf8'), data[k].dtype.str,
+                               data[k].shape) for k in data.keys()]
+
+                # merge metadata info into common dict
+                md_dict = {}
+                for md in sub_md_list:
+                    if md is not None and 'dims' in md:
+                        md_dict.update(md['dims'])
+
+                # convert dict to recarray
+                metadata = {'dims': md_dict}
+                dtype = np.dtype(dtype_list, metadata=metadata)
+                data = np.core.records.fromarrays(data.values(), dtype=dtype)
 
             for var_data in data.dtype.names:
                 if var_data not in self.nc.variables:
-                    try:
-                        dtype = data[var_data].dtype
-                    except AttributeError:
-                        dtype = type(data[var_data])
-
+                    dtype = data[var_data].dtype
                     dimensions = (self.obs_dim,)
 
+                    # check if custom metadata is included
                     if data.dtype.metadata is not None:
                         metadata = data.dtype.metadata
-                        if 'dims' in metadata:
+                        if 'dims' in metadata and var_data in metadata['dims']:
                             dimensions = metadata['dims'][var_data]
 
                     self.nc.createVariable(var_data, dtype,
                                            dimensions=dimensions)
 
-                try:
-                    self.nc.variables[var_data][idx, ] = data[var_data]
-                except ValueError:
-                    pass
+                self.nc.variables[var_data][idx] = data[var_data]
 
             var_loc_id = self.var['loc_id']['name']
             self.nc.variables[var_loc_id][idx] = loc_id

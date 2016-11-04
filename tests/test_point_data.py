@@ -160,7 +160,7 @@ class PointDataAppendUnlimTest(unittest.TestCase):
             nptest.assert_array_equal(nc.read(4)['var3'], np.array([9, 9]))
 
 
-class PointDataMultiDimTest(unittest.TestCase):
+class PointDataMultiDimRecarrayTest(unittest.TestCase):
 
     def setUp(self):
         """
@@ -174,16 +174,20 @@ class PointDataMultiDimTest(unittest.TestCase):
         """
         os.remove(self.fn)
 
-    def test_read_write_multi_dim(self):
+    def test_io_multi_dim_recarray(self):
         """
         Test support of multi - dimensional arrays using
-        numpy.dtype.metadata field.
+        numpy.dtype.metadata field from recarray.
         """
-        dim_info = {'dims': {'var': ('obs', 'coef', 'config')}}
-        data = np.zeros(4, dtype=np.dtype(
-            [('var', np.float32, (3, 13))], metadata=dim_info))
+        dim_info = {'dims': {'var': ('obs', 'coef', 'config'),
+                             'var2': ('obs', 'coef', 'doy')}}
 
-        add_dims = {'coef': 3, 'config': 13}
+        data = np.zeros(4, dtype=np.dtype(
+            [('var', np.float32, (3, 13)),
+             ('var2', np.int32, (3, 366))],
+            metadata=dim_info))
+
+        add_dims = {'coef': 3, 'config': 13, 'doy': 366}
 
         with PointData(self.fn, mode='w', add_dims=add_dims) as nc:
             nc.write(np.arange(4), data)
@@ -192,6 +196,43 @@ class PointDataMultiDimTest(unittest.TestCase):
             for loc_id in range(4):
                 nptest.assert_array_equal(nc.read(loc_id)['var'][0, :],
                                           data['var'][0])
+                nptest.assert_array_equal(nc.read(loc_id)['var2'][0, :],
+                                          data['var2'][0])
+
+
+class PointDataMultiDimDictTest(unittest.TestCase):
+
+    def setUp(self):
+        """
+        Define test file.
+        """
+        self.fn = os.path.join(mkdtemp(), 'test.nc')
+
+    def tearDown(self):
+        """
+        Delete test file.
+        """
+        os.remove(self.fn)
+
+    def test_io_multi_dim_dict(self):
+        """
+        Test support of multi - dimensional arrays using
+        numpy.dtype.metadata field from dictionary.
+        """
+        dim_info = {'dims': {'var1': ('obs', 'coef', 'config')}}
+        data_var = np.zeros((4, 3, 13), dtype=np.dtype(
+            np.float32, metadata=dim_info))
+
+        dim_info = {'dims': {'var2': ('obs', 'coef', 'doy')}}
+        data_var2 = np.zeros((4, 3, 366), dtype=np.dtype(
+            np.int32, metadata=dim_info))
+
+        add_dims = {'coef': 3, 'config': 13, 'doy': 366}
+
+        data = {'var1': data_var, 'var2': data_var2}
+
+        with PointData(self.fn, mode='w', add_dims=add_dims) as nc:
+            nc.write(np.arange(4), data)
 
 
 class GriddedPointDataReadWriteTest(unittest.TestCase):
@@ -221,6 +262,7 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
         dataset = [1, 2, 3]
 
         for loc_id, data in zip(loc_ids, dataset):
+            data = np.array(data)
             nc.write(loc_id, {'var1': data})
 
         nc.close()
@@ -242,8 +284,8 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
         Define test file, grid and grid points.
         """
         self.gpis = [10, 11, 12, 10000, 10001, 10002, 20000, 20001, 20002]
-        self.grid = grids.genreg_grid().to_cell_grid().\
-            subgrid_from_gpis(self.gpis)
+        self.grid = grids.genreg_grid().to_cell_grid().subgrid_from_gpis(
+            self.gpis)
         self.path = mkdtemp()
         self.fn_global = os.path.join(self.path, 'global.nc')
 
@@ -265,7 +307,7 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
                               fn_format='{:04d}.nc') as nc:
 
             for loc_id in loc_ids:
-                nc.write(loc_id, {'var1': loc_id})
+                nc.write(loc_id, {'var1': np.array(loc_id)})
 
         with GriddedPointData(self.path, grid=self.grid,
                               fn_format='{:04d}.nc') as nc:
