@@ -7,7 +7,7 @@ dependencies:
 - netcdf4=1.2.2=np111py27_0
 - numpy=1.11.0=py27_1
 - openssl=1.0.2e=0
-- pandas=0.18.1=np111py27_0
+- pandas=0.19.1=np111py27_0
 - pip=8.0.1=py27_0
 - proj4
 - py=1.4.31=py27_0
