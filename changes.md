@@ -1,3 +1,8 @@
+## v0.1.9 - 2017-01-19
+- Fix n_loc bug
+- Add recarray for point data
+- Excluding pandas==0.19.0
+
 ## v0.1.8 - 2016-07-18
 - Deprecate pynetcf.time_series.GriddedTs please use
   pynetcf.time_series.GriddedNcTs in the future. Be aware that the __init__
