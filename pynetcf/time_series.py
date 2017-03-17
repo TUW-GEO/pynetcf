@@ -39,6 +39,7 @@ import netCDF4
 
 from pynetcf.base import Dataset, DatasetError
 from pygeobase.io_base import GriddedTsBase
+from pygeogrids.grids import CellGrid
 
 
 class OrthoMultiTs(Dataset):
@@ -1133,10 +1134,16 @@ class IndexedRaggedTs(ContiguousRaggedTs):
         lon_uniq = lon[loc_ids_uniq_index]
         lat = np.atleast_1d(lat)
         lat_uniq = lat[loc_ids_uniq_index]
-        alt = np.atleast_1d(alt)
-        alt_uniq = alt[loc_ids_uniq_index]
-        loc_descr = np.atleast_1d(loc_descr)
-        loc_descr_uniq = loc_descr[loc_ids_uniq_index]
+        if alt is not None:
+            alt = np.atleast_1d(alt)
+            alt_uniq = alt[loc_ids_uniq_index]
+        else:
+            alt_uniq = None
+        if loc_descr is not None:
+            loc_descr = np.atleast_1d(loc_descr)
+            loc_descr_uniq = loc_descr[loc_ids_uniq_index]
+        else:
+            loc_descr_uniq = None
         try:
             idx = self._get_loc_id_index(loc_id)
         except IOError:
@@ -1383,3 +1390,58 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
     def __init__(self, *args, **kwargs):
         kwargs['ioclass'] = IndexedRaggedTs
         super(GriddedNcIndexedRaggedTs, self).__init__(*args, **kwargs)
+
+    def write_cell(self, cell, gpi, data, dates):
+        """
+        Write complete data set into cell file.
+
+        Parameters
+        ----------
+        cell : int
+            Cell number.
+        gpi : numpy.ndarray
+            Location ids.
+        data : dict
+            dictionary with variable names as keys and numpy.arrays as values
+        dates: numpy.array
+            array of dates in correct format
+        """
+        if isinstance(self.grid, CellGrid) is False:
+            raise TypeError("Associated grid is not of type "
+                            "pygeogrids.CellGrid.")
+
+        if self.mode != 'w':
+            raise ValueError("File not opened in write mode.")
+
+        tmp_cell = np.unique(self.grid.arrcell[gpi])
+
+        if tmp_cell.size > 1 or tmp_cell != cell:
+            raise ValueError("GPIs do not correspond to given cell.")
+
+        lons = self.grid.arrlon[gpi]
+        lats = self.grid.arrlat[gpi]
+
+        filename = os.path.join(self.path,
+                                '{:}.nc'.format(self.fn_format.format(cell)))
+
+        if os.path.isfile(filename):
+            mode = 'a'
+        else:
+            mode = 'w'
+
+        if self.previous_cell != cell:
+            self.flush()
+            self.close()
+            self.previous_cell = cell
+            if self.mode == 'w':
+                if 'n_loc' not in self.ioclass_kws:
+                    n_loc = self.grid.grid_points_for_cell(cell)[0].size
+                    self.ioclass_kws['n_loc'] = n_loc
+            self.fid = self.ioclass(filename, mode=mode,
+                                    **self.ioclass_kws)
+            self.ioclass_kws.pop('n_loc', None)
+
+        self.fid.write_ts(gpi, data, dates, lon=lons, lat=lats,
+                          dates_direct=True)
+        self.flush()
+        self.close()
