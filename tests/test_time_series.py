@@ -370,6 +370,42 @@ class DatasetIndexedTest(unittest.TestCase):
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
 
+    def test_file_writing_multiple_points_at_once(self):
+        """
+        Write multiple points at once. This means that we can have multiple
+        locations more than once. Dates and data must be in the same order as
+        locations. This mean we only need to translate from locations to index
+        and can write the data as is.
+        """
+        with nc.IndexedRaggedTs(self.testfilename, n_loc=3,
+                                mode='w') as dataset:
+            locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
+            data = {'test': np.concatenate([np.arange(2),
+                                            np.arange(5),
+                                            np.arange(6)])}
+            dates = []
+            for n_data in [2, 5, 6]:
+                base = datetime(2007, 1, n_data)
+                dates.append(np.array([base + timedelta(hours=i)
+                                       for i in range(n_data)]))
+            dates = np.concatenate(dates)
+            dataset.write_ts(locations, data, dates,
+                             loc_descr=['first station'] * 13,
+                             lon=locations, lat=locations,
+                             alt=locations)
+
+        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+            for gpis, n_data in zip([1, 2, 3], [2, 5, 6]):
+                data = dataset.read_all_ts(gpis)
+                nptest.assert_array_equal(data['test'], np.arange(n_data))
+                test_dates = []
+                base = datetime(2007, 1, n_data)
+                test_dates.append(
+                    np.array([base + timedelta(hours=i)
+                              for i in range(n_data)]))
+                dates = np.concatenate(test_dates)
+                nptest.assert_array_equal(data['time'], dates)
+
     def test_unlim_loc_file_writing(self):
 
         with nc.IndexedRaggedTs(self.testfilename, mode='w') as dataset:

@@ -37,7 +37,7 @@ import pandas as pd
 import numpy as np
 import netCDF4
 
-from pynetcf.base import Dataset
+from pynetcf.base import Dataset, DatasetError
 from pygeobase.io_base import GriddedTsBase
 
 
@@ -277,7 +277,7 @@ class OrthoMultiTs(Dataset):
 
         Parameters
         ----------
-        loc_id : int
+        loc_id : int or numpy.ndarray
             Location id.
 
         Returns
@@ -286,14 +286,17 @@ class OrthoMultiTs(Dataset):
             Location id index.
         """
         self._read_loc_ids()
+        loc_id = np.atleast_1d(loc_id)
+        loc_id_index = np.where(loc_id == self.loc_ids_var[:, None])[0]
 
-        loc_id_index = np.where(loc_id == self.loc_ids_var)[0]
-
-        if loc_id_index.size != 1:
+        if loc_id_index.size != loc_id.size:
             raise IOError('Index problem {:} elements '
-                          ' found'.format(loc_id_index.size))
+                          ' found for {:} locations'.format(loc_id_index.size,
+                                                            loc_id.size))
 
-        return loc_id_index[0]
+        if loc_id.size == 1:
+            loc_id_index = loc_id_index[0]
+        return loc_id_index
 
     def _add_location(self, loc_id, lon, lat, alt=None, loc_descr=None):
         """
@@ -634,7 +637,8 @@ class OrthoMultiTs(Dataset):
         try:
             idx = self._get_loc_id_index(loc_id)
         except IOError:
-            idx = self._add_location(loc_id, lon, lat, alt, loc_descr)
+            _ = self._add_location(loc_id, lon, lat, alt, loc_descr)
+            idx = self._get_loc_id_index(loc_id)
 
         # find out if attributes is a dict to be used for all variables or if
         # there is a dictionary of attributes for each variable
@@ -1099,8 +1103,10 @@ class IndexedRaggedTs(ContiguousRaggedTs):
 
         Parameters
         ----------
-        loc_id : int
-            location id
+        loc_id : int or numpy.ndarray
+            location id, if it is an array the location ids have to match the
+            data in the data dictionary and in the dates array. In this way data for more than
+            one point can be written into the file at once.
         data : dict
             dictionary with variable names as keys and numpy.arrays as values
         dates: numpy.array
@@ -1113,10 +1119,33 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             if true the dates are already converted into floating
             point number of correct magnitude
         """
+        # we always want to work with arrays
+        loc_id = np.atleast_1d(loc_id)
+        if len(loc_id) == 1:
+            loc_id = loc_id.repeat(dates.size)
+
+        (loc_ids_uniq,
+         loc_ids_uniq_index,
+         loc_ids_uniq_lookup) = np.unique(loc_id,
+                                          return_index=True,
+                                          return_inverse=True)
+        lon = np.atleast_1d(lon)
+        lon_uniq = lon[loc_ids_uniq_index]
+        lat = np.atleast_1d(lat)
+        lat_uniq = lat[loc_ids_uniq_index]
+        alt = np.atleast_1d(alt)
+        alt_uniq = alt[loc_ids_uniq_index]
+        loc_descr = np.atleast_1d(loc_descr)
+        loc_descr_uniq = loc_descr[loc_ids_uniq_index]
         try:
             idx = self._get_loc_id_index(loc_id)
         except IOError:
-            idx = self._add_location(loc_id, lon, lat, alt, loc_descr)
+            idx = self._add_location(loc_ids_uniq,
+                                     lon_uniq,
+                                     lat_uniq,
+                                     alt_uniq,
+                                     loc_descr_uniq)
+            idx = self._get_loc_id_index(loc_id)
 
         # find out if attributes is a dict to be used for all variables or if
         # there is a dictionary of attributes for each variable
@@ -1131,16 +1160,11 @@ class IndexedRaggedTs(ContiguousRaggedTs):
                                             "must have the same size" % key)))
 
         # add number of new elements to index_var
-        indices = np.empty_like(dates, dtype=np.int)
-        indices.fill(idx)
+        indices = idx
         self.append_var(self.obs_loc_lut, indices)
 
-        index = self._get_index_of_ts(loc_id)
-
-        # if this is the case the data is an append and only the last
-        # dates.size elements are needed
-        if index.size > dates.size:
-            index = index[index.size - dates.size:]
+        index = np.arange(len(self.variables[self.obs_loc_lut]))[
+            len(self.variables[self.obs_loc_lut]) - len(indices):]
 
         for key in data:
 
