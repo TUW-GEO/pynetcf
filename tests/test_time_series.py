@@ -467,6 +467,72 @@ class DatasetIndexedTest(unittest.TestCase):
                 dates = np.concatenate(test_dates)
                 nptest.assert_array_equal(data['time'], dates)
 
+    def test_file_writing_multiple_points_at_once_two_steps_recarray_input(self):
+        """
+        Write multiple points at once. Add more during an append. Use record arrays as input.
+        """
+        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+                                mode='w') as dataset:
+            locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
+            data = {'test': np.concatenate([np.arange(2),
+                                            np.arange(5),
+                                            np.arange(6)])}
+            dates = []
+            for n_data in [2, 5, 6]:
+                base = datetime(2007, 1, n_data)
+                dates.append(np.array([base + timedelta(hours=i)
+                                       for i in range(n_data)]))
+            dates = np.concatenate(dates)
+            data = np.array(data['test'], dtype={'names': ['test'],
+                                                 'formats': ['i8']})
+            dataset.write_ts(locations, data, dates,
+                             loc_descr=['first station'] * 13,
+                             lon=locations, lat=locations,
+                             alt=locations)
+
+        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+                                mode='a') as dataset:
+            locations = np.array([1, 1, 4, 4])
+            data = {'test': np.concatenate([np.arange(2),
+                                            np.arange(2)])}
+            dates = []
+            for n_data in [2, 2]:
+                base = datetime(2007, 2, n_data)
+                dates.append(np.array([base + timedelta(hours=i)
+                                       for i in range(n_data)]))
+            dates = np.concatenate(dates)
+
+            data = np.array(data['test'], dtype={'names': ['test'],
+                                                 'formats': ['i8']})
+            dataset.write_ts(locations, data, dates,
+                             loc_descr=['first station'] * 4,
+                             lon=locations, lat=locations,
+                             alt=locations)
+
+        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+            for gpis, n_data, base_month in zip([1, 2, 3, 4],
+                                                [2, 5, 6, 2],
+                                                [1, 1, 1, 2]):
+                data = dataset.read_all_ts(gpis)
+                if gpis == 1:
+                    nptest.assert_array_equal(data['test'], np.concatenate([np.arange(n_data),
+                                                                            np.arange(n_data)]))
+                else:
+                    nptest.assert_array_equal(data['test'], np.arange(n_data))
+                test_dates = []
+                base = datetime(2007, base_month, n_data)
+                test_dates.append(
+                    np.array([base + timedelta(hours=i)
+                              for i in range(n_data)]))
+                if gpis == 1:
+                    base = datetime(2007, 2, n_data)
+                    test_dates.append(
+                        np.array([base + timedelta(hours=i)
+                                  for i in range(n_data)]))
+
+                dates = np.concatenate(test_dates)
+                nptest.assert_array_equal(data['time'], dates)
+
     def test_unlim_loc_file_writing(self):
 
         with nc.IndexedRaggedTs(self.testfilename, mode='w') as dataset:
