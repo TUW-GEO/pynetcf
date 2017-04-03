@@ -1115,7 +1115,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             location id, if it is an array the location ids have to match the
             data in the data dictionary and in the dates array. In this way data for more than
             one point can be written into the file at once.
-        data : dict
+        data : dict or numpy.recarray
             dictionary with variable names as keys and numpy.arrays as values
         dates: numpy.array
             array of datetime objects
@@ -1127,6 +1127,11 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             if true the dates are already converted into floating
             point number of correct magnitude
         """
+        if type(data) == np.ndarray:
+            field_names = data.dtype.names
+        else:
+            field_names = data.keys()
+
         # we always want to work with arrays
         loc_id = np.atleast_1d(loc_id)
         if len(loc_id) == 1:
@@ -1168,7 +1173,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
             if sorted(data.keys()) == sorted(attributes.keys()):
                 unique_attr = True
 
-        for key in data:
+        for key in field_names:
             if data[key].size != dates.size:
                 raise DatasetError("".join(("timestamps and dataset %s ",
                                             "must have the same size" % key)))
@@ -1180,7 +1185,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
         index = np.arange(len(self.variables[self.obs_loc_lut]))[
             len(self.variables[self.obs_loc_lut]) - len(indices):]
 
-        for key in data:
+        for key in field_names:
 
             internal_attributes = {'name': key,
                                    'coordinates': 'time lat lon alt'}
