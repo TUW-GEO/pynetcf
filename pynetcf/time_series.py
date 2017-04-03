@@ -288,7 +288,14 @@ class OrthoMultiTs(Dataset):
         """
         self._read_loc_ids()
         loc_id = np.atleast_1d(loc_id)
-        loc_id_index = np.where(loc_id == self.loc_ids_var[:, None])[0]
+        loc_ids_sorted = np.argsort(self.loc_ids_var.data)
+        ypos = np.searchsorted(self.loc_ids_var[loc_ids_sorted], loc_id)
+        try:
+            loc_id_index = loc_ids_sorted[ypos]
+            # loc_id_index = np.where(loc_id == self.loc_ids_var[:, None])[0]
+        except IndexError:
+            # Location not yet defined:
+            raise IOError('Location not yet defined')
 
         if loc_id_index.size != loc_id.size:
             raise IOError('Index problem {:} elements '
@@ -1167,7 +1174,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
                                             "must have the same size" % key)))
 
         # add number of new elements to index_var
-        indices = idx
+        indices = np.atleast_1d(idx)
         self.append_var(self.obs_loc_lut, indices)
 
         index = np.arange(len(self.variables[self.obs_loc_lut]))[
