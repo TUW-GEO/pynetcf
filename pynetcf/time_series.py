@@ -1398,7 +1398,7 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
         kwargs['ioclass'] = IndexedRaggedTs
         super(GriddedNcIndexedRaggedTs, self).__init__(*args, **kwargs)
 
-    def write_cell(self, cell, gpi, data, dates):
+    def write_cell(self, cell, gpi, data, datefield):
         """
         Write complete data set into cell file.
 
@@ -1408,10 +1408,10 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
             Cell number.
         gpi : numpy.ndarray
             Location ids.
-        data : dict
+        data : dict or numpy record array
             dictionary with variable names as keys and numpy.arrays as values
-        dates: numpy.array
-            array of dates in correct format
+        datefield: string
+            field in the data dict that contains dates in correct format
         """
         if isinstance(self.grid, CellGrid) is False:
             raise TypeError("Associated grid is not of type "
@@ -1448,6 +1448,11 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
                                     **self.ioclass_kws)
             self.ioclass_kws.pop('n_loc', None)
 
+        if type(data) == np.array:
+            data = [dict(zip(data.dtype.names,x)) for x in data]
+
+        dates = data[datefield]
+        del data[datefield]
         self.fid.write_ts(gpi, data, dates, lon=lons, lat=lats,
                           dates_direct=True)
         self.flush()
