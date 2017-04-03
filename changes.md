@@ -1,4 +1,4 @@
-## v0.1.11 - unreleased
+## v0.1.11 - 2017-04-03
 
 - IndexedRaggedTs.write_ts can now write data for multiple grid points at once.
 - Add interface to write a complete cell to GriddedNcIndexedRaggedTs
