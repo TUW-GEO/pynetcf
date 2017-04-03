@@ -1,3 +1,13 @@
+## v0.1.11 - unreleased
+
+- IndexedRaggedTs.write_ts can now write data for multiple grid points at once.
+- Add interface to write a complete cell to GriddedNcIndexedRaggedTs
+
+## v0.1.10 - 2017-01-19
+
+- No changes in functionality
+- Fix setup.py for correct installation
+
 ## v0.1.9 - 2017-01-19
 - Fix n_loc bug
 - Add recarray for point data
