@@ -1,3 +1,7 @@
+## v0.1.12 - 2017-04-04
+
+- IndexedRaggedTs are now compatible with numpy record arrays and dictionaries.
+
 ## v0.1.11 - 2017-04-03
 
 - IndexedRaggedTs.write_ts can now write data for multiple grid points at once.
