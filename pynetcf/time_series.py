@@ -1453,8 +1453,8 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
                                     **self.ioclass_kws)
             self.ioclass_kws.pop('n_loc', None)
 
-        if type(data) == np.array:
-            data = [dict(zip(data.dtype.names,x)) for x in data]
+        if type(data) != dict:
+            data = {key: data[key] for key in data.dtype.names}
 
         dates = data[datefield]
         del data[datefield]
