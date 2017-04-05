@@ -1,4 +1,4 @@
-## v0.1.12 - 2017-04-04
+## v0.1.12 - 2017-04-05
 
 - IndexedRaggedTs are now compatible with numpy record arrays and dictionaries.
 
