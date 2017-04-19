@@ -1285,10 +1285,10 @@ class GriddedNcTs(GriddedTsBase):
                     self.fid = self.ioclass(filename, mode=self.mode,
                                             **self.ioclass_kws)
                     self.previous_cell = cell
-                except (IOError, RuntimeError) as e:
+                except (IOError, RuntimeError):
                     success = False
                     self.fid = None
-                    msg = "I/O error: {:}".format(e.strerror)
+                    msg = "I/O error {:}".format(filename)
                     warnings.warn(msg, RuntimeWarning)
 
         if self.mode in ['w', 'a']:
@@ -1306,10 +1306,10 @@ class GriddedNcTs(GriddedTsBase):
                                             **self.ioclass_kws)
                     self.previous_cell = cell
                     self.ioclass_kws.pop('n_loc', None)
-                except (IOError, RuntimeError) as e:
+                except (IOError, RuntimeError):
                     success = False
                     self.fid = None
-                    msg = "I/O error: {:}".format(e.strerror),
+                    msg = "I/O error {:}".format(filename)
                     warnings.warn(msg, RuntimeWarning)
 
         return success
