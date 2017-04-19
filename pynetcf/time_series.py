@@ -1288,7 +1288,7 @@ class GriddedNcTs(GriddedTsBase):
                 except (IOError, RuntimeError) as e:
                     success = False
                     self.fid = None
-                    msg = "I/O error({0}): {1}".format(e.errno, e.strerror)
+                    msg = "I/O error: {:}".format(e.strerror)
                     warnings.warn(msg, RuntimeWarning)
 
         if self.mode in ['w', 'a']:
@@ -1309,7 +1309,7 @@ class GriddedNcTs(GriddedTsBase):
                 except (IOError, RuntimeError) as e:
                     success = False
                     self.fid = None
-                    msg = "I/O error({0}): {1}".format(e.errno, e.strerror),
+                    msg = "I/O error: {:}".format(e.strerror),
                     warnings.warn(msg, RuntimeWarning)
 
         return success
