@@ -853,7 +853,8 @@ class GriddedNcTsTests(unittest.TestCase):
         Remove temporary files.
         """
         for filename in self.testfilenames:
-            os.remove(filename)
+            if os.path.isfile(filename):
+                os.remove(filename)
 
     def test_n_loc(self):
         """
