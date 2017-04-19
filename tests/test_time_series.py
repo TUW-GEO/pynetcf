@@ -872,5 +872,15 @@ class GriddedNcTsTests(unittest.TestCase):
         for gpi in self.gpis:
             dataset.write(gpi, ts, fill_values=fill_values)
 
+    def test_missing_file(self):
+
+        dataset = nc.GriddedNcContiguousRaggedTs(
+            mkdtemp(), self.grid, mode='r')
+
+        for gpi in self.gpis:
+            ts = dataset.read(gpi)
+            assert ts is None
+
+
 if __name__ == "__main__":
     unittest.main()
