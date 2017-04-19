@@ -33,6 +33,8 @@ according to the Climate Forecast Metadata Conventions
 """
 
 import os
+import warnings
+
 import pandas as pd
 import numpy as np
 import netCDF4
@@ -1264,7 +1266,13 @@ class GriddedNcTs(GriddedTsBase):
         ----------
         gp : int
             Grid point.
+
+        Returns
+        -------
+        success : boolean
+            Flag if opening the file was successful.
         """
+        success = True
         cell = self.grid.gpi2cell(gp)
         filename = os.path.join(self.path,
                                 '{:}.nc'.format(self.fn_format.format(cell)))
@@ -1272,22 +1280,39 @@ class GriddedNcTs(GriddedTsBase):
         if self.mode == 'r':
             if self.previous_cell != cell:
                 self.close()
-                self.previous_cell = cell
-                self.fid = self.ioclass(filename, mode=self.mode,
-                                        **self.ioclass_kws)
+
+                try:
+                    self.fid = self.ioclass(filename, mode=self.mode,
+                                            **self.ioclass_kws)
+                    self.previous_cell = cell
+                except IOError as e:
+                    success = False
+                    self.fid = None
+                    msg = "I/O error({0}): {1}".format(e.errno, e.strerror)
+                    warnings.warn(msg, RuntimeWarning)
 
         if self.mode in ['w', 'a']:
             if self.previous_cell != cell:
                 self.flush()
                 self.close()
-                self.previous_cell = cell
-                if self.mode == 'w':
-                    if 'n_loc' not in self.ioclass_kws:
-                        n_loc = self.grid.grid_points_for_cell(cell)[0].size
-                        self.ioclass_kws['n_loc'] = n_loc
-                self.fid = self.ioclass(filename, mode=self.mode,
-                                        **self.ioclass_kws)
-                self.ioclass_kws.pop('n_loc', None)
+
+                try:
+                    if self.mode == 'w':
+                        if 'n_loc' not in self.ioclass_kws:
+                            n_loc = self.grid.grid_points_for_cell(cell)[
+                                0].size
+                            self.ioclass_kws['n_loc'] = n_loc
+                    self.fid = self.ioclass(filename, mode=self.mode,
+                                            **self.ioclass_kws)
+                    self.previous_cell = cell
+                    self.ioclass_kws.pop('n_loc', None)
+                except IOError as e:
+                    success = False
+                    self.fid = None
+                    msg = "I/O error({0}): {1}".format(e.errno, e.strerror),
+                    warnings.warn(msg, RuntimeWarning)
+
+        return success
 
     def _read_gp(self, gpi, period=None, **kwargs):
         """
@@ -1309,7 +1334,8 @@ class GriddedNcTs(GriddedTsBase):
         if self.mode in ['w', 'a']:
             raise IOError("trying to read file is in 'write/append' mode")
 
-        self._open(gpi)
+        if not self._open(gpi):
+            return None
 
         if self.parameters is None:
             data = self.fid.read_all_ts(gpi, **kwargs)
