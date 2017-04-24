@@ -1,3 +1,7 @@
+## v0.1.13 - unreleased
+
+- Catch RuntimeError and IOError to be compatible with older netCDF4 versions.
+
 ## v0.1.12 - 2017-04-05
 
 - IndexedRaggedTs are now compatible with numpy record arrays and dictionaries.
