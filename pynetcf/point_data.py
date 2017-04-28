@@ -106,8 +106,9 @@ class PointData(object):
                 os.makedirs(path)
 
         self.nc_finfo = {'filename': filename, 'mode': mode,
-                         'format': file_format, 'zlib': zlib,
-                         'complevel': 4}
+                         'format': file_format}
+        self.compression_info = {'zlib': zlib,
+                                 'complevel': complevel}
 
         self.nc = netCDF4.Dataset(**self.nc_finfo)
 
@@ -220,7 +221,8 @@ class PointData(object):
         """
         for k, var in self.var.items():
             self.nc.createVariable(var['name'], var['dtype'],
-                                   dimensions=var['dim'])
+                                   dimensions=var['dim'],
+                                   **self.compression_info)
             self.nc.variables[var['name']].setncatts(var['attr'])
 
     def write(self, loc_id, data, lon=None, lat=None, alt=None, time=None,
@@ -281,7 +283,8 @@ class PointData(object):
                             dimensions = metadata['dims'][var_data]
 
                     self.nc.createVariable(var_data, dtype,
-                                           dimensions=dimensions)
+                                           dimensions=dimensions,
+                                           **self.compression_info)
 
                 self.nc.variables[var_data][idx] = data[var_data]
 
