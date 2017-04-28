@@ -66,6 +66,7 @@ class PointDataReadWriteTest(unittest.TestCase):
 
         with PointData(self.fn) as nc:
             nptest.assert_array_equal(nc['var1'], range(5, 10))
+            assert nc.nc['var1'].filters()['zlib'] == True
             nptest.assert_array_equal(nc['var2'][1], np.array([11]))
 
 
