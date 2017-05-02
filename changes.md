@@ -1,4 +1,4 @@
-## v0.1.13 - unreleased
+## v0.1.13 - 2017-05-02
 
 - Catch RuntimeError and IOError to be compatible with older netCDF4 versions.
 - Fix compression of variables in point_data.
