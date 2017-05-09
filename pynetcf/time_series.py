@@ -290,6 +290,11 @@ class OrthoMultiTs(Dataset):
         """
         self._read_loc_ids()
         loc_id = np.atleast_1d(loc_id)
+        # check if the location ids are all actually in the location id
+        # variable
+        in1d = np.in1d(loc_id, self.loc_ids_var.data, assume_unique=True)
+        if loc_id[in1d].size != loc_id.size:
+            raise IOError("Location not yet defined")
         loc_ids_sorted = np.argsort(self.loc_ids_var.data)
         ypos = np.searchsorted(self.loc_ids_var[loc_ids_sorted], loc_id)
         try:
