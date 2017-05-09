@@ -38,6 +38,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 import numpy.testing as nptest
+import pytest
 
 import pynetcf.time_series as nc
 import pygeogrids.grids as grids
@@ -82,6 +83,25 @@ class OrthoMultiTest(unittest.TestCase):
                               for i in range(n_data)]))
             dates = np.concatenate(test_dates)
             nptest.assert_array_equal(data['time'], dates)
+
+    def test_file_io_reading_non_existing_point(self):
+
+        with nc.OrthoMultiTs(self.testfilename, mode='w',
+                             n_loc=3) as dataset:
+            for n_data in [5]:
+                for location in [1, 2, 6]:
+
+                    data = {'test': np.arange(n_data)}
+                    base = datetime(2007, 1, n_data)
+                    dates = np.array([base + timedelta(hours=i)
+                                      for i in range(n_data)])
+                    dataset.write_ts(
+                        location, data, dates, loc_descr='first station',
+                        lon=0, lat=0, alt=5)
+
+        with nc.OrthoMultiTs(self.testfilename) as dataset:
+            with pytest.raises(IOError):
+                data = dataset.read_all_ts(5)
 
     def test_file_io_2_steps(self):
 
@@ -882,6 +902,58 @@ class GriddedNcTsTests(unittest.TestCase):
             ts = dataset.read(gpi)
             assert ts is None
 
+
+class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
+
+    def setUp(self):
+        """
+        Create grid and temporary location for files.
+        """
+        self.testdatapath = os.path.join(mkdtemp())
+        self.testfilenames = [os.path.join(self.testdatapath, '0001.nc')]
+
+        self.gpis = [1, 10, 11, 12]
+        self.lons = [0, 0, 1, 1]
+        self.lats = [1, 1, 0, 0]
+        self.cells = [1, 1, 1, 1]
+        self.grid = grids.CellGrid(self.lons,
+                                   self.lats,
+                                   self.cells,
+                                   self.gpis)
+
+    def tearDown(self):
+        """
+        Remove temporary files.
+        """
+        for filename in self.testfilenames:
+            if os.path.isfile(filename):
+                os.remove(filename)
+
+    def test_write_read_non_existing_data(self):
+        """
+        Test whether None is returned if a non existing gpi is read.
+        """
+        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+
+        ts = pd.DataFrame({'var1': np.arange(len(dates)),
+                           'var2': np.arange(len(dates))}, index=dates)
+
+        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+                                                 self.grid, mode='w')
+        fill_values = {'var1': 5, 'var2': 5}
+
+        for gpi in [1, 10, 12]:
+            dataset.write(gpi, ts, fill_values=fill_values)
+
+        dataset.close()
+
+        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+                                                 self.grid, mode='r')
+        data = dataset.read(1)
+        nptest.assert_array_equal(data.columns.values,
+                                  np.array([u'var1', u'var2'], dtype=object))
+        with pytest.raises(IOError):
+            data = dataset.read(11)
 
 if __name__ == "__main__":
     unittest.main()

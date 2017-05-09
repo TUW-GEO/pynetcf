@@ -1,3 +1,7 @@
+## v0.1.14 - unreleased
+
+- fix bug that read the wrong timeseries if a non existing location id was given.
+
 ## v0.1.13 - 2017-05-02
 
 - Catch RuntimeError and IOError to be compatible with older netCDF4 versions.
