@@ -257,7 +257,7 @@ class PointData(object):
                 sub_md_list = [v.dtype.metadata for v in data.values()]
 
                 # collect dtype info
-                dtype_list = [(k.encode('utf8'), data[k].dtype.str,
+                dtype_list = [(str(k), data[k].dtype.str,
                                data[k].shape) for k in data.keys()]
 
                 # merge metadata info into common dict
