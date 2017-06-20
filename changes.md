@@ -1,3 +1,7 @@
+## v0.1.15 - unreleased
+
+- fix bug that lost the datatype during writing of timeseries with pandas > 0.17.1
+
 ## v0.1.14 - 2017-06-20
 
 - fix bug that read the wrong timeseries if a non existing location id was given.
