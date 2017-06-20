@@ -1,6 +1,7 @@
-## v0.1.15 - unreleased
+## v0.1.15 - 2017-06-20
 
-- fix bug that lost the datatype during writing of timeseries with pandas > 0.17.1
+- Fix bug that lost the datatype during writing of timeseries with pandas > 0.17.1
+- Fix Python 3 compability.
 
 ## v0.1.14 - 2017-06-20
 
