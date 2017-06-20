@@ -922,8 +922,8 @@ class ContiguousRaggedTs(OrthoMultiTs):
                           "location id #{:} not found".format(loc_id))
 
         if self.read_bulk and self.obs_loc_lut not in self.variables:
-            self.variables[self.obs_loc_lut] = self.dataset.variables[
-                self.obs_loc_lut][:]
+            self.variables[self.obs_loc_lut] = np.array(
+                self.dataset.variables[self.obs_loc_lut][:])
         start = np.sum(self.variables[self.obs_loc_lut][:loc_id_index])
         end = np.sum(self.variables[self.obs_loc_lut][:loc_id_index + 1])
 

@@ -643,7 +643,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
         dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
                           mode='w', grid=self.grid, autoscale=autoscale)
-        for gpi in [10, 11, 12]:
+        for gpi in [10, 11, 12, 18, 19, 20]:
             dataset.write_gp(gpi, ts, attributes=attributes,
                              fill_values={'var1': 5,
                                           'var2': 5})
@@ -662,7 +662,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
                           scale_factors=scale_factors,
                           offsets=offsets)
 
-        for gpi in [11, 12]:
+        for gpi in [11, 12, 20]:
             ts = dataset.read_ts(gpi)
             dtype = np.int
             if automask:
@@ -713,7 +713,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
         dataset = ioclass(self.testdatapath, self.grid,
                           mode='w', ioclass_kws={"read_bulk": read_bulk},
                           autoscale=autoscale)
-        for gpi in [10, 11, 12]:
+        for gpi in [10, 11, 12, 14, 15, 16, 18]:
             dataset.write(gpi, ts, attributes=attributes,
                           fill_values={'var1': 5,
                                        'var2': 5})
@@ -733,7 +733,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
                           scale_factors=scale_factors,
                           offsets=offsets)
 
-        for gpi in [11, 12]:
+        for gpi in [11, 12, 14, 15, 18]:
             ts = dataset.read(gpi)
             dtype = np.int
             if automask:
