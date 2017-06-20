@@ -469,8 +469,9 @@ class DatasetIndexedTest(unittest.TestCase):
                                                 [1, 1, 1, 2]):
                 data = dataset.read_all_ts(gpis)
                 if gpis == 1:
-                    nptest.assert_array_equal(data['test'], np.concatenate([np.arange(n_data),
-                                                                            np.arange(n_data)]))
+                    nptest.assert_array_equal(
+                        data['test'], np.concatenate([np.arange(n_data),
+                                                      np.arange(n_data)]))
                 else:
                     nptest.assert_array_equal(data['test'], np.arange(n_data))
                 test_dates = []
@@ -535,8 +536,9 @@ class DatasetIndexedTest(unittest.TestCase):
                                                 [1, 1, 1, 2]):
                 data = dataset.read_all_ts(gpis)
                 if gpis == 1:
-                    nptest.assert_array_equal(data['test'], np.concatenate([np.arange(n_data),
-                                                                            np.arange(n_data)]))
+                    nptest.assert_array_equal(
+                        data['test'], np.concatenate([np.arange(n_data),
+                                                      np.arange(n_data)]))
                 else:
                     nptest.assert_array_equal(data['test'], np.arange(n_data))
                 test_dates = []
@@ -901,6 +903,34 @@ class GriddedNcTsTests(unittest.TestCase):
         for gpi in self.gpis:
             ts = dataset.read(gpi)
             assert ts is None
+
+    def test_datatype(self):
+        """
+        Test if integer datatype is correctly written into NetCDF file.
+        """
+        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+
+        ts = pd.DataFrame({'var1': np.arange(len(dates), dtype=np.int8),
+                           'var2': np.arange(len(dates), dtype=np.int16),
+                           'var3': np.arange(len(dates), dtype=np.int32),
+                           'var4': np.arange(len(dates), dtype=np.int64)},
+                          index=dates)
+
+        dataset_w = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+                                                   self.grid, mode='w')
+
+        for gpi in self.gpis:
+            dataset_w.write(gpi, ts)
+
+        dataset_r = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+                                                   self.grid, mode='r')
+
+        for gpi in self.gpis:
+            arr = dataset_r.read(gpi)
+            assert(arr['var1'].dtype == np.int8)
+            assert(arr['var2'].dtype == np.int16)
+            assert(arr['var3'].dtype == np.int32)
+            assert(arr['var4'].dtype == np.int64)
 
 
 class GriddedNcTsTestsSimpleGrid(unittest.TestCase):

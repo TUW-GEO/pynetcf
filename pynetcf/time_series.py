@@ -1406,9 +1406,10 @@ class GriddedNcTs(GriddedTsBase):
         self._open(gp)
         lon, lat = self.grid.gpi2lonlat(gp)
 
-        ds = data.to_dict('list')
+        ds = data.to_dict('series')
+
         for key in ds:
-            ds[key] = np.array(ds[key])
+            ds[key] = ds[key].values
 
         self.fid.write_ts(gp, ds, data.index.to_pydatetime(),
                           lon=lon, lat=lat, **kwargs)
