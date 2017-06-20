@@ -1,6 +1,7 @@
-## v0.1.14 - unreleased
+## v0.1.14 - 2017-06-20
 
 - fix bug that read the wrong timeseries if a non existing location id was given.
+- fix bug when reading not completely filled files in read_bulk mode in contigous ragged.
 
 ## v0.1.13 - 2017-05-02
 
