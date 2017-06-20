@@ -1,10 +1,7 @@
 name: pynetcf
 dependencies:
-- curl=7.45.0
-- hdf5=1.8.15.1
-- libnetcdf=4.3.3.1
-- mkl=11.3.3
-- netcdf4=1.2.2
+- hdf5
+- netcdf4
 - numpy
 - pandas=0.19.1
 - proj4
