@@ -1,3 +1,7 @@
+## v0.1.16 - 2017-07-07
+
+- Translate RuntimeError of older versions of the netCDF4 library to IOError.
+
 ## v0.1.15 - 2017-06-20
 
 - Fix bug that lost the datatype during writing of timeseries with pandas > 0.17.1

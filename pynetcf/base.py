@@ -112,8 +112,12 @@ class Dataset(object):
             if not os.path.exists(path):
                 os.makedirs(path)
 
-        self.dataset = netCDF4.Dataset(self.filename, self.mode,
-                                       format=self.file_format)
+        try:
+            self.dataset = netCDF4.Dataset(self.filename, self.mode,
+                                           format=self.file_format)
+        except RuntimeError:
+            raise IOError("File {} does not exist".format(self.filename))
+
         self.dataset.set_auto_scale(self.autoscale)
         self.dataset.set_auto_mask(self.automask)
 

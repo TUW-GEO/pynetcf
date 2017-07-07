@@ -110,7 +110,10 @@ class PointData(object):
         self.compression_info = {'zlib': zlib,
                                  'complevel': complevel}
 
-        self.nc = netCDF4.Dataset(**self.nc_finfo)
+        try:
+            self.nc = netCDF4.Dataset(**self.nc_finfo)
+        except RuntimeError:
+            raise IOError("File {} does not exist.".format(filename))
 
         loc_id_attr = {'long_name': 'location_id'}
 

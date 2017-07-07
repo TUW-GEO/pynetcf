@@ -30,6 +30,8 @@ import os
 import unittest
 from tempfile import mkdtemp
 
+import pytest
+
 import numpy as np
 import numpy.testing as nptest
 
@@ -44,12 +46,16 @@ class PointDataReadWriteTest(unittest.TestCase):
         Define test file.
         """
         self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn_not_written = os.path.join(mkdtemp(), 'test_not_written.nc')
 
     def tearDown(self):
         """
         Delete test file.
         """
-        os.remove(self.fn)
+        try:
+            os.remove(self.fn)
+        except OSError:
+            pass
 
     def test_io(self):
         """
@@ -68,6 +74,13 @@ class PointDataReadWriteTest(unittest.TestCase):
             nptest.assert_array_equal(nc['var1'], range(5, 10))
             assert nc.nc['var1'].filters()['zlib'] == True
             nptest.assert_array_equal(nc['var2'][1], np.array([11]))
+
+    def test_ioerror(self):
+        """
+        Should raise IOError if the files does not exist.
+        """
+        with pytest.raises(IOError):
+            PointData(self.fn_not_written)
 
 
 class PointDataAppendTest(unittest.TestCase):

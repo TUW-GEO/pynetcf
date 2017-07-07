@@ -48,6 +48,15 @@ if sys.version_info < (3, 0):
     range = xrange
 
 
+def test_open_non_existing_file():
+    classes = [nc.OrthoMultiTs,
+               nc.ContiguousRaggedTs,
+               nc.IndexedRaggedTs]
+    for cls in classes:
+        with pytest.raises(IOError):
+            cls("not_existing_fname.nc")
+
+
 class OrthoMultiTest(unittest.TestCase):
 
     def setUp(self):
