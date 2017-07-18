@@ -33,6 +33,7 @@ according to the Climate Forecast Metadata Conventions
 """
 
 import os
+import time
 import numpy as np
 import netCDF4
 import datetime
@@ -108,9 +109,7 @@ class Dataset(object):
         if self.mode == "a" and not os.path.exists(self.filename):
             self.mode = "w"
         if self.mode == 'w':
-            path = os.path.dirname(self.filename)
-            if not os.path.exists(path):
-                os.makedirs(path)
+            self._create_file_dir()
 
         try:
             self.dataset = netCDF4.Dataset(self.filename, self.mode,
@@ -120,6 +119,20 @@ class Dataset(object):
 
         self.dataset.set_auto_scale(self.autoscale)
         self.dataset.set_auto_mask(self.automask)
+
+    def _create_file_dir(self):
+        """
+        Create directory for file to sit in.
+        Avoid race condition if multiple instances are
+        writing files into the same directory.
+        """
+        path = os.path.dirname(self.filename)
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path)
+            except OSError:
+                time.sleep(1)
+                self._create_file_dir()
 
     def _set_global_attr(self):
         """

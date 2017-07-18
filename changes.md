@@ -1,6 +1,7 @@
 ## v0.1.16 - 2017-07-07
 
 - Translate RuntimeError of older versions of the netCDF4 library to IOError.
+- Avoid race conditions when creating directories for new files.
 
 ## v0.1.15 - 2017-06-20
 
