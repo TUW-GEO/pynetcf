@@ -375,6 +375,8 @@ class GriddedPointData(GriddedBase):
 
     def __init__(self, *args, **kwargs):
         kwargs['ioclass'] = PointData
+        if 'fn_format' not in kwargs:
+            kwargs['fn_format'] = '{:04d}.nc'
         super(GriddedPointData, self).__init__(*args, **kwargs)
 
     def to_point_data(self, filename, **kwargs):
