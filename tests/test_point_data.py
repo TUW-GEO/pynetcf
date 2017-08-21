@@ -147,7 +147,7 @@ class PointDataAppendUnlimTest(unittest.TestCase):
         Test appending to pre - existing point data file with
         unlimited observation dimension.
         """
-        with PointData(self.fn, mode='w') as nc:
+        with PointData(self.fn, mode='a') as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 data = np.array(data)
                 if loc_id == 1:

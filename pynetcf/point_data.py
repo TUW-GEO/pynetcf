@@ -97,21 +97,24 @@ class PointData(object):
                  time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
                  **kwargs):
 
-        if mode == 'a' and not os.path.exists(filename):
-            mode = 'w'
+        self.nc_finfo = {'filename': filename, 'mode': mode,
+                         'format': file_format}
 
-        if mode == 'w':
+        initial_mode = mode
+
+        if mode == 'a' and not os.path.exists(filename):
+            initial_mode = 'w'
+
+        if initial_mode == 'w':
             path = os.path.dirname(filename)
             if not os.path.exists(path):
                 os.makedirs(path)
-
-        self.nc_finfo = {'filename': filename, 'mode': mode,
-                         'format': file_format}
         self.compression_info = {'zlib': zlib,
                                  'complevel': complevel}
 
         try:
-            self.nc = netCDF4.Dataset(**self.nc_finfo)
+            self.nc = netCDF4.Dataset(filename, format=file_format,
+                                      mode=initial_mode)
         except RuntimeError:
             raise IOError("File {} does not exist.".format(filename))
 
@@ -152,7 +155,7 @@ class PointData(object):
                              'unit': time_units, 'dtype': np.float64,
                              'attr': time_attr}}
 
-        if self.nc_finfo['mode'] == 'w':
+        if initial_mode == 'w':
 
             s = "%Y-%m-%d %H:%M:%S"
             attr = {'id': os.path.split(self.nc_finfo['filename'])[1],
@@ -165,7 +168,7 @@ class PointData(object):
 
         # find next free position, i.e. next empty loc_id
         self.loc_idx = 0
-        if self.nc_finfo['mode'] in ['r+', 'a']:
+        if initial_mode in ['r+', 'a']:
             loc_id = self.nc.variables[self.var['loc_id']['name']]
             if self.nc.dimensions[obs_dim].isunlimited():
                 self.loc_idx = loc_id.shape[0]
@@ -188,7 +191,7 @@ class PointData(object):
         Flush data.
         """
         if self.nc is not None:
-            if self.nc_finfo['mode'] in ['w', 'r+']:
+            if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
                 self.nc.sync()
 
     def close(self):
@@ -331,7 +334,7 @@ class PointData(object):
         """
         data = None
 
-        if self.nc_finfo['mode'] in ['r', 'r+']:
+        if self.nc_finfo['mode'] in ['r', 'r+', 'a']:
             loc_id_var = self.nc.variables[self.var['loc_id']['name']][:]
             pos = np.where(loc_id_var == loc_id)[0]
 
