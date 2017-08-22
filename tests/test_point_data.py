@@ -208,9 +208,9 @@ class PointDataMultiDimRecarrayTest(unittest.TestCase):
 
         with PointData(self.fn) as nc:
             for loc_id in range(4):
-                nptest.assert_array_equal(nc.read(loc_id)['var'][0, :],
+                nptest.assert_array_equal(nc.read(loc_id)['var'],
                                           data['var'][0])
-                nptest.assert_array_equal(nc.read(loc_id)['var2'][0, :],
+                nptest.assert_array_equal(nc.read(loc_id)['var2'],
                                           data['var2'][0])
 
 
