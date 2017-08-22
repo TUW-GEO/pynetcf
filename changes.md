@@ -1,3 +1,8 @@
+## v0.1.17 - 2017-08-22
+
+- Allow writing and reading of PointData in append mode.
+- Set default filenames for GriddedPointData to include .nc ending.
+
 ## v0.1.16 - 2017-07-07
 
 - Translate RuntimeError of older versions of the netCDF4 library to IOError.
