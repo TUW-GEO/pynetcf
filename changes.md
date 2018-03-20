@@ -1,3 +1,8 @@
+## v0.1.18 - 2018-03-20
+
+- Update installation to pyscaffold 2.5.x to fix https://github.com/blue-yonder/pyscaffold/issues/148
+- Restrict netcdf4 package to versions <=1.2.8 because of https://github.com/Unidata/netcdf4-python/issues/784
+
 ## v0.1.17 - 2017-08-22
 
 - Allow writing and reading of PointData in append mode.
