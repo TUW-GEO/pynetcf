@@ -11,9 +11,6 @@ pynetcf
 .. image:: https://badge.fury.io/py/pynetcf.svg
     :target: https://badge.fury.io/py/pynetcf
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.846768.svg
-   :target: https://doi.org/10.5281/zenodo.846768
-
 .. image:: https://readthedocs.org/projects/pynetcf/badge/?version=latest
    :target: http://pynetcf.readthedocs.org/
 
@@ -26,10 +23,17 @@ This is a first draft which has a lot of room for improvements, this is especial
 Citation
 ========
 
-If you use the software in a publication then please cite it using the Zenodo DOI:
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.846767.svg
+   :target: https://doi.org/10.5281/zenodo.846767
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.846768.svg
-   :target: https://doi.org/10.5281/zenodo.846768
+If you use the software in a publication then please cite it using the Zenodo DOI.
+Be aware that this badge links to the latest package version.
+
+Please select your specific version at https://doi.org/10.5281/zenodo.846767 to get the DOI of that version.
+You should normally always use the DOI for the specific version of your record in citations.
+This is to ensure that other researchers can access the exact research artefact you used for reproducibility.
+
+You can find additional information regarding DOI versioning at http://help.zenodo.org/#versioning
 
 Installation
 ============
