@@ -155,6 +155,8 @@ class PointData(object):
                              'unit': time_units, 'dtype': np.float64,
                              'attr': time_attr}}
 
+        self.builtin_vars = [self.var[key]['name'] for key in self.var]
+
         if initial_mode == 'w':
 
             s = "%Y-%m-%d %H:%M:%S"
@@ -341,7 +343,11 @@ class PointData(object):
             if pos.size > 0:
                 data = {}
                 for var_name in self.nc.variables.keys():
-                    data[var_name] = self.nc.variables[var_name][pos]
+                    read_data = self.nc.variables[var_name][pos]
+                    if var_name not in self.builtin_vars:
+                        read_data = np.squeeze(read_data)
+
+                    data[var_name] = read_data
 
         else:
             raise IOError("Read operations failed. "
