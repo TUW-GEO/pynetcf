@@ -1,6 +1,7 @@
 ## v0.1.XX
 
-- Update readme
+- Update readme.
+- Remove unnecessary dimensions while reading point data.
 
 ## v0.1.18 - 2018-03-20
 
