@@ -209,7 +209,7 @@ class ImageStack(Dataset):
 
     def _init_location_variables(self):
         # write station information, longitude, latitude and altitude
-        self.write_var('lon', data=snp.sort(np.unique(self.grid.lon2d)), dim='lon',
+        self.write_var('lon', data=np.sort(np.unique(self.grid.lon2d)), dim='lon',
                        attr={'standard_name': 'longitude',
                              'long_name': 'location longitude',
                              'units': 'degrees_east',
