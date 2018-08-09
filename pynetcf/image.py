@@ -215,7 +215,7 @@ class ImageStack(Dataset):
                              'units': 'degrees_east',
                              'valid_range': (-180.0, 180.0)},
                        dtype=np.float)
-        self.write_var('lat', data=np.unique(self.grid.lat2d), dim='lat',
+        self.write_var('lat', data=np.unique(self.grid.lat2d)[::-1], dim='lat',
                        attr={'standard_name': 'latitude',
                              'long_name': 'location latitude',
                              'units': 'degrees_north',
