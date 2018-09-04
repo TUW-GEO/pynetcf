@@ -163,7 +163,6 @@ class ImageStack(Dataset):
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
-        self.lat_chunksize = self.grid.ulon.__len__()
         super(ImageStack, self).__init__(filename, name=name, mode=mode)
 
         if self.mode == 'w':
@@ -173,6 +172,7 @@ class ImageStack(Dataset):
         elif self.mode in ['a', 'r']:
             self._load_grid()
             self._load_variables()
+        self.lat_chunksize = self.grid.ulon.__len__()
 
     def _init_dimensions(self):
         self.create_dim('lon', self.grid.ulon.__len__())
