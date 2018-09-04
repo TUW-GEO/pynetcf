@@ -75,8 +75,7 @@ class ImageStackTests(unittest.TestCase):
             assert list(data['variable'].values) == [221, 222]
             lon = nc.dataset.variables['lon'][:]
             lat = nc.dataset.variables['lat'][:]
-            assert np.all(origlon == lon)
-            assert np.all(origlat == lat)
+            assert np.all(origlon == lon) & np.all(origlat == lat)
 
 
 
