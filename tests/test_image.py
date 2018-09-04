@@ -66,14 +66,15 @@ class ImageStackTests(unittest.TestCase):
                                 datetime(2007, 1, 2)], mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
             nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
-            origlon, origlat = self.grid.gpi2lonlat([14, 22, 23])
+            # test corner gpis
+            origlon, origlat = self.grid.gpi2lonlat([0, 1439, 720*1440-1, 719*1440])
 
         with ncdata.ImageStack(self.testfilename, self.grid) as nc:
             data = nc[14]
             assert list(data['variable'].values) == [141, 142]
             data = nc[22]
             assert list(data['variable'].values) == [221, 222]
-            lon, lat = nc.grid.gpi2lonlat([14, 22, 23])
+            lon, lat = nc.grid.gpi2lonlat([0, 1439, 720*1440-1, 719*1440])
             assert np.all(origlon == lon)
             assert np.all(origlat == lat)
 
