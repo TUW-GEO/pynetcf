@@ -48,7 +48,8 @@ class ImageStackTests(unittest.TestCase):
         Define test file.
         """
         self.testfilename = os.path.join(mkdtemp(), 'test.nc')
-        self.grid = grids.genreg_grid()
+        self.grid = grids.genreg_grid(0.25, 0.25).to_cell_grid(5)
+
 
     def tearDown(self):
         """
@@ -65,12 +66,17 @@ class ImageStackTests(unittest.TestCase):
                                 datetime(2007, 1, 2)], mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
             nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
+            origlon, origlat = self.grid.gpi2lonlat([14, 22, 23])
 
         with ncdata.ImageStack(self.testfilename, self.grid) as nc:
             data = nc[14]
             assert list(data['variable'].values) == [141, 142]
             data = nc[22]
             assert list(data['variable'].values) == [221, 222]
+            lon, lat = nc.grid.gpi2lonlat([14, 22, 23])
+            assert np.all(origlon == lon)
+            assert np.all(origlat == lat)
+
 
 
 class ArrayStackTests(unittest.TestCase):
