@@ -1,5 +1,5 @@
 numpy
-netCDF4>=1.4.2
+netCDF4>=1.4.2,<=1.2.8
 pygeogrids
 pygeobase>=0.3.18
 pandas!=0.19.0
