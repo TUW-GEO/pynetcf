@@ -1,7 +1,9 @@
-## v0.1.XX
+## v0.1.19 - 2019-01-08
 
 - Update readme.
 - Remove unnecessary dimensions while reading point data.
+- Pin squinx version to fix rtd
+- Update netcdf4 requirement to v1.4.2
 
 ## v0.1.18 - 2018-03-20
 
