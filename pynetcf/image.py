@@ -163,7 +163,6 @@ class ImageStack(Dataset):
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
-        self.lat_chunksize = self.grid.lat2d.shape[1]
         super(ImageStack, self).__init__(filename, name=name, mode=mode)
 
         if self.mode == 'w':
@@ -173,10 +172,11 @@ class ImageStack(Dataset):
         elif self.mode in ['a', 'r']:
             self._load_grid()
             self._load_variables()
+        self.lat_chunksize = self.grid.ulon.__len__()
 
     def _init_dimensions(self):
-        self.create_dim('lon', self.grid.lon2d.shape[0])
-        self.create_dim('lat', self.grid.lat2d.shape[1])
+        self.create_dim('lon', self.grid.ulon.__len__())
+        self.create_dim('lat', self.grid.ulat.__len__())
         self.create_dim('time', len(self.times))
 
     def _load_grid(self):
@@ -209,13 +209,13 @@ class ImageStack(Dataset):
 
     def _init_location_variables(self):
         # write station information, longitude, latitude and altitude
-        self.write_var('lon', data=self.grid.lon2d[:, 0], dim='lon',
+        self.write_var('lon', data=self.grid.ulon, dim='lon',
                        attr={'standard_name': 'longitude',
                              'long_name': 'location longitude',
                              'units': 'degrees_east',
                              'valid_range': (-180.0, 180.0)},
                        dtype=np.float)
-        self.write_var('lat', data=self.grid.lat2d[0, :], dim='lat',
+        self.write_var('lat', data=self.grid.ulat[::-1], dim='lat',
                        attr={'standard_name': 'latitude',
                              'long_name': 'location latitude',
                              'units': 'degrees_north',
