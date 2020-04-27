@@ -43,10 +43,6 @@ import pytest
 import pynetcf.time_series as nc
 import pygeogrids.grids as grids
 
-import sys
-if sys.version_info < (3, 0):
-    range = xrange
-
 
 def test_open_non_existing_file():
     classes = [nc.OrthoMultiTs,
