@@ -1,5 +1,5 @@
 =======
-pynetcf
+pynetCF
 =======
 
 .. image:: https://travis-ci.org/TUW-GEO/pynetCF.svg?branch=master
@@ -74,6 +74,5 @@ If you want to contribute please follow these steps:
 Note
 ====
 
-For now please see the tests for examples on how to use the classes.
-
-
+This project has been set up using PyScaffold 3.2.3. For details and usage
+information on PyScaffold see https://pyscaffold.org/.
