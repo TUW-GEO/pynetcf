@@ -5,7 +5,12 @@ Changelog
 Version 0.2.0
 =============
 
-- Update pyscaffold
+- Package no longer Python 2.7 compatible
+- Update pyscaffold v3.2.3
+- Remove build_script and changes.md
+- Update environment.yml
+- Package name changed from pynetCF to pynetcf
+- Updating travis settings
 
 Version 0.1.19
 ==============
