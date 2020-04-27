@@ -10,4 +10,5 @@ dependencies:
 - netCDF4
 - pykdtree
 - pip:
-  - pygeogrids>=0.1.9
+  - pygeobase
+  - pygeogrids
