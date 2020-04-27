@@ -1,8 +1,8 @@
 =======
-pynetCF
+pynetcf
 =======
 
-This is the documentation of **pynetCF**.
+This is the documentation of **pynetcf**.
 
 .. note::
 

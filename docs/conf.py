@@ -35,7 +35,7 @@ except ImportError:
     from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
-module_dir = os.path.join(__location__, "../src/pynetCF")
+module_dir = os.path.join(__location__, "../src/pynetcf")
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
@@ -46,7 +46,8 @@ try:
     from pkg_resources import parse_version
 
     cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
-    cmd_line = cmd_line_template.format(outputdir=output_dir, moduledir=module_dir)
+    cmd_line = cmd_line_template.format(
+        outputdir=output_dir, moduledir=module_dir)
 
     args = cmd_line.split(" ")
     if parse_version(sphinx.__version__) >= parse_version('1.7'):
@@ -81,7 +82,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pynetCF'
+project = u'pynetcf'
 copyright = u'2020, Sebastian'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -151,7 +152,7 @@ html_theme_options = {
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 try:
-    from pynetCF import __version__ as version
+    from pynetcf import __version__ as version
 except ImportError:
     pass
 else:
@@ -216,27 +217,27 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pynetCF-doc'
+htmlhelp_basename = 'pynetcf-doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-# 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-# 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-# 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'pynetCF Documentation',
-   u'Sebastian', 'manual'),
+    ('index', 'user_guide.tex', u'pynetcf Documentation',
+     u'Sebastian', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
