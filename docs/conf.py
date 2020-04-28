@@ -13,6 +13,13 @@ import sys
 import inspect
 import shutil
 
+import mock
+
+MOCK_MODULES = ['numpy', 'pandas', 'netCDF4',
+                'pygeogrids', 'pygeogrids.grids']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
 __location__ = os.path.join(os.getcwd(), os.path.dirname(
     inspect.getfile(inspect.currentframe())))
 
@@ -83,7 +90,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pynetcf'
-copyright = u'2020, Sebastian'
+copyright = u'2020, TU Wien'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -237,7 +244,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index', 'user_guide.tex', u'pynetcf Documentation',
-     u'Sebastian', 'manual'),
+     u'TU Wien', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
