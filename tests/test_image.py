@@ -1,5 +1,4 @@
-# Copyright (c) 2017, Vienna University of Technology,
-# Department of Geodesy and Geoinformation
+# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -105,6 +104,7 @@ class ArrayStackTests(unittest.TestCase):
             assert list(data['variable'].values) == [141, 142]
             data = nc[22]
             assert list(data['variable'].values) == [221, 222]
+
 
 if __name__ == "__main__":
     unittest.main()

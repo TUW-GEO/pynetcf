@@ -1,5 +1,4 @@
-# Copyright (c) 2017, Vienna University of Technology,
-# Department of Geodesy and Geoinformation
+# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -989,6 +988,7 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
                                   np.array([u'var1', u'var2'], dtype=object))
         with pytest.raises(IOError):
             data = dataset.read(11)
+
 
 if __name__ == "__main__":
     unittest.main()
