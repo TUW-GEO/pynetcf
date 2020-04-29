@@ -2,11 +2,11 @@
 pynetcf
 =======
 
-.. image:: https://travis-ci.org/TUW-GEO/pynetCF.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/pynetCF
+.. image:: https://travis-ci.org/TUW-GEO/pynetcf.svg?branch=master
+    :target: https://travis-ci.org/TUW-GEO/pynetcf
 
-.. image:: https://coveralls.io/repos/github/TUW-GEO/pynetCF/badge.svg?branch=master
-   :target: https://coveralls.io/github/TUW-GEO/pynetCF?branch=master
+.. image:: https://coveralls.io/repos/github/TUW-GEO/pynetcf/badge.svg?branch=master
+   :target: https://coveralls.io/github/TUW-GEO/pynetcf?branch=master
 
 .. image:: https://badge.fury.io/py/pynetcf.svg
     :target: https://badge.fury.io/py/pynetcf
@@ -64,8 +64,8 @@ Guidelines
 
 If you want to contribute please follow these steps:
 
-- Fork the pynetCF repository to your account
-- make a new feature branch from the pynetCF master branch
+- Fork the pynetcf repository to your account
+- make a new feature branch from the pynetcf master branch
 - Add your feature
 - Please include tests for your contributions in one of the test directories.
   We use py.test so a simple function called test_my_feature is enough
@@ -74,6 +74,5 @@ If you want to contribute please follow these steps:
 Note
 ====
 
-For now please see the tests for examples on how to use the classes.
-
-
+This project has been set up using PyScaffold 3.2.3. For details and usage
+information on PyScaffold see https://pyscaffold.org/.
