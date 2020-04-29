@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.2.1
+=============
+
+- Force date type conversion to numpy.datetime64
+- Update copyright date
+
 Version 0.2.0
 =============
 

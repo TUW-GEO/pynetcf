@@ -470,18 +470,21 @@ class OrthoMultiTs(Dataset):
 
     def read_time(self, loc_id):
         """
-        read the time stamps for the given location id
+        Read the time stamps for the given location id
         in this case the location id is irrelevant since they
         all have the same timestamps
         """
         return self.dataset.variables[self.time_var][:]
 
     def read_dates(self, loc_id):
+        """
+        Read time stamps and convert them.
+        """
         self.dates = netCDF4.num2date(self.read_time(loc_id),
                                       units=self.dataset.variables[
                                           self.time_var].units,
                                       calendar='standard')
-        return self.dates
+        return self.dates.astype('datetime64[ns]')
 
     def _read_var_ts(self, loc_id, var):
         """
