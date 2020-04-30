@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.2.2
+=============
+
+- Change numpy.num2date behavior to return datetime.datetime
+
 Version 0.2.1
 =============
 
