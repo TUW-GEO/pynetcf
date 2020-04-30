@@ -480,10 +480,12 @@ class OrthoMultiTs(Dataset):
         """
         Read time stamps and convert them.
         """
-        self.dates = netCDF4.num2date(self.read_time(loc_id),
-                                      units=self.dataset.variables[
-                                          self.time_var].units,
-                                      calendar='standard')
+        self.dates = netCDF4.num2date(
+            self.read_time(loc_id),
+            units=self.dataset.variables[self.time_var].units,
+            calendar='standard', only_use_cftime_datetimes=False,
+            only_use_python_datetimes=True)
+
         return self.dates.astype('datetime64[ns]')
 
     def _read_var_ts(self, loc_id, var):
