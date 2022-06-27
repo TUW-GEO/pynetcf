@@ -1,7 +1,3 @@
-=======
-pynetcf
-=======
-
 .. image:: https://github.com/TUW-GEO/pynetcf/workflows/ubuntu/badge.svg
    :target: https://github.com/TUW-GEO/pynetcf/actions/workflows/ubuntu.yml
 
@@ -16,6 +12,12 @@ pynetcf
 
 .. image:: https://readthedocs.org/projects/pynetcf/badge/?version=latest
    :target: http://pynetcf.readthedocs.org/
+
+|
+
+=======
+pynetcf
+=======
 
 Basic python classes that map to netCDF files on disk written according to the `Climate and Forecast metadata conventions`_
 
@@ -74,8 +76,10 @@ If you want to contribute please follow these steps:
   We use py.test so a simple function called test_my_feature is enough
 - submit a pull request to our master branch
 
+.. _pyscaffold-notes:
+
 Note
 ====
 
-This project has been set up using PyScaffold 3.2.3. For details and usage
+This project has been set up using PyScaffold 4.2.3. For details and usage
 information on PyScaffold see https://pyscaffold.org/.

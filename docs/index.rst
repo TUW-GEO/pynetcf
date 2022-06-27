@@ -4,15 +4,24 @@ pynetcf
 
 This is the documentation of **pynetcf**.
 
-Basic python classes that map to netCDF files on disk written according
-to the `Climate and Forecast metadata conventions <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html>`_
+.. note::
 
-This is a first draft which has a lot of room for improvements, this is especially true for the time series based representations.
+    This is the main page of your project's `Sphinx`_ documentation.
+    It is formatted in `reStructuredText`_. Add additional pages
+    by creating rst-files in ``docs`` and adding them to the `toctree`_ below.
+    Use then `references`_ in order to link them from this page, e.g.
+    :ref:`authors` and :ref:`changes`.
 
-How to use
-==========
+    It is also possible to refer to the documentation of other Python packages
+    with the `Python domain syntax`_. By default you can reference the
+    documentation of `Sphinx`_, `Python`_, `NumPy`_, `SciPy`_, `matplotlib`_,
+    `Pandas`_, `Scikit-Learn`_. You can add more by extending the
+    ``intersphinx_mapping`` in your Sphinx's ``conf.py``.
 
-For now please see the tests for examples on how to use the classes.
+    The pretty useful extension `autodoc`_ is activated by default and lets
+    you include documentation from docstrings. Docstrings can be written in
+    `Google style`_ (recommended!), `NumPy style`_ and `classical style`_.
+
 
 Contents
 ========
@@ -20,6 +29,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   Overview <readme>
+   Contributions & Help <contributing>
    License <license>
    Authors <authors>
    Changelog <changelog>
@@ -33,18 +44,18 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _toctree: http://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html
-.. _reStructuredText: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-.. _references: http://www.sphinx-doc.org/en/stable/markup/inline.html
-.. _Python domain syntax: http://sphinx-doc.org/domains.html#the-python-domain
-.. _Sphinx: http://www.sphinx-doc.org/
-.. _Python: http://docs.python.org/
-.. _Numpy: http://docs.scipy.org/doc/numpy
-.. _SciPy: http://docs.scipy.org/doc/scipy/reference/
+.. _toctree: https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html
+.. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+.. _references: https://www.sphinx-doc.org/en/stable/markup/inline.html
+.. _Python domain syntax: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#the-python-domain
+.. _Sphinx: https://www.sphinx-doc.org/
+.. _Python: https://docs.python.org/
+.. _Numpy: https://numpy.org/doc/stable
+.. _SciPy: https://docs.scipy.org/doc/scipy/reference/
 .. _matplotlib: https://matplotlib.org/contents.html#
-.. _Pandas: http://pandas.pydata.org/pandas-docs/stable
-.. _Scikit-Learn: http://scikit-learn.org/stable
-.. _autodoc: http://www.sphinx-doc.org/en/stable/ext/autodoc.html
-.. _Google style: https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings
+.. _Pandas: https://pandas.pydata.org/pandas-docs/stable
+.. _Scikit-Learn: https://scikit-learn.org/stable
+.. _autodoc: https://www.sphinx-doc.org/en/master/ext/autodoc.html
+.. _Google style: https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings
 .. _NumPy style: https://numpydoc.readthedocs.io/en/latest/format.html
-.. _classical style: http://www.sphinx-doc.org/en/stable/domains.html#info-field-lists
+.. _classical style: https://www.sphinx-doc.org/en/master/domains.html#info-field-lists
