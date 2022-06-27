@@ -54,9 +54,8 @@ jobs:
       - name: Install package and test
         shell: bash -l {0}
         run: |
-          pip install .
-          pip install pytest==6.2.5 tomli==1.2.3
-          python setup.py test
+          pip install -e .
+          pytest --cache-clear
       - name: Upload Coverage
         shell: bash -l {0}
         run: |
