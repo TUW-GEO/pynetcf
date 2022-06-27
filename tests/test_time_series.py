@@ -362,8 +362,8 @@ class DatasetIndexedTest(unittest.TestCase):
     def setUp(self):
         self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
-#    def tearDown(self):
-#        os.remove(self.testfilename)
+    def tearDown(self):
+        os.remove(self.testfilename)
 
     def test_file_writing(self):
 
