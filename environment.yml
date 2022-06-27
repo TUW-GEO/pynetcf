@@ -3,12 +3,11 @@ dependencies:
 - h5py
 - numpy
 - pandas
-- proj4
-- pyproj
-- pytest
-- pytest-cov
 - netCDF4
 - pykdtree
+- proj4
+- pyproj
+- pip
 - pip:
   - pygeobase
   - pygeogrids
