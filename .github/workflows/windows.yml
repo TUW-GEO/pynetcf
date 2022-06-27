@@ -30,7 +30,7 @@ jobs:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           environment-file: environment_win.yml
-          activate-environment: ascat_env
+          activate-environment: pynetcf
           auto-activate-base: false
       - name: Print environment infos
         shell: bash -l {0}
