@@ -213,17 +213,17 @@ class ImageStack(Dataset):
                              'long_name': 'location longitude',
                              'units': 'degrees_east',
                              'valid_range': (-180.0, 180.0)},
-                       dtype=np.float)
+                       dtype=np.float32)
         self.write_var('lat', data=self.grid.lat2d[0, :], dim='lat',
                        attr={'standard_name': 'latitude',
                              'long_name': 'location latitude',
                              'units': 'degrees_north',
                              'valid_range': (-90.0, 90.0)},
-                       dtype=np.float)
+                       dtype=np.float32)
 
     def init_variable(self, var):
         self.write_var(var, data=None, dim=('time', 'lat', 'lon'),
-                       dtype=np.float,
+                       dtype=np.float32,
                        attr={'_FillValue': -9999.})
 
     def write_ts(self, gpi, data):
