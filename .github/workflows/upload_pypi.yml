@@ -1,4 +1,4 @@
-name: Upload pypi
+name: upload pypi
 
 on:
    # trigger only on release

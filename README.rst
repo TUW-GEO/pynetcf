@@ -2,8 +2,11 @@
 pynetcf
 =======
 
-.. image:: https://travis-ci.org/TUW-GEO/pynetcf.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/pynetcf
+.. image:: https://github.com/TUW-GEO/pynetcf/workflows/ubuntu/badge.svg
+   :target: https://github.com/TUW-GEO/pynetcf/actions/workflows/ubuntu.yml
+
+.. image:: https://github.com/TUW-GEO/pynetcf/workflows/windows/badge.svg
+   :target: https://github.com/TUW-GEO/pynetcf/actions/workflows/windows.yml
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/pynetcf/badge.svg?branch=master
    :target: https://coveralls.io/github/TUW-GEO/pynetcf?branch=master
