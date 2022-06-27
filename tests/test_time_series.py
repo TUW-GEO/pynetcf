@@ -57,8 +57,8 @@ class OrthoMultiTest(unittest.TestCase):
     def setUp(self):
         self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
-    def tearDown(self):
-        os.remove(self.testfilename)
+#    def tearDown(self):
+#        os.remove(self.testfilename)
 
     def test_file_io_simple(self):
 
@@ -362,8 +362,8 @@ class DatasetIndexedTest(unittest.TestCase):
     def setUp(self):
         self.testfilename = os.path.join(mkdtemp(), 'test.nc')
 
-    def tearDown(self):
-        os.remove(self.testfilename)
+#    def tearDown(self):
+#        os.remove(self.testfilename)
 
     def test_file_writing(self):
 
@@ -629,8 +629,8 @@ class DatasetGriddedTsTests(unittest.TestCase):
         self.testfilename = os.path.join(self.testdatapath, '0107.nc')
         self.grid = grids.genreg_grid().to_cell_grid()
 
-    def tearDown(self):
-        os.remove(self.testfilename)
+#    def tearDown(self):
+#        os.remove(self.testfilename)
 
     def _test_writing_with_attributes(self, ioclass, autoscale=True,
                                       dtypes=None,
@@ -874,13 +874,13 @@ class GriddedNcTsTests(unittest.TestCase):
         reg_grid = grids.genreg_grid().to_cell_grid()
         self.grid = reg_grid.subgrid_from_gpis(self.gpis)
 
-    def tearDown(self):
-        """
-        Remove temporary files.
-        """
-        for filename in self.testfilenames:
-            if os.path.isfile(filename):
-                os.remove(filename)
+#    def tearDown(self):
+#        """
+#        Remove temporary files.
+#        """
+#        for filename in self.testfilenames:
+#            if os.path.isfile(filename):
+#                os.remove(filename)
 
     def test_n_loc(self):
         """
@@ -955,13 +955,13 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
                                    self.cells,
                                    self.gpis)
 
-    def tearDown(self):
-        """
-        Remove temporary files.
-        """
-        for filename in self.testfilenames:
-            if os.path.isfile(filename):
-                os.remove(filename)
+#    def tearDown(self):
+#        """
+#        Remove temporary files.
+#        """
+#        for filename in self.testfilenames:
+#            if os.path.isfile(filename):
+#                os.remove(filename)
 
     def test_write_read_non_existing_data(self):
         """
@@ -989,6 +989,3 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
         with pytest.raises(IOError):
             data = dataset.read(11)
 
-
-if __name__ == "__main__":
-    unittest.main()
