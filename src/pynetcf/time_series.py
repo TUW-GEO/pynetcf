@@ -220,7 +220,7 @@ class OrthoMultiTs(Dataset):
         """
         # make variable that contains the location id
         self.write_var(self.loc_ids_name, data=None, dim=self.loc_dim_name,
-                       dtype=np.int)
+                       dtype=np.int64)
 
         self.write_var(self.loc_descr_name, data=None, dim=self.loc_dim_name,
                        dtype=str)
@@ -897,7 +897,7 @@ class ContiguousRaggedTs(OrthoMultiTs):
                 'sample_dimension': self.obs_dim_name}
 
         self.write_var(self.obs_loc_lut, data=None, dim=self.loc_dim_name,
-                       dtype=np.int, attr=attr,
+                       dtype=np.int64, attr=attr,
                        chunksizes=self.unlim_chunksize)
 
     def _get_index_of_ts(self, loc_id):
