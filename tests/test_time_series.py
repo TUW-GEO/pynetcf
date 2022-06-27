@@ -670,9 +670,9 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
         for gpi in [11, 12, 20]:
             ts = dataset.read_ts(gpi)
-            dtype = np.int
+            dtype = np.int64
             if automask:
-                dtype = np.float
+                dtype = np.float32
             ts_should = {'var1': np.arange(len(dates), dtype=dtype),
                          'var2': np.arange(len(dates), dtype=dtype)}
             if automask:
@@ -741,9 +741,9 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
         for gpi in [11, 12, 14, 15, 18]:
             ts = dataset.read(gpi)
-            dtype = np.int
+            dtype = np.int64
             if automask:
-                dtype = np.float
+                dtype = np.float32
             ts_should = {'var1': np.arange(len(dates), dtype=dtype),
                          'var2': np.arange(len(dates), dtype=dtype)}
             if automask:

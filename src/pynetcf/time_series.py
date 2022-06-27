@@ -1064,7 +1064,7 @@ class IndexedRaggedTs(ContiguousRaggedTs):
                 'instance_dimension': self.loc_dim_name}
 
         self.write_var(self.obs_loc_lut, data=None, dim=self.obs_dim_name,
-                       dtype=np.int, attr=attr,
+                       dtype=np.int64, attr=attr,
                        chunksizes=self.unlim_chunksize)
 
     def _get_index_of_ts(self, loc_id):
