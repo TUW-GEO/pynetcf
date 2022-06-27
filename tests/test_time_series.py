@@ -31,6 +31,7 @@ Testing time series class.
 
 import os
 import unittest
+from tempfile import mkstemp
 from tempfile import mkdtemp
 
 import pandas as pd
@@ -55,10 +56,10 @@ def test_open_non_existing_file():
 class OrthoMultiTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = mkstemp('.nc')[1]
 
-#    def tearDown(self):
-#        os.remove(self.testfilename)
+    def tearDown(self):
+        os.remove(self.testfilename)
 
     def test_file_io_simple(self):
 
@@ -292,7 +293,7 @@ class OrthoMultiTest(unittest.TestCase):
 class DatasetContiguousTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = mkstemp('.nc')[1]
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -360,7 +361,7 @@ class DatasetContiguousTest(unittest.TestCase):
 class DatasetIndexedTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = mkstemp('.nc')[1]
 
     def tearDown(self):
         os.remove(self.testfilename)
