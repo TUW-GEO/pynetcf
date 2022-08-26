@@ -41,7 +41,7 @@ import datetime
 class DatasetError(Exception):
     pass
 
-
+# TODO: rethink structure of dataset- orthomulti- contiguous- indexed
 class Dataset(object):
 
     """
@@ -155,6 +155,8 @@ class Dataset(object):
         if name not in self.dataset.dimensions.keys():
             self.dataset.createDimension(name, size=n)
 
+    # TODO: make write and append only affect database object, which is written to disk only at flush
+    # TODO: consider taking xarray as argument, instead or in addition to numpy array, maybe conversion method
     def write_var(self, name, data=None, dim=None, attr={}, dtype=None,
                   zlib=None, complevel=None, chunksizes=None, **kwargs):
         """
