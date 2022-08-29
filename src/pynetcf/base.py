@@ -156,6 +156,9 @@ class Dataset(object):
             self.dataset.createDimension(name, size=n)
 
     # TODO: make write and append only affect database object, which is written to disk only at flush
+    #  (or before any read to this file - maybe also check if file is still open before reading?)
+    #  but also shoudn't Dataset.sync() already do the buffering and only writing to disk once it is called?
+    #  https://home.strw.leidenuniv.nl/~sfinx/netcdf11.html also says that a flush is automatically performed before seeking anywhere in the file
     # TODO: consider taking xarray as argument, instead or in addition to numpy array, maybe conversion method
     def write_var(self, name, data=None, dim=None, attr={}, dtype=None,
                   zlib=None, complevel=None, chunksizes=None, **kwargs):
