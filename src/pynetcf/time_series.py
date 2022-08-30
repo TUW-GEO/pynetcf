@@ -428,7 +428,7 @@ class OrthoMultiTs(Dataset):
 
     def _get_index_of_ts(self, loc_id):
         """
-        Get the indes of a time series.
+        Get the index of a time series.
 
         Parameters
         ----------
@@ -443,7 +443,7 @@ class OrthoMultiTs(Dataset):
         try:
             loc_id_index = self._get_loc_id_index(loc_id)
         except IOError:
-            msg = "Indexs for location id #{:} not found".format(loc_id)
+            msg = "Index for location id #{:} not found".format(loc_id)
             raise IOError(msg)
 
         _slice = (loc_id_index, slice(None, None, None))
@@ -1302,7 +1302,6 @@ class GriddedNcTs(GriddedTsBase):
 
         if self.mode in ['w', 'a']:
             if self.previous_cell != cell:
-                self.flush()
                 self.close()
 
                 try:
@@ -1478,7 +1477,6 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
             mode = 'w'
 
         if self.previous_cell != cell:
-            self.flush()
             self.close()
             self.previous_cell = cell
             if self.mode == 'w':
@@ -1496,5 +1494,4 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
         del data[datefield]
         self.fid.write_ts(gpi, data, dates, lon=lons, lat=lats,
                           dates_direct=True)
-        self.flush()
         self.close()
