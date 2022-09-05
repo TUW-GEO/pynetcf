@@ -39,7 +39,7 @@ import numpy as np
 import numpy.testing as nptest
 import pytest
 
-import pynetcf.time_series as nc
+import pynetcf.time_series_concrete as nc
 import pygeogrids.grids as grids
 
 
