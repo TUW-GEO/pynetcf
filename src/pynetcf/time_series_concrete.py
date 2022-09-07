@@ -105,35 +105,10 @@ class OrthoMultiTs(DatasetTs):
                  unlim_chunksize=None, read_bulk=False, read_dates=True,
                  **kwargs):
 
-        super(OrthoMultiTs, self).__init__(filename, **kwargs)
-
-        self.n_loc = n_loc
-
-        # dimension names
-        self.obs_dim_name = obs_dim_name
-        self.loc_dim_name = loc_dim_name
-
-        # location names
-        self.loc_ids_name = loc_ids_name
-        self.loc_descr_name = loc_descr_name
-
-        # time, time units and location
-        self.time_var = time_var
-        self.time_units = time_units
-        self.lat_var = lat_var
-        self.lon_var = lon_var
-        self.alt_var = alt_var
-
-        self.unlim_chunksize = unlim_chunksize
-
-        if unlim_chunksize is not None:
-            self.unlim_chunksize = [unlim_chunksize]
-
-        self.write_offset = None
-
-        # variable which lists the variables that should not be
-        # considered time series even if they have the correct dimension
-        self.not_timeseries = [self.time_var]
+        super(OrthoMultiTs, self).__init__(filename, n_loc, loc_dim_name, obs_dim_name, loc_ids_name,
+                                           loc_descr_name, time_units, time_var, lat_var, lon_var,
+                                           alt_var, unlim_chunksize, read_bulk, read_dates,
+                                           **kwargs)
 
         # initialize dimensions and index_variable
         if self.mode == 'w':
@@ -143,31 +118,6 @@ class OrthoMultiTs(DatasetTs):
             self._init_location_id_and_time()
 
             self.global_attr['featureType'] = 'timeSeries'
-
-        # location ids, to be read upon first reading operation
-        self.loc_ids_var = None
-
-        # date variables, for OrthogonalMulitTs it can be stored
-        # since it is the same for all variables in a file
-        self.constant_dates = True
-        self.dates = None
-        self.read_dates_auto = read_dates
-
-        if self.mode == 'r':
-            self.read_bulk = read_bulk
-        else:
-            self.read_bulk = False
-
-        # cache location id during reading
-        self.prev_loc_id = None
-
-        # if read bulk is activated the arrays will  be read into the
-        # local variables dict if it is not activated the data will be read
-        # from the netCDF variables
-        if not self.read_bulk:
-            self.variables = self.dataset.variables
-        else:
-            self.variables = {}
 
     def _init_dimensions(self):
         """
