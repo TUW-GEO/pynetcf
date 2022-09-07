@@ -26,21 +26,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-Classes for reading and writing time series in NetCDF files
+Abstract class providing an interface for reading and writing time series in NetCDF files
 according to the Climate Forecast Metadata Conventions
 (http://cfconventions.org/).
 """
 
-import os
-import warnings
-
-import pandas as pd
 import numpy as np
 import netCDF4
 
-from pynetcf.base import Dataset, DatasetError
-from pygeobase.io_base import GriddedTsBase
-from pygeogrids.grids import CellGrid
+from pynetcf.base import Dataset
 from abc import ABC, abstractmethod
 
 
