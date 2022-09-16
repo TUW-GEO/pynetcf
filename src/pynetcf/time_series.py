@@ -161,6 +161,7 @@ class DatasetTs(Dataset, ABC):
         """
         pass
 
+    @abstractmethod
     def _init_lookup(self):
         """
         Initializes variables for the lookup between locations and entries in
