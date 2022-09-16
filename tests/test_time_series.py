@@ -39,14 +39,15 @@ import numpy as np
 import numpy.testing as nptest
 import pytest
 
-import pynetcf.time_series as nc
+from pynetcf.time_series_concrete import OrthoMultiTs, ContiguousRaggedTs, IndexedRaggedTs
+from pynetcf.time_series_gridded import GriddedNcOrthoMultiTs, GriddedNcContiguousRaggedTs, GriddedNcIndexedRaggedTs
 import pygeogrids.grids as grids
 
 
 def test_open_non_existing_file():
-    classes = [nc.OrthoMultiTs,
-               nc.ContiguousRaggedTs,
-               nc.IndexedRaggedTs]
+    classes = [OrthoMultiTs,
+               ContiguousRaggedTs,
+               IndexedRaggedTs]
     for cls in classes:
         with pytest.raises(IOError):
             cls("not_existing_fname.nc")
@@ -62,7 +63,7 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_io_simple(self):
 
-        with nc.OrthoMultiTs(self.testfilename, mode='w',
+        with OrthoMultiTs(self.testfilename, mode='w',
                              n_loc=3) as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
@@ -75,7 +76,7 @@ class OrthoMultiTest(unittest.TestCase):
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5)
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(2)
             nptest.assert_array_equal(data['test'], np.arange(5))
 
@@ -90,7 +91,7 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_io_reading_non_existing_point(self):
 
-        with nc.OrthoMultiTs(self.testfilename, mode='w',
+        with OrthoMultiTs(self.testfilename, mode='w',
                              n_loc=3) as dataset:
             for n_data in [5]:
                 for location in [1, 2, 6]:
@@ -103,13 +104,13 @@ class OrthoMultiTest(unittest.TestCase):
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5)
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             with pytest.raises(IOError):
                 data = dataset.read_all_ts(5)
 
     def test_file_io_2_steps(self):
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=3,
+        with OrthoMultiTs(self.testfilename, n_loc=3,
                              mode='w') as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
@@ -122,7 +123,7 @@ class OrthoMultiTest(unittest.TestCase):
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5, fill_values={'test': -1})
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=3,
+        with OrthoMultiTs(self.testfilename, n_loc=3,
                              mode='a') as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
@@ -135,7 +136,7 @@ class OrthoMultiTest(unittest.TestCase):
                         location, data, dates, loc_descr='first station',
                         lon=0, lat=0, alt=5, fill_values={'test': -1})
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(2)
             nptest.assert_array_equal(data['test'], np.arange(10))
 
@@ -154,7 +155,7 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_write_ts_all(self):
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=3,
+        with OrthoMultiTs(self.testfilename, n_loc=3,
                              mode='w') as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
@@ -169,7 +170,7 @@ class OrthoMultiTest(unittest.TestCase):
                                      lons=np.arange(3),
                                      lats=np.arange(3), alts=np.arange(3))
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(2)
             nptest.assert_array_equal(data['test'], np.arange(5) + 5)
             test_dates = []
@@ -183,7 +184,7 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_write_ts_all_1_location(self):
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=1,
+        with OrthoMultiTs(self.testfilename, n_loc=1,
                              mode='w') as dataset:
             n_data = 5
             locations = np.array([1])
@@ -198,7 +199,7 @@ class OrthoMultiTest(unittest.TestCase):
                                          1),
                                      lats=np.arange(1), alts=None)
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(data['test'], np.arange(5))
             test_dates = []
@@ -212,7 +213,7 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_write_ts_all_attributes(self):
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=3,
+        with OrthoMultiTs(self.testfilename, n_loc=3,
                              mode='w') as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
@@ -230,7 +231,7 @@ class OrthoMultiTest(unittest.TestCase):
                                      attributes={'testattribute':
                                                  'teststring'})
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(2)
             nptest.assert_array_equal(data['test'], np.arange(5) + 5)
             assert dataset.dataset.variables[
@@ -251,7 +252,7 @@ class OrthoMultiTest(unittest.TestCase):
         test writing two datasets with attributes for each dataset
         """
 
-        with nc.OrthoMultiTs(self.testfilename, n_loc=3,
+        with OrthoMultiTs(self.testfilename, n_loc=3,
                              mode='w') as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
@@ -272,7 +273,7 @@ class OrthoMultiTest(unittest.TestCase):
                                                  'test2': {'testattribute2':
                                                            'teststring2'}})
 
-        with nc.OrthoMultiTs(self.testfilename) as dataset:
+        with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(2)
             nptest.assert_array_equal(data['test'], np.arange(5) + 5)
             assert dataset.dataset.variables[
@@ -302,7 +303,7 @@ class DatasetContiguousTest(unittest.TestCase):
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
                           datetime(2007, 3, 1)])
 
-        with nc.ContiguousRaggedTs(self.testfilename,
+        with ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, n_obs=9, mode='w') as dataset:
             data = {'test': np.arange(3)}
             dataset.write_ts(1, data, dates, loc_descr='first station',
@@ -312,7 +313,7 @@ class DatasetContiguousTest(unittest.TestCase):
             dataset.write_ts(3, data, dates, loc_descr='third station',
                              lon=3, lat=3, alt=3)
 
-        with nc.ContiguousRaggedTs(self.testfilename) as dataset:
+        with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(data['test'], np.arange(3))
             nptest.assert_array_equal(data['time'], dates)
@@ -322,7 +323,7 @@ class DatasetContiguousTest(unittest.TestCase):
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
                           datetime(2007, 3, 1)])
 
-        with nc.ContiguousRaggedTs(self.testfilename,
+        with ContiguousRaggedTs(self.testfilename,
                                    n_loc=3, mode='w') as dataset:
             data = {'test': np.arange(3)}
             dataset.write_ts(1, data, dates, loc_descr='first station',
@@ -332,7 +333,7 @@ class DatasetContiguousTest(unittest.TestCase):
             dataset.write_ts(3, data, dates, loc_descr='third station',
                              lon=3, lat=3, alt=3)
 
-        with nc.ContiguousRaggedTs(self.testfilename) as dataset:
+        with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(data['test'], np.arange(3))
             nptest.assert_array_equal(data['time'], dates)
@@ -342,7 +343,7 @@ class DatasetContiguousTest(unittest.TestCase):
         dates = np.array([datetime(2007, 1, 1), datetime(2007, 2, 1),
                           datetime(2007, 3, 1)])
 
-        with nc.ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
+        with ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
             data = {'test': np.arange(3)}
             dataset.write_ts(1, data, dates, loc_descr='first station',
                              lon=1, lat=1, alt=1)
@@ -351,7 +352,7 @@ class DatasetContiguousTest(unittest.TestCase):
             dataset.write_ts(3, data, dates, loc_descr='third station',
                              lon=3, lat=3, alt=3)
 
-        with nc.ContiguousRaggedTs(self.testfilename) as dataset:
+        with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(data['test'], np.arange(3))
             nptest.assert_array_equal(data['time'], dates)
@@ -367,7 +368,7 @@ class DatasetIndexedTest(unittest.TestCase):
 
     def test_file_writing(self):
 
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=3,
+        with IndexedRaggedTs(self.testfilename, n_loc=3,
                                 mode='w') as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
@@ -380,7 +381,7 @@ class DatasetIndexedTest(unittest.TestCase):
                                      lon=location, lat=location,
                                      alt=location)
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(
                 data['test'], np.concatenate([np.arange(2), np.arange(5),
@@ -401,7 +402,7 @@ class DatasetIndexedTest(unittest.TestCase):
         locations. This mean we only need to translate from locations to index
         and can write the data as is.
         """
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=3,
+        with IndexedRaggedTs(self.testfilename, n_loc=3,
                                 mode='w') as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {'test': np.concatenate([np.arange(2),
@@ -418,7 +419,7 @@ class DatasetIndexedTest(unittest.TestCase):
                              lon=locations, lat=locations,
                              alt=locations)
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             for gpis, n_data in zip([1, 2, 3], [2, 5, 6]):
                 data = dataset.read_all_ts(gpis)
                 nptest.assert_array_equal(data['test'], np.arange(n_data))
@@ -434,7 +435,7 @@ class DatasetIndexedTest(unittest.TestCase):
         """
         Write multiple points at once. Add more during an append.
         """
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+        with IndexedRaggedTs(self.testfilename, n_loc=4,
                                 mode='w') as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {'test': np.concatenate([np.arange(2),
@@ -451,7 +452,7 @@ class DatasetIndexedTest(unittest.TestCase):
                              lon=locations, lat=locations,
                              alt=locations)
 
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+        with IndexedRaggedTs(self.testfilename, n_loc=4,
                                 mode='a') as dataset:
             locations = np.array([1, 1, 4, 4])
             data = {'test': np.concatenate([np.arange(2),
@@ -467,7 +468,7 @@ class DatasetIndexedTest(unittest.TestCase):
                              lon=locations, lat=locations,
                              alt=locations)
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             for gpis, n_data, base_month in zip([1, 2, 3, 4],
                                                 [2, 5, 6, 2],
                                                 [1, 1, 1, 2]):
@@ -496,7 +497,7 @@ class DatasetIndexedTest(unittest.TestCase):
         """
         Write multiple points at once. Add more during an append. Use record arrays as input.
         """
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+        with IndexedRaggedTs(self.testfilename, n_loc=4,
                                 mode='w') as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {'test': np.concatenate([np.arange(2),
@@ -515,7 +516,7 @@ class DatasetIndexedTest(unittest.TestCase):
                              lon=locations, lat=locations,
                              alt=locations)
 
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=4,
+        with IndexedRaggedTs(self.testfilename, n_loc=4,
                                 mode='a') as dataset:
             locations = np.array([1, 1, 4, 4])
             data = {'test': np.concatenate([np.arange(2),
@@ -534,7 +535,7 @@ class DatasetIndexedTest(unittest.TestCase):
                              lon=locations, lat=locations,
                              alt=locations)
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             for gpis, n_data, base_month in zip([1, 2, 3, 4],
                                                 [2, 5, 6, 2],
                                                 [1, 1, 1, 2]):
@@ -561,7 +562,7 @@ class DatasetIndexedTest(unittest.TestCase):
 
     def test_unlim_loc_file_writing(self):
 
-        with nc.IndexedRaggedTs(self.testfilename, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, mode='w') as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
                     data = {'test': np.arange(n_data)}
@@ -573,7 +574,7 @@ class DatasetIndexedTest(unittest.TestCase):
                                      lon=location, lat=location,
                                      alt=location)
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             nptest.assert_array_equal(
                 data['test'], np.concatenate([np.arange(2), np.arange(5),
@@ -589,7 +590,7 @@ class DatasetIndexedTest(unittest.TestCase):
 
     def test_file_writing_with_attributes(self):
 
-        with nc.IndexedRaggedTs(self.testfilename, n_loc=3,
+        with IndexedRaggedTs(self.testfilename, n_loc=3,
                                 mode='w') as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
@@ -604,7 +605,7 @@ class DatasetIndexedTest(unittest.TestCase):
                                      attributes={'testattribute':
                                                  'teststring'})
 
-        with nc.IndexedRaggedTs(self.testfilename) as dataset:
+        with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all_ts(1)
             assert dataset.dataset.variables[
                 'test'].testattribute == 'teststring'
@@ -647,20 +648,20 @@ class DatasetGriddedTsTests(unittest.TestCase):
                                'scale_factor': 0.5},
                       'var2': {'testattribute2': 'teststring2'}}
 
-        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+        dataset = ioclass(self.testdatapath, IndexedRaggedTs,
                           mode='w', grid=self.grid, autoscale=autoscale)
         for gpi in [10, 11, 12, 18, 19, 20]:
             dataset.write_gp(gpi, ts, attributes=attributes,
                              fill_values={'var1': 5,
                                           'var2': 5})
 
-        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+        dataset = ioclass(self.testdatapath, IndexedRaggedTs,
                           mode='a', grid=self.grid,
                           autoscale=autoscale)
         for gpi in [13, 10]:
             dataset.write_gp(gpi, ts)
 
-        dataset = ioclass(self.testdatapath, nc.IndexedRaggedTs,
+        dataset = ioclass(self.testdatapath, IndexedRaggedTs,
                           grid=self.grid,
                           autoscale=autoscale,
                           automask=automask,
@@ -771,93 +772,93 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
     def test_writing_with_attributes_GriddedContigious(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs)
+            GriddedNcContiguousRaggedTs)
 
     def test_writing_with_attributes_GriddedIndexed(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs)
+            GriddedNcIndexedRaggedTs)
 
     def test_writing_with_attributes_GriddedOrthoMulti(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs)
+            GriddedNcOrthoMultiTs)
 
     def test_writing_with_attributes_GriddedContigious_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs, read_bulk=True)
+            GriddedNcContiguousRaggedTs, read_bulk=True)
 
     def test_writing_with_attributes_GriddedIndexed_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs, read_bulk=True)
+            GriddedNcIndexedRaggedTs, read_bulk=True)
 
     def test_writing_with_attributes_GriddedOrthoMulti_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs, read_bulk=True)
+            GriddedNcOrthoMultiTs, read_bulk=True)
 
     def test_writing_GriddedContigious_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
+            GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             automask=False)
 
     def test_writing_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
+            GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             automask=False)
 
     def test_writing_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
+            GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             automask=False)
 
     def test_writing_parameters_GriddedContigious_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs, read_bulk=True,
+            GriddedNcContiguousRaggedTs, read_bulk=True,
             parameters=['var1'])
 
     def test_writing_parameters_GriddedIndexed_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs, read_bulk=True,
+            GriddedNcIndexedRaggedTs, read_bulk=True,
             parameters=['var1'])
 
     def test_writing_parameters_GriddedOrthoMulti_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs, read_bulk=True,
+            GriddedNcOrthoMultiTs, read_bulk=True,
             parameters=['var1'])
 
     def test_writing_parameters_GriddedContigious_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
+            GriddedNcContiguousRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             autoscale=False, parameters=['var1'],
             automask=False)
 
     def test_writing_parameters_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
+            GriddedNcIndexedRaggedTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             autoscale=False, parameters=['var1'],
             automask=False)
 
     def test_writing_parameters_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
+            GriddedNcOrthoMultiTs, dtypes={'var1': np.ubyte},
             offsets={'var1': 10}, scale_factors={'var1': 2},
             autoscale=False, parameters=['var1'],
             automask=False)
 
     def test_writing_parameters_GriddedContigious_autoscale_false(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcContiguousRaggedTs, autoscale=False)
+            GriddedNcContiguousRaggedTs, autoscale=False)
 
     def test_writing_parameters_GriddedIndexed_autoscale_false(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcIndexedRaggedTs, autoscale=False)
+            GriddedNcIndexedRaggedTs, autoscale=False)
 
     def test_writing_parameters_GriddedOrthoMulti_autoscale_false(self):
         self._test_writing_with_attributes_prepared_classes(
-            nc.GriddedNcOrthoMultiTs, autoscale=False)
+            GriddedNcOrthoMultiTs, autoscale=False)
 
 
 class GriddedNcTsTests(unittest.TestCase):
@@ -892,7 +893,7 @@ class GriddedNcTsTests(unittest.TestCase):
         ts = pd.DataFrame({'var1': np.arange(len(dates)),
                            'var2': np.arange(len(dates))}, index=dates)
 
-        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+        dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                  self.grid, mode='w')
         fill_values = {'var1': 5, 'var2': 5}
 
@@ -901,7 +902,7 @@ class GriddedNcTsTests(unittest.TestCase):
 
     def test_missing_file(self):
 
-        dataset = nc.GriddedNcContiguousRaggedTs(
+        dataset = GriddedNcContiguousRaggedTs(
             mkdtemp(), self.grid, mode='r')
 
         for gpi in self.gpis:
@@ -920,13 +921,13 @@ class GriddedNcTsTests(unittest.TestCase):
                            'var4': np.arange(len(dates), dtype=np.int64)},
                           index=dates)
 
-        dataset_w = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+        dataset_w = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                    self.grid, mode='w')
 
         for gpi in self.gpis:
             dataset_w.write(gpi, ts)
 
-        dataset_r = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+        dataset_r = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                    self.grid, mode='r')
 
         for gpi in self.gpis:
@@ -972,7 +973,7 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
         ts = pd.DataFrame({'var1': np.arange(len(dates)),
                            'var2': np.arange(len(dates))}, index=dates)
 
-        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+        dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                  self.grid, mode='w')
         fill_values = {'var1': 5, 'var2': 5}
 
@@ -981,7 +982,7 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
 
         dataset.close()
 
-        dataset = nc.GriddedNcContiguousRaggedTs(self.testdatapath,
+        dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                  self.grid, mode='r')
         data = dataset.read(1)
         nptest.assert_array_equal(data.columns.values,

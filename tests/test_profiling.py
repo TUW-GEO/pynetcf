@@ -1,4 +1,3 @@
-# TODO: add testcase for profiling: writing many new files in folder and deleting again
 
 # Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
@@ -43,7 +42,7 @@ import pynetcf.base as ncbase
 # number of temporary files created during profiling
 NO_OF_FILES = 100
 # dimension(s) of DIM_SIZExDIM_SIZE arrays written to variable
-DIM_SIZE = 10000
+DIM_SIZE = 100
 
 class ProfilingTest(unittest.TestCase):
 
