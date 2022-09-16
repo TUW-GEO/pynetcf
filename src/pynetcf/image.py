@@ -34,7 +34,7 @@ import netCDF4
 import datetime
 import pandas as pd
 
-from pynetcf.time_series import OrthoMultiTs
+from pynetcf.time_series_concrete import OrthoMultiTs
 from pynetcf.base import Dataset
 import pygeogrids.grids as grids
 
