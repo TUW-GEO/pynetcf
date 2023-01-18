@@ -290,3 +290,7 @@ class Dataset(object):
 
     def __exit__(self, value_type, value, traceback):
         self.close()
+        
+    def __del__(self):
+        if hasattr(self, "dataset"):
+            self.close()
