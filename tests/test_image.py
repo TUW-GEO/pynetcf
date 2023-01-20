@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,10 @@ Testing image classes of pynetcf.
 
 import os
 import unittest
+from datetime import datetime
 from tempfile import mkdtemp
 
 import numpy as np
-from datetime import datetime
-
 import pynetcf.image as ncdata
 import pygeogrids.grids as grids
 

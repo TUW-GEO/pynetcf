@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -30,18 +30,22 @@ Testing time series class.
 """
 
 import os
+import pytest
 import unittest
+from datetime import datetime, timedelta
 from tempfile import mkdtemp
 
-import pandas as pd
-from datetime import datetime, timedelta
 import numpy as np
 import numpy.testing as nptest
-import pytest
-
-from pynetcf.time_series_concrete import OrthoMultiTs, ContiguousRaggedTs, IndexedRaggedTs
-from pynetcf.time_series_gridded import GriddedNcOrthoMultiTs, GriddedNcContiguousRaggedTs, GriddedNcIndexedRaggedTs
+import pandas as pd
 import pygeogrids.grids as grids
+
+from pynetcf.time_series import OrthoMultiTs
+from pynetcf.time_series import ContiguousRaggedTs
+from pynetcf.time_series import IndexedRaggedTs
+from pynetcf.time_series import GriddedNcOrthoMultiTs
+from pynetcf.time_series import GriddedNcContiguousRaggedTs
+from pynetcf.time_series import GriddedNcIndexedRaggedTs
 
 
 def test_open_non_existing_file():

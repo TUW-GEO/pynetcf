@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -26,16 +26,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import pytest
 import unittest
 from tempfile import mkdtemp
 
-import pytest
-
 import numpy as np
 import numpy.testing as nptest
+import pygeogrids.grids as grids
 
 from pynetcf.point_data import PointData, GriddedPointData
-import pygeogrids.grids as grids
 
 
 class PointDataReadWriteTest(unittest.TestCase):
