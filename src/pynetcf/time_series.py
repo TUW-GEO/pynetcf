@@ -24,7 +24,6 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Abstract class providing an interface for reading and writing time series
 in NetCDF files using Climate Forecast Metadata Conventions
@@ -46,7 +45,6 @@ from pynetcf.base import DatasetError
 
 
 class DatasetTs(Dataset, ABC):
-
     """
     Abstract class to store common methods for NetCDF time series such as
     OrthoMulti-, ContiguousRaggedArray- and IndexedRaggedArray-representation.
@@ -98,12 +96,21 @@ class DatasetTs(Dataset, ABC):
         num2date routine is very slow for big datasets
     """
 
-    def __init__(self, filename, n_loc=None, loc_dim_name='locations',
-                 obs_dim_name='time', loc_ids_name='location_id',
+    def __init__(self,
+                 filename,
+                 n_loc=None,
+                 loc_dim_name='locations',
+                 obs_dim_name='time',
+                 loc_ids_name='location_id',
                  loc_descr_name='location_description',
                  time_units="days since 1900-01-01 00:00:00",
-                 time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
-                 unlim_chunksize=None, read_bulk=False, read_dates=True,
+                 time_var='time',
+                 lat_var='lat',
+                 lon_var='lon',
+                 alt_var='alt',
+                 unlim_chunksize=None,
+                 read_bulk=False,
+                 read_dates=True,
                  **kwargs):
 
         super(DatasetTs, self).__init__(filename, **kwargs)
@@ -135,7 +142,6 @@ class DatasetTs(Dataset, ABC):
         # variable which lists the variables that should not be
         # considered time series even if they have the correct dimension
         self.not_timeseries = [self.time_var]
-
 
         # location ids, to be read upon first reading operation
         self.loc_ids_var = None
@@ -181,27 +187,39 @@ class DatasetTs(Dataset, ABC):
         """
         Initialize location information: longitude, latitude and altitude.
         """
-        self.write_var(self.lon_var, data=None, dim=self.loc_dim_name,
-                       attr={'standard_name': 'longitude',
-                             'long_name': 'location longitude',
-                             'units': 'degrees_east',
-                             'valid_range': (-180.0, 180.0)},
+        self.write_var(self.lon_var,
+                       data=None,
+                       dim=self.loc_dim_name,
+                       attr={
+                           'standard_name': 'longitude',
+                           'long_name': 'location longitude',
+                           'units': 'degrees_east',
+                           'valid_range': (-180.0, 180.0)
+                       },
                        dtype=np.float32)
 
-        self.write_var(self.lat_var, data=None, dim=self.loc_dim_name,
-                       attr={'standard_name': 'latitude',
-                             'long_name': 'location latitude',
-                             'units': 'degrees_north',
-                             'valid_range': (-90.0, 90.0)},
+        self.write_var(self.lat_var,
+                       data=None,
+                       dim=self.loc_dim_name,
+                       attr={
+                           'standard_name': 'latitude',
+                           'long_name': 'location latitude',
+                           'units': 'degrees_north',
+                           'valid_range': (-90.0, 90.0)
+                       },
                        dtype=np.float32)
 
-        self.write_var(self.alt_var, data=None, dim=self.loc_dim_name,
-                       attr={'standard_name': 'height',
-                             'long_name': 'vertical distance above the '
-                             'surface',
-                             'units': 'm',
-                             'positive': 'up',
-                             'axis': 'Z'},
+        self.write_var(self.alt_var,
+                       data=None,
+                       dim=self.loc_dim_name,
+                       attr={
+                           'standard_name': 'height',
+                           'long_name': 'vertical distance above the '
+                           'surface',
+                           'units': 'm',
+                           'positive': 'up',
+                           'axis': 'Z'
+                       },
                        dtype=np.float32)
 
     def _init_location_id_and_time(self):
@@ -210,18 +228,27 @@ class DatasetTs(Dataset, ABC):
         the format.
         """
         # make variable that contains the location id
-        self.write_var(self.loc_ids_name, data=None, dim=self.loc_dim_name,
+        self.write_var(self.loc_ids_name,
+                       data=None,
+                       dim=self.loc_dim_name,
                        dtype=np.int64)
 
-        self.write_var(self.loc_descr_name, data=None, dim=self.loc_dim_name,
+        self.write_var(self.loc_descr_name,
+                       data=None,
+                       dim=self.loc_dim_name,
                        dtype=str)
 
         # initialize time variable
-        self.write_var(self.time_var, data=None, dim=self.obs_dim_name,
-                       attr={'standard_name': 'time',
-                             'long_name': 'time of measurement',
-                             'units': self.time_units},
-                       dtype=np.float64, chunksizes=self.unlim_chunksize)
+        self.write_var(self.time_var,
+                       data=None,
+                       dim=self.obs_dim_name,
+                       attr={
+                           'standard_name': 'time',
+                           'long_name': 'time of measurement',
+                           'units': self.time_units
+                       },
+                       dtype=np.float64,
+                       chunksizes=self.unlim_chunksize)
 
     def _read_loc_ids(self, force=False):
         """
@@ -296,8 +323,8 @@ class DatasetTs(Dataset, ABC):
 
         if loc_id_index.size != loc_id.size:
             raise IOError('Index problem {:} elements '
-                          ' found for {:} locations'.format(loc_id_index.size,
-                                                            loc_id.size))
+                          ' found for {:} locations'.format(
+                              loc_id_index.size, loc_id.size))
 
         if loc_id.size == 1:
             loc_id_index = loc_id_index[0]
@@ -385,11 +412,11 @@ class DatasetTs(Dataset, ABC):
             if len(index) == 1:
                 index = int(index[0])
                 loc_ids_new = 0
-                self.dataset.variables[self.loc_descr_name][
-                    index] = str(loc_descr)
+                self.dataset.variables[self.loc_descr_name][index] = str(
+                    loc_descr)
             else:
-                self.dataset.variables[self.loc_descr_name][
-                    index] = loc_descr[loc_ids_new].astype(object)
+                self.dataset.variables[self.loc_descr_name][index] = loc_descr[
+                    loc_ids_new].astype(object)
 
         # update location ids variable after adding location
         self._read_loc_ids(force=True)
@@ -468,7 +495,8 @@ class DatasetTs(Dataset, ABC):
         self.dates = netCDF4.num2date(
             self.read_time(loc_id),
             units=self.dataset.variables[self.time_var].units,
-            calendar='standard', only_use_cftime_datetimes=False,
+            calendar='standard',
+            only_use_cftime_datetimes=False,
             only_use_python_datetimes=True)
 
         return self.dates.astype('datetime64[ns]')
@@ -556,8 +584,9 @@ class DatasetTs(Dataset, ABC):
         time_series : dict
             keys of var and time with numpy.arrays as values
         """
-        ts = self.read_ts(
-            self._get_all_ts_variables(), loc_id, dates_direct=dates_direct)
+        ts = self.read_ts(self._get_all_ts_variables(),
+                          loc_id,
+                          dates_direct=dates_direct)
 
         return ts
 
@@ -577,8 +606,9 @@ class DatasetTs(Dataset, ABC):
             self.append_var(self.time_var, dates)
         else:
             units = self.dataset.variables[self.time_var].units
-            self.append_var(self.time_var, netCDF4.date2num(dates, units=units,
-                                                            calendar='standard'))
+            self.append_var(
+                self.time_var,
+                netCDF4.date2num(dates, units=units, calendar='standard'))
 
     def get_time_variable_overlap(self, dates):
         """
@@ -606,17 +636,24 @@ class DatasetTs(Dataset, ABC):
             indexes = np.array([0])
         else:
             try:
-                indexes = netCDF4.date2index(
-                    dates, timevar)
+                indexes = netCDF4.date2index(dates, timevar)
             except ValueError:
                 indexes = np.array([timevar.size])
 
         return indexes
 
     @abstractmethod
-    def write_ts(self, loc_id, data, dates,
-                 loc_descr=None, lon=None, lat=None, alt=None,
-                 fill_values=None, attributes=None, dates_direct=False):
+    def write_ts(self,
+                 loc_id,
+                 data,
+                 dates,
+                 loc_descr=None,
+                 lon=None,
+                 lat=None,
+                 alt=None,
+                 fill_values=None,
+                 attributes=None,
+                 dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file
         for this data format it is assumed that in each write/append cycle
@@ -641,9 +678,17 @@ class DatasetTs(Dataset, ABC):
         """
         pass
 
-    def write_ts_all_loc(self, loc_ids, data, dates, loc_descrs=None,
-                         lons=None, lats=None, alts=None, fill_values=None,
-                         attributes=None, dates_direct=False):
+    def write_ts_all_loc(self,
+                         loc_ids,
+                         data,
+                         dates,
+                         loc_descrs=None,
+                         lons=None,
+                         lats=None,
+                         alts=None,
+                         fill_values=None,
+                         attributes=None,
+                         dates_direct=False):
         """
         Write time series data in bulk, for this the user has to provide
         a 2D array with dimensions (self.nloc, dates) that is filled with
@@ -700,8 +745,7 @@ class DatasetTs(Dataset, ABC):
 
         for key in data:
 
-            internal_attributes = {'name': key,
-                                   'coordinates': 'lat lon alt'}
+            internal_attributes = {'name': key, 'coordinates': 'lat lon alt'}
 
             if type(fill_values) == dict:
                 internal_attributes['_FillValue'] = fill_values[key]
@@ -718,10 +762,12 @@ class DatasetTs(Dataset, ABC):
                 chunksizes = None
             else:
                 chunksizes = [self.n_loc, self.unlim_chunksize[0]]
-            self.write_var(key, data=None, dim=(self.loc_dim_name,
-                                                self.obs_dim_name),
+            self.write_var(key,
+                           data=None,
+                           dim=(self.loc_dim_name, self.obs_dim_name),
                            attr=internal_attributes,
-                           dtype=data[key].dtype, chunksizes=chunksizes)
+                           dtype=data[key].dtype,
+                           chunksizes=chunksizes)
 
             if self.write_offset is None:
                 # current shape tells us how many elements are already
@@ -742,7 +788,6 @@ class DatasetTs(Dataset, ABC):
 
 
 class OrthoMultiTs(DatasetTs):
-
     """
     Implementation of the Orthogonal multidimensional array representation
     of time series according to the NetCDF CF-conventions 1.6.
@@ -793,18 +838,28 @@ class OrthoMultiTs(DatasetTs):
         num2date routine is very slow for big datasets
     """
 
-    def __init__(self, filename, n_loc=None, loc_dim_name='locations',
-                 obs_dim_name='time', loc_ids_name='location_id',
+    def __init__(self,
+                 filename,
+                 n_loc=None,
+                 loc_dim_name='locations',
+                 obs_dim_name='time',
+                 loc_ids_name='location_id',
                  loc_descr_name='location_description',
                  time_units="days since 1900-01-01 00:00:00",
-                 time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
-                 unlim_chunksize=None, read_bulk=False, read_dates=True,
+                 time_var='time',
+                 lat_var='lat',
+                 lon_var='lon',
+                 alt_var='alt',
+                 unlim_chunksize=None,
+                 read_bulk=False,
+                 read_dates=True,
                  **kwargs):
 
-        super(OrthoMultiTs, self).__init__(filename, n_loc, loc_dim_name, obs_dim_name, loc_ids_name,
-                                           loc_descr_name, time_units, time_var, lat_var, lon_var,
-                                           alt_var, unlim_chunksize, read_bulk, read_dates,
-                                           **kwargs)
+        super(OrthoMultiTs,
+              self).__init__(filename, n_loc, loc_dim_name, obs_dim_name,
+                             loc_ids_name, loc_descr_name, time_units,
+                             time_var, lat_var, lon_var, alt_var,
+                             unlim_chunksize, read_bulk, read_dates, **kwargs)
 
         # initialize dimensions and index_variable
         if self.mode == 'w':
@@ -876,9 +931,17 @@ class OrthoMultiTs(DatasetTs):
         """
         return self.read_var(self.loc_ids_name)
 
-    def write_ts(self, loc_id, data, dates,
-                 loc_descr=None, lon=None, lat=None, alt=None,
-                 fill_values=None, attributes=None, dates_direct=False):
+    def write_ts(self,
+                 loc_id,
+                 data,
+                 dates,
+                 loc_descr=None,
+                 lon=None,
+                 lat=None,
+                 alt=None,
+                 fill_values=None,
+                 attributes=None,
+                 dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file
         for this data format it is assumed that in each write/append cycle
@@ -928,8 +991,7 @@ class OrthoMultiTs(DatasetTs):
 
         for key in data:
 
-            internal_attributes = {'name': key,
-                                   'coordinates': 'lat lon alt'}
+            internal_attributes = {'name': key, 'coordinates': 'lat lon alt'}
 
             if type(fill_values) == dict:
                 internal_attributes['_FillValue'] = fill_values[key]
@@ -946,10 +1008,12 @@ class OrthoMultiTs(DatasetTs):
                 chunksizes = None
             else:
                 chunksizes = [self.n_loc, self.unlim_chunksize[0]]
-            self.write_var(key, data=None, dim=(self.loc_dim_name,
-                                                self.obs_dim_name),
+            self.write_var(key,
+                           data=None,
+                           dim=(self.loc_dim_name, self.obs_dim_name),
                            attr=internal_attributes,
-                           dtype=data[key].dtype, chunksizes=chunksizes)
+                           dtype=data[key].dtype,
+                           chunksizes=chunksizes)
 
             if self.write_offset is None:
                 # find start of elements that are not yet filled with values
@@ -973,7 +1037,6 @@ class OrthoMultiTs(DatasetTs):
 
 
 class ContiguousRaggedTs(DatasetTs):
-
     """
     Class that represents a Contiguous ragged array representation of
     time series according to NetCDF CF-conventions 1.6.
@@ -1019,13 +1082,19 @@ class ContiguousRaggedTs(DatasetTs):
         Default: alt
     """
 
-    def __init__(self, filename, n_loc=None, n_obs=None,
-                 obs_loc_lut='row_size', obs_dim_name='obs', **kwargs):
+    def __init__(self,
+                 filename,
+                 n_loc=None,
+                 n_obs=None,
+                 obs_loc_lut='row_size',
+                 obs_dim_name='obs',
+                 **kwargs):
 
         self.n_obs = n_obs
         self.obs_loc_lut = obs_loc_lut
 
-        super(ContiguousRaggedTs, self).__init__(filename, n_loc=n_loc,
+        super(ContiguousRaggedTs, self).__init__(filename,
+                                                 n_loc=n_loc,
                                                  obs_dim_name=obs_dim_name,
                                                  **kwargs)
 
@@ -1051,11 +1120,16 @@ class ContiguousRaggedTs(DatasetTs):
         Initializes variables for the lookup between locations and entries in
         the time series.
         """
-        attr = {'long_name': 'number of observations at this location',
-                'sample_dimension': self.obs_dim_name}
+        attr = {
+            'long_name': 'number of observations at this location',
+            'sample_dimension': self.obs_dim_name
+        }
 
-        self.write_var(self.obs_loc_lut, data=None, dim=self.loc_dim_name,
-                       dtype=np.int64, attr=attr,
+        self.write_var(self.obs_loc_lut,
+                       data=None,
+                       dim=self.loc_dim_name,
+                       dtype=np.int64,
+                       attr=attr,
                        chunksizes=self.unlim_chunksize)
 
     def _get_index_of_ts(self, loc_id):
@@ -1122,8 +1196,16 @@ class ContiguousRaggedTs(DatasetTs):
         """
         return self._read_var_ts(loc_id, self.time_var)
 
-    def write_ts(self, loc_id, data, dates, loc_descr=None, lon=None,
-                 lat=None, alt=None, fill_values=None, attributes=None,
+    def write_ts(self,
+                 loc_id,
+                 data,
+                 dates,
+                 loc_descr=None,
+                 lon=None,
+                 lat=None,
+                 alt=None,
+                 fill_values=None,
+                 attributes=None,
                  dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file.
@@ -1168,8 +1250,10 @@ class ContiguousRaggedTs(DatasetTs):
         index = self._get_index_of_ts(loc_id)
         for key in data:
 
-            internal_attributes = {'name': key,
-                                   'coordinates': 'time lat lon alt'}
+            internal_attributes = {
+                'name': key,
+                'coordinates': 'time lat lon alt'
+            }
 
             if type(fill_values) == dict:
                 internal_attributes['_FillValue'] = fill_values[key]
@@ -1182,7 +1266,9 @@ class ContiguousRaggedTs(DatasetTs):
 
                 internal_attributes.update(variable_attributes)
 
-            self.write_var(key, data=None, dim=self.obs_dim_name,
+            self.write_var(key,
+                           data=None,
+                           dim=self.obs_dim_name,
                            attr=internal_attributes,
                            dtype=data[key].dtype,
                            chunksizes=self.unlim_chunksize)
@@ -1197,17 +1283,18 @@ class ContiguousRaggedTs(DatasetTs):
 
 
 class IndexedRaggedTs(DatasetTs):
-
     """
     Class that represents a Indexed ragged array representation of time series
     according to NetCDF CF-conventions 1.6.
     """
 
-    def __init__(self, filename, n_loc=None, obs_loc_lut='locationIndex',
+    def __init__(self,
+                 filename,
+                 n_loc=None,
+                 obs_loc_lut='locationIndex',
                  **kwargs):
         self.obs_loc_lut = obs_loc_lut
-        super(IndexedRaggedTs, self).__init__(filename, n_loc=n_loc,
-                                              **kwargs)
+        super(IndexedRaggedTs, self).__init__(filename, n_loc=n_loc, **kwargs)
 
         if self.mode == 'w':
             self._init_dimensions()
@@ -1232,11 +1319,16 @@ class IndexedRaggedTs(DatasetTs):
         Initializes variables for the lookup between locations and entries
         in the time series.
         """
-        attr = {'long_name': 'which location this observation is for',
-                'instance_dimension': self.loc_dim_name}
+        attr = {
+            'long_name': 'which location this observation is for',
+            'instance_dimension': self.loc_dim_name
+        }
 
-        self.write_var(self.obs_loc_lut, data=None, dim=self.obs_dim_name,
-                       dtype=np.int64, attr=attr,
+        self.write_var(self.obs_loc_lut,
+                       data=None,
+                       dim=self.obs_dim_name,
+                       dtype=np.int64,
+                       attr=attr,
                        chunksizes=self.unlim_chunksize)
 
     def _get_index_of_ts(self, loc_id):
@@ -1298,8 +1390,16 @@ class IndexedRaggedTs(DatasetTs):
         """
         return self._read_var_ts(loc_id, self.time_var)
 
-    def write_ts(self, loc_id, data, dates, loc_descr=None, lon=None,
-                 lat=None, alt=None, fill_values=None, attributes=None,
+    def write_ts(self,
+                 loc_id,
+                 data,
+                 dates,
+                 loc_descr=None,
+                 lon=None,
+                 lat=None,
+                 alt=None,
+                 fill_values=None,
+                 attributes=None,
                  dates_direct=False):
         """
         write time series data, if not yet existing also add location to file
@@ -1332,8 +1432,7 @@ class IndexedRaggedTs(DatasetTs):
         if len(loc_id) == 1:
             loc_id = loc_id.repeat(dates.size)
 
-        (loc_ids_uniq,
-         loc_ids_uniq_index,
+        (loc_ids_uniq, loc_ids_uniq_index,
          loc_ids_uniq_lookup) = np.unique(loc_id,
                                           return_index=True,
                                           return_inverse=True)
@@ -1354,11 +1453,8 @@ class IndexedRaggedTs(DatasetTs):
         try:
             idx = self._get_loc_id_index(loc_id)
         except IOError:
-            idx = self._add_location(loc_ids_uniq,
-                                     lon_uniq,
-                                     lat_uniq,
-                                     alt_uniq,
-                                     loc_descr_uniq)
+            idx = self._add_location(loc_ids_uniq, lon_uniq, lat_uniq,
+                                     alt_uniq, loc_descr_uniq)
             idx = self._get_loc_id_index(loc_id)
 
         # find out if attributes is a dict to be used for all variables or if
@@ -1377,13 +1473,16 @@ class IndexedRaggedTs(DatasetTs):
         indices = np.atleast_1d(idx)
         self.append_var(self.obs_loc_lut, indices)
 
-        index = np.arange(len(self.variables[self.obs_loc_lut]))[
-            len(self.variables[self.obs_loc_lut]) - len(indices):]
+        index = np.arange(len(self.variables[
+            self.obs_loc_lut]))[len(self.variables[self.obs_loc_lut]) -
+                                len(indices):]
 
         for key in field_names:
 
-            internal_attributes = {'name': key,
-                                   'coordinates': 'time lat lon alt'}
+            internal_attributes = {
+                'name': key,
+                'coordinates': 'time lat lon alt'
+            }
 
             if type(fill_values) == dict:
                 internal_attributes['_FillValue'] = fill_values[key]
@@ -1397,7 +1496,9 @@ class IndexedRaggedTs(DatasetTs):
                 internal_attributes.update(variable_attributes)
 
             # does nothing if variable exists already
-            self.write_var(key, data=None, dim=self.obs_dim_name,
+            self.write_var(key,
+                           data=None,
+                           dim=self.obs_dim_name,
                            attr=internal_attributes,
                            dtype=data[key].dtype,
                            chunksizes=self.unlim_chunksize)
@@ -1442,8 +1543,10 @@ class GriddedNcTs(GriddedTsBase):
 
         super(GriddedNcTs, self).__init__(*args, **kwargs)
 
-        self.ioclass_kws.update({'autoscale': self.autoscale,
-                                 'automask': self.automask})
+        self.ioclass_kws.update({
+            'autoscale': self.autoscale,
+            'automask': self.automask
+        })
         self.dates = None
 
         if self.ioclass == OrthoMultiTs:
@@ -1475,7 +1578,8 @@ class GriddedNcTs(GriddedTsBase):
                 self.close()
 
                 try:
-                    self.fid = self.ioclass(filename, mode=self.mode,
+                    self.fid = self.ioclass(filename,
+                                            mode=self.mode,
                                             **self.ioclass_kws)
                     self.previous_cell = cell
                 except (IOError, RuntimeError):
@@ -1491,10 +1595,11 @@ class GriddedNcTs(GriddedTsBase):
                 try:
                     if self.mode == 'w':
                         if 'n_loc' not in self.ioclass_kws:
-                            n_loc = self.grid.grid_points_for_cell(cell)[
-                                0].size
+                            n_loc = self.grid.grid_points_for_cell(
+                                cell)[0].size
                             self.ioclass_kws['n_loc'] = n_loc
-                    self.fid = self.ioclass(filename, mode=self.mode,
+                    self.fid = self.ioclass(filename,
+                                            mode=self.mode,
                                             **self.ioclass_kws)
                     self.previous_cell = cell
                     self.ioclass_kws.pop('n_loc', None)
@@ -1562,7 +1667,8 @@ class GriddedNcTs(GriddedTsBase):
                             self.dtypes[dtype_column])
                     except ValueError:
                         raise ValueError(
-                            "Dtype conversion did not work. Try turning off automatic masking.")
+                            "Dtype conversion did not work. Try turning off automatic masking."
+                        )
 
         if self.scale_factors is not None:
             for scale_column in self.scale_factors:
@@ -1598,8 +1704,12 @@ class GriddedNcTs(GriddedTsBase):
         for key in ds:
             ds[key] = ds[key].values
 
-        self.fid.write_ts(gp, ds, data.index.to_pydatetime(),
-                          lon=lon, lat=lat, **kwargs)
+        self.fid.write_ts(gp,
+                          ds,
+                          data.index.to_pydatetime(),
+                          lon=lon,
+                          lat=lat,
+                          **kwargs)
 
 
 class GriddedNcOrthoMultiTs(GriddedNcTs):
@@ -1667,8 +1777,7 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
                 if 'n_loc' not in self.ioclass_kws:
                     n_loc = self.grid.grid_points_for_cell(cell)[0].size
                     self.ioclass_kws['n_loc'] = n_loc
-            self.fid = self.ioclass(filename, mode=mode,
-                                    **self.ioclass_kws)
+            self.fid = self.ioclass(filename, mode=mode, **self.ioclass_kws)
             self.ioclass_kws.pop('n_loc', None)
 
         if type(data) != dict:
@@ -1676,6 +1785,10 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
 
         dates = data[datefield]
         del data[datefield]
-        self.fid.write_ts(gpi, data, dates, lon=lons, lat=lats,
+        self.fid.write_ts(gpi,
+                          data,
+                          dates,
+                          lon=lons,
+                          lat=lats,
                           dates_direct=True)
         self.close()
