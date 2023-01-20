@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-Module for reading and writing point data in NetCDF format according to
-the Climate Forecast Metadata Conventions (http://cfconventions.org/).
+Classes for reading and writing point data in NetCDF files
+using Climate Forecast Metadata Conventions (http://cfconventions.org/).
 """
 
 import os
@@ -205,9 +205,21 @@ class PointData(object):
             self.nc = None
 
     def __enter__(self):
+        """
+        ContextManager enter.
+        """
         return self
 
     def __exit__(self, value_type, value, traceback):
+        """
+        ContextManager exit.
+        """
+        self.close()
+
+    def __del__(self):
+        """
+        Destructor.
+        """
         self.close()
 
     def _create_dims(self, dims):
