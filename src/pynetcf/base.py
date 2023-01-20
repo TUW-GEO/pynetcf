@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,7 @@
 
 """
 Base classes for reading and writing time series and images in NetCDF files
-according to the Climate Forecast Metadata Conventions
-(http://cfconventions.org/).
+using Climate Forecast Metadata Conventions (http://cfconventions.org/).
 """
 
 import os
@@ -41,7 +40,7 @@ import datetime
 class DatasetError(Exception):
     pass
 
-class Dataset(object):
+class Dataset:
 
     """
     NetCDF file wrapper class that makes some things easier
@@ -271,26 +270,51 @@ class Dataset(object):
                 return self.dataset.variables[name][:]
 
     def add_global_attr(self, name, value):
+        """
+        Add global attribute.
+
+        Parameters
+        ----------
+        name : str
+            Name.
+        value : str or number
+            Value.
+        """
         self.global_attr[name] = value
 
     def flush(self):
+        """
+        Flush data to disk.
+        """
         if self.dataset is not None:
             if self.mode in ['w', 'r+']:
                 self._set_global_attr()
                 self.dataset.sync()
 
     def close(self):
+        """
+        Flush and close file.
+        """
         if self.dataset is not None:
             self.flush()
             self.dataset.close()
             self.dataset = None
 
     def __enter__(self):
+        """
+        ContextManager enter.
+        """
         return self
 
     def __exit__(self, value_type, value, traceback):
+        """
+        ContextManager exit.
+        """
         self.close()
-        
+
     def __del__(self):
+        """
+        Destructor.
+        """
         if hasattr(self, "dataset"):
             self.close()
