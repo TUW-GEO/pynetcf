@@ -1,4 +1,4 @@
-# Copyright (c) 2020, TU Wien, Department of Geodesy and Geoinformation.
+# Copyright (c) 2023, TU Wien, Department of Geodesy and Geoinformation.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-
+Image class definition for NetCDF files.
 """
 
 import numpy as np
@@ -79,26 +79,31 @@ class ArrayStack(OrthoMultiTs):
         self.lat_chunksize = len(self.grid.activegpis)
 
     def _load_grid(self):
+        """
+        Load grid.
+        """
         lons = self.dataset.variables[self.lon_var][:]
         lats = self.dataset.variables[self.lat_var][:]
         self.grid = grids.BasicGrid(lons, lats)
 
     def _load_times(self):
+        """
+        Load time stamps.
+        """
         self.times = netCDF4.num2date(self.dataset.variables['time'][:],
                                       self.time_units)
 
     def write_ts(self, gpi, data):
         """
-        write a time series into the imagestack
-        at the given gpi
+        Write a time series into the imagestack for gpi.
 
         Parameters
         ----------
-        self: type
+        self : type
             description
-        gpi: int or numpy.array
+        gpi : int or numpy.array
             grid point indices to write to
-        data: dictionary
+        data : dictionary
             dictionary of int or numpy.array for each variable
             that should be written
             shape must be (len(gpi), len(times))
@@ -113,16 +118,15 @@ class ArrayStack(OrthoMultiTs):
 
     def __setitem__(self, gpi, data):
         """
-        write a time series into the imagestack
-        at the given gpi
+        Write a time series into the imagestack for gpi.
 
         Parameters
         ----------
-        self: type
+        self : type
             description
-        gpi: int or numpy.array
+        gpi : int or numpy.array
             grid point indices to write to
-        data: dictionary
+        data : dictionary
             dictionary of int or numpy.array for each variable
             that should be written
             shape must be (len(gpi), len(times))
@@ -130,7 +134,19 @@ class ArrayStack(OrthoMultiTs):
         self.write_ts(gpi, data)
 
     def __getitem__(self, key):
+        """
+        Get data for given gpi/timestamp.
 
+        Parameters
+        ----------
+        key : datetime or int
+            Timestamp or gpi.
+
+        Returns
+        -------
+        data : pandas.DataFrame
+            Data.
+        """
         if type(key) == datetime.datetime:
             index = netCDF4.date2index(
                 key, self.dataset.variables[self.time_var])
@@ -149,7 +165,7 @@ class ArrayStack(OrthoMultiTs):
 class ImageStack(Dataset):
 
     """
-    Class for writing stacks of 2D images into netCDF.
+    Class for writing stacks of 2D images into NetCDF.
     """
 
     def __init__(self, filename, grid=None, times=None,
@@ -174,30 +190,41 @@ class ImageStack(Dataset):
             self._load_variables()
 
     def _init_dimensions(self):
+        """
+        Initialize dimensions.
+        """
         self.create_dim('lon', self.grid.lon2d.shape[0])
         self.create_dim('lat', self.grid.lat2d.shape[1])
         self.create_dim('time', len(self.times))
 
     def _load_grid(self):
+        """
+        Load grid.
+        """
         lons = self.dataset.variables['lon'][:]
         lats = self.dataset.variables['lat'][:]
         self.grid = grids.gridfromdims(lons, lats)
 
     def _load_variables(self):
+        """
+        Load variables.
+        """
         for var in self.dataset.variables:
             if self.dataset.variables[var].dimensions == ('time', 'lat', 'lon'):
                 self.variables.append(var)
 
     def _load_times(self):
+        """
+        Load time stamps.
+        """
         self.times = netCDF4.num2date(self.dataset.variables['time'][:],
                                       self.time_units)
 
     def _init_time(self):
         """
-        initialize the dimensions and variables that are the basis of
-        the format
+        Initialize the dimensions and variables that are the basis of
+        the format.
         """
-        # initialize time variable
         time_data = netCDF4.date2num(self.times, self.time_units)
         self.write_var(self.time_var, data=time_data, dim='time',
                        attr={'standard_name': 'time',
@@ -207,7 +234,9 @@ class ImageStack(Dataset):
                        chunksizes=[self.time_chunksize])
 
     def _init_location_variables(self):
-        # write station information, longitude, latitude and altitude
+        """
+        Write station information, longitude, latitude and altitude
+        """
         self.write_var('lon', data=self.grid.lon2d[:, 0], dim='lon',
                        attr={'standard_name': 'longitude',
                              'long_name': 'location longitude',
@@ -222,22 +251,24 @@ class ImageStack(Dataset):
                        dtype=np.float32)
 
     def init_variable(self, var):
+        """
+        Initialize variable.
+        """
         self.write_var(var, data=None, dim=('time', 'lat', 'lon'),
                        dtype=np.float32,
                        attr={'_FillValue': -9999.})
 
     def write_ts(self, gpi, data):
         """
-        write a time series into the imagestack
-        at the given gpi
+        Write a time series into the imagestack for gpi.
 
         Parameters
         ----------
-        self: type
+        self : type
             description
-        gpi: int or numpy.array
+        gpi : int or numpy.array
             grid point indices to write to
-        data: dictionary
+        data : dictionary
             dictionary of int or numpy.array for each variable
             that should be written
             shape must be (len(gpi), len(times))
@@ -255,8 +286,7 @@ class ImageStack(Dataset):
 
     def __setitem__(self, gpi, data):
         """
-        write a time series into the imagestack
-        at the given gpi
+        Write a time series into the imagestack for gpi.
 
         Parameters
         ----------
@@ -272,7 +302,19 @@ class ImageStack(Dataset):
         self.write_ts(gpi, data)
 
     def __getitem__(self, key):
+        """
+        Get data for given gpi.
 
+        Parameters
+        ----------
+        key : int
+            gpi
+
+        Returns
+        -------
+        data : pandas.DataFrame
+            Data.
+        """
         gpi = np.atleast_1d(key)
         data = {}
         for i, gp in enumerate(gpi):
