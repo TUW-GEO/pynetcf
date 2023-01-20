@@ -110,6 +110,8 @@ class PointData:
             'format': file_format
         }
 
+        self.nc = None
+
         initial_mode = mode
 
         if mode == 'a' and not os.path.exists(filename):

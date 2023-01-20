@@ -278,7 +278,7 @@ class DatasetTs(Dataset, ABC):
         """
         self._read_loc_ids()
 
-        masked = np.where(self.loc_ids_var.mask)[0]
+        masked = np.where(np.atleast_1d(self.loc_ids_var.mask))[0]
 
         # all indexes already filled
         if len(masked) == 0:

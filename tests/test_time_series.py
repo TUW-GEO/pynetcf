@@ -31,6 +31,7 @@ Testing time series class.
 import os
 import pytest
 import unittest
+import warnings
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
 
@@ -1096,12 +1097,16 @@ class GriddedNcTsTests(unittest.TestCase):
             dataset.write(gpi, ts, fill_values=fill_values)
 
     def test_missing_file(self):
+        """
+        Test missing files.
+        """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            dataset = GriddedNcContiguousRaggedTs(mkdtemp(), self.grid, mode='r')
 
-        dataset = GriddedNcContiguousRaggedTs(mkdtemp(), self.grid, mode='r')
-
-        for gpi in self.gpis:
-            ts = dataset.read(gpi)
-            assert ts is None
+            for gpi in self.gpis:
+                ts = dataset.read(gpi)
+                assert ts is None
 
     def test_datatype(self):
         """
