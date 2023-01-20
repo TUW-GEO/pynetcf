@@ -24,7 +24,6 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Classes for reading and writing point data in NetCDF files
 using Climate Forecast Metadata Conventions (http://cfconventions.org/).
@@ -39,8 +38,7 @@ import netCDF4
 from pygeobase.io_base import GriddedBase
 
 
-class PointData(object):
-
+class PointData:
     """
     PointData class for reading and writing netCDF files following the
     CF conventions for point data.
@@ -89,15 +87,28 @@ class PointData(object):
         Altitude variable name. Default: 'alt'
     """
 
-    def __init__(self, filename, mode='r', file_format='NETCDF4', zlib=True,
-                 complevel=4, n_obs=None, obs_dim='obs', add_dims=None,
+    def __init__(self,
+                 filename,
+                 mode='r',
+                 file_format='NETCDF4',
+                 zlib=True,
+                 complevel=4,
+                 n_obs=None,
+                 obs_dim='obs',
+                 add_dims=None,
                  loc_id_var='location_id',
                  time_units="days since 1900-01-01 00:00:00",
-                 time_var='time', lat_var='lat', lon_var='lon', alt_var='alt',
+                 time_var='time',
+                 lat_var='lat',
+                 lon_var='lon',
+                 alt_var='alt',
                  **kwargs):
 
-        self.nc_finfo = {'filename': filename, 'mode': mode,
-                         'format': file_format}
+        self.nc_finfo = {
+            'filename': filename,
+            'mode': mode,
+            'format': file_format
+        }
 
         initial_mode = mode
 
@@ -108,29 +119,39 @@ class PointData(object):
             path = os.path.dirname(filename)
             if not os.path.exists(path):
                 os.makedirs(path)
-        self.compression_info = {'zlib': zlib,
-                                 'complevel': complevel}
+        self.compression_info = {'zlib': zlib, 'complevel': complevel}
 
         try:
-            self.nc = netCDF4.Dataset(filename, format=file_format,
+            self.nc = netCDF4.Dataset(filename,
+                                      format=file_format,
                                       mode=initial_mode)
         except RuntimeError:
             raise IOError("File {} does not exist.".format(filename))
 
         loc_id_attr = {'long_name': 'location_id'}
 
-        lon_attr = {'standard_name': 'longitude',
-                    'long_name': 'location longitude',
-                    'units': 'degrees_east',
-                    'valid_range': (-180.0, 180.0)}
+        lon_attr = {
+            'standard_name': 'longitude',
+            'long_name': 'location longitude',
+            'units': 'degrees_east',
+            'valid_range': (-180.0, 180.0)
+        }
 
-        lat_attr = {'standard_name': 'latitude',
-                    'long_name': 'location latitude',
-                    'units': 'degrees_north', 'valid_range': (-90.0, 90.0)}
+        lat_attr = {
+            'standard_name': 'latitude',
+            'long_name': 'location latitude',
+            'units': 'degrees_north',
+            'valid_range': (-90.0, 90.0)
+        }
 
-        alt_attr = {'standard_name': 'height',
-                    'long_name': 'vertical distance above the '
-                    'surface', 'units': 'm', 'positive': 'up', 'axis': 'Z'}
+        alt_attr = {
+            'standard_name': 'height',
+            'long_name': 'vertical distance above the '
+            'surface',
+            'units': 'm',
+            'positive': 'up',
+            'axis': 'Z'
+        }
 
         time_attr = {'standard_name': 'time'}
 
@@ -142,26 +163,50 @@ class PointData(object):
         else:
             self.dim = {obs_dim: n_obs}
 
-        self.var = {'loc_id': {'name': loc_id_var, 'dim': obs_dim,
-                               'attr': loc_id_attr, 'dtype': np.int32},
-                    'lon': {'name': lon_var, 'dim': obs_dim,
-                            'attr': lon_attr, 'dtype': np.float32},
-                    'lat': {'name': lat_var, 'dim': obs_dim,
-                            'attr': lat_attr, 'dtype': np.float32},
-                    'alt': {'name': alt_var, 'dim': obs_dim,
-                            'attr': alt_attr, 'dtype': np.float32},
-                    'time': {'name': time_var, 'dim': obs_dim,
-                             'unit': time_units, 'dtype': np.float64,
-                             'attr': time_attr}}
+        self.var = {
+            'loc_id': {
+                'name': loc_id_var,
+                'dim': obs_dim,
+                'attr': loc_id_attr,
+                'dtype': np.int32
+            },
+            'lon': {
+                'name': lon_var,
+                'dim': obs_dim,
+                'attr': lon_attr,
+                'dtype': np.float32
+            },
+            'lat': {
+                'name': lat_var,
+                'dim': obs_dim,
+                'attr': lat_attr,
+                'dtype': np.float32
+            },
+            'alt': {
+                'name': alt_var,
+                'dim': obs_dim,
+                'attr': alt_attr,
+                'dtype': np.float32
+            },
+            'time': {
+                'name': time_var,
+                'dim': obs_dim,
+                'unit': time_units,
+                'dtype': np.float64,
+                'attr': time_attr
+            }
+        }
 
         self.builtin_vars = [self.var[key]['name'] for key in self.var]
 
         if initial_mode == 'w':
 
             s = "%Y-%m-%d %H:%M:%S"
-            attr = {'id': os.path.split(self.nc_finfo['filename'])[1],
-                    'date_created': datetime.datetime.now().strftime(s),
-                    'featureType': 'point'}
+            attr = {
+                'id': os.path.split(self.nc_finfo['filename'])[1],
+                'date_created': datetime.datetime.now().strftime(s),
+                'featureType': 'point'
+            }
 
             self.nc.setncatts(attr)
             self._create_dims(self.dim)
@@ -239,12 +284,19 @@ class PointData(object):
         Initialize location information (lon, lat, etc.).
         """
         for k, var in self.var.items():
-            self.nc.createVariable(var['name'], var['dtype'],
+            self.nc.createVariable(var['name'],
+                                   var['dtype'],
                                    dimensions=var['dim'],
                                    **self.compression_info)
             self.nc.variables[var['name']].setncatts(var['attr'])
 
-    def write(self, loc_id, data, lon=None, lat=None, alt=None, time=None,
+    def write(self,
+              loc_id,
+              data,
+              lon=None,
+              lat=None,
+              alt=None,
+              time=None,
               **kwargs):
         """
         Write data for specified location ids.
@@ -276,8 +328,8 @@ class PointData(object):
                 sub_md_list = [v.dtype.metadata for v in data.values()]
 
                 # collect dtype info
-                dtype_list = [(str(k), data[k].dtype.str,
-                               data[k].shape) for k in data.keys()]
+                dtype_list = [(str(k), data[k].dtype.str, data[k].shape)
+                              for k in data.keys()]
 
                 # merge metadata info into common dict
                 md_dict = {}
@@ -293,7 +345,7 @@ class PointData(object):
             for var_data in data.dtype.names:
                 if var_data not in self.nc.variables:
                     dtype = data[var_data].dtype
-                    dimensions = (self.obs_dim,)
+                    dimensions = (self.obs_dim, )
 
                     # check if custom metadata is included
                     if data.dtype.metadata is not None:
@@ -301,7 +353,8 @@ class PointData(object):
                         if 'dims' in metadata and var_data in metadata['dims']:
                             dimensions = metadata['dims'][var_data]
 
-                    self.nc.createVariable(var_data, dtype,
+                    self.nc.createVariable(var_data,
+                                           dtype,
                                            dimensions=dimensions,
                                            **self.compression_info)
 
@@ -384,7 +437,6 @@ class PointData(object):
 
 
 class GriddedPointData(GriddedBase):
-
     """
     GriddedPointData class using GriddedBase class as parent and
     PointData as i/o class.
@@ -407,5 +459,9 @@ class GriddedPointData(GriddedBase):
         """
         with PointData(filename, mode='w', **kwargs) as nc:
             for data, gp in self.iter_gp():
-                nc.write(gp, data, lon=data['lon'], lat=data['lat'],
-                         alt=data['alt'], time=data['time'])
+                nc.write(gp,
+                         data,
+                         lon=data['lon'],
+                         lat=data['lat'],
+                         alt=data['alt'],
+                         time=data['time'])
