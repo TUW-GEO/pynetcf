@@ -65,8 +65,7 @@ class PointDataReadWriteTest(unittest.TestCase):
 
         with PointData(self.fn, mode='w', n_obs=5) as nc:
             for loc_id, d1, d2 in zip(loc_ids, data1, data2):
-                nc.write(loc_id, {'var1': np.array(d1),
-                                  'var2': np.array(d2)})
+                nc.write(loc_id, {'var1': np.array(d1), 'var2': np.array(d2)})
 
         with PointData(self.fn) as nc:
             nptest.assert_array_equal(nc['var1'], range(5, 10))
@@ -191,13 +190,17 @@ class PointDataMultiDimRecarrayTest(unittest.TestCase):
         Test support of multi - dimensional arrays using
         numpy.dtype.metadata field from recarray.
         """
-        dim_info = {'dims': {'var': ('obs', 'coef', 'config'),
-                             'var2': ('obs', 'coef', 'doy')}}
+        dim_info = {
+            'dims': {
+                'var': ('obs', 'coef', 'config'),
+                'var2': ('obs', 'coef', 'doy')
+            }
+        }
 
-        data = np.zeros(4, dtype=np.dtype(
-            [('var', np.float32, (3, 13)),
-             ('var2', np.int32, (3, 366))],
-            metadata=dim_info))
+        data = np.zeros(4,
+                        dtype=np.dtype([('var', np.float32, (3, 13)),
+                                        ('var2', np.int32, (3, 366))],
+                                       metadata=dim_info))
 
         add_dims = {'coef': 3, 'config': 13, 'doy': 366}
 
@@ -206,10 +209,10 @@ class PointDataMultiDimRecarrayTest(unittest.TestCase):
 
         with PointData(self.fn) as nc:
             for loc_id in range(4):
-                nptest.assert_array_equal(nc.read(loc_id)['var'],
-                                          data['var'][0])
-                nptest.assert_array_equal(nc.read(loc_id)['var2'],
-                                          data['var2'][0])
+                nptest.assert_array_equal(
+                    nc.read(loc_id)['var'], data['var'][0])
+                nptest.assert_array_equal(
+                    nc.read(loc_id)['var2'], data['var2'][0])
 
 
 class PointDataMultiDimDictTest(unittest.TestCase):
@@ -232,12 +235,12 @@ class PointDataMultiDimDictTest(unittest.TestCase):
         numpy.dtype.metadata field from dictionary.
         """
         dim_info = {'dims': {'var1': ('obs', 'coef', 'config')}}
-        data_var = np.zeros((4, 3, 13), dtype=np.dtype(
-            np.float32, metadata=dim_info))
+        data_var = np.zeros((4, 3, 13),
+                            dtype=np.dtype(np.float32, metadata=dim_info))
 
         dim_info = {'dims': {'var2': ('obs', 'coef', 'doy')}}
-        data_var2 = np.zeros((4, 3, 366), dtype=np.dtype(
-            np.int32, metadata=dim_info))
+        data_var2 = np.zeros((4, 3, 366),
+                             dtype=np.dtype(np.int32, metadata=dim_info))
 
         add_dims = {'coef': 3, 'config': 13, 'doy': 366}
 
@@ -267,7 +270,9 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
         """
         Test writing and reading of gridded PointData.
         """
-        nc = GriddedPointData(self.testdatapath, mode='w', grid=self.grid,
+        nc = GriddedPointData(self.testdatapath,
+                              mode='w',
+                              grid=self.grid,
                               fn_format='{:04d}.nc')
 
         loc_ids = [10, 11, 12]
@@ -279,7 +284,8 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
 
         nc.close()
 
-        nc = GriddedPointData(self.testdatapath, grid=self.grid,
+        nc = GriddedPointData(self.testdatapath,
+                              grid=self.grid,
                               fn_format='{:04d}.nc')
 
         for i, loc_id in enumerate(loc_ids):
@@ -315,7 +321,9 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
         """
         loc_ids = self.gpis
 
-        with GriddedPointData(self.path, mode='w', grid=self.grid,
+        with GriddedPointData(self.path,
+                              mode='w',
+                              grid=self.grid,
                               fn_format='{:04d}.nc') as nc:
 
             for loc_id in loc_ids:

@@ -24,7 +24,6 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Testing base classes of pynetcf.
 """
@@ -49,8 +48,8 @@ class DatasetTest(unittest.TestCase):
 
     def test_write_append_read_1D(self):
 
-        with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w') as self.dataset:
+        with ncbase.Dataset(self.testfilename, file_format='NETCDF4',
+                            mode='w') as self.dataset:
             # create unlimited Dimension
             self.dataset.create_dim('dim', None)
             self.dataset.write_var('test', np.arange(15), dim=('dim'))
@@ -65,18 +64,22 @@ class DatasetTest(unittest.TestCase):
         with ncbase.Dataset(self.testfilename) as self.dataset:
             data = self.dataset.read_var('test')
             nptest.assert_array_equal(
-                data, np.concatenate([np.arange(15), np.arange(15)]))
+                data, np.concatenate([np.arange(15),
+                                      np.arange(15)]))
 
     def test_write_append_read_1D_autmaskscale_enabled(self):
 
-        with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w') as self.dataset:
+        with ncbase.Dataset(self.testfilename, file_format='NETCDF4',
+                            mode='w') as self.dataset:
             # create unlimited Dimension
             self.dataset.create_dim('dim', None)
-            self.dataset.write_var('test', np.arange(15), dim=('dim'),
+            self.dataset.write_var('test',
+                                   np.arange(15),
+                                   dim=('dim'),
                                    attr={"scale_factor": 0.5})
 
-        with ncbase.Dataset(self.testfilename, autoscale=False) as self.dataset:
+        with ncbase.Dataset(self.testfilename,
+                            autoscale=False) as self.dataset:
             data = self.dataset.read_var('test')
             nptest.assert_array_equal(data, np.arange(15) * 2)
 
@@ -86,68 +89,79 @@ class DatasetTest(unittest.TestCase):
         with ncbase.Dataset(self.testfilename) as self.dataset:
             data = self.dataset.read_var('test')
             nptest.assert_array_equal(
-                data, np.concatenate([np.arange(15), np.arange(15)]))
+                data, np.concatenate([np.arange(15),
+                                      np.arange(15)]))
 
     def test_write_append_read_1D_autmaskscale_disabled(self):
 
         with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w',
+                            file_format='NETCDF4',
+                            mode='w',
                             autoscale=False) as self.dataset:
             # create unlimited Dimension
             self.dataset.create_dim('dim', None)
-            self.dataset.write_var('test', np.arange(15), dim=('dim'),
+            self.dataset.write_var('test',
+                                   np.arange(15),
+                                   dim=('dim'),
                                    attr={"scale_factor": 0.5})
 
-        with ncbase.Dataset(self.testfilename, autoscale=False) as self.dataset:
+        with ncbase.Dataset(self.testfilename,
+                            autoscale=False) as self.dataset:
             data = self.dataset.read_var('test')
             nptest.assert_array_equal(data, np.arange(15))
 
-        with ncbase.Dataset(self.testfilename, mode='a', autoscale=False) as self.dataset:
+        with ncbase.Dataset(self.testfilename, mode='a',
+                            autoscale=False) as self.dataset:
             self.dataset.append_var('test', np.arange(15))
 
-        with ncbase.Dataset(self.testfilename, autoscale=False) as self.dataset:
+        with ncbase.Dataset(self.testfilename,
+                            autoscale=False) as self.dataset:
             data = self.dataset.read_var('test')
             nptest.assert_array_equal(
-                data, np.concatenate([np.arange(15), np.arange(15)]))
+                data, np.concatenate([np.arange(15),
+                                      np.arange(15)]))
 
     def test_write_read_2D(self):
 
-        with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w') as self.dataset:
+        with ncbase.Dataset(self.testfilename, file_format='NETCDF4',
+                            mode='w') as self.dataset:
             self.dataset.create_dim('dim1', 15)
             self.dataset.create_dim('dim2', 15)
-            self.dataset.write_var(
-                'test', np.arange(15 * 15).reshape((15, 15)),
-                dim=('dim1', 'dim2'))
+            self.dataset.write_var('test',
+                                   np.arange(15 * 15).reshape((15, 15)),
+                                   dim=('dim1', 'dim2'))
 
         with ncbase.Dataset(self.testfilename) as self.dataset:
             data = self.dataset.read_var('test')
-            nptest.assert_array_equal(
-                data, np.arange(15 * 15).reshape((15, 15)))
+            nptest.assert_array_equal(data,
+                                      np.arange(15 * 15).reshape((15, 15)))
 
     def test_write_append_2D(self):
 
-        with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w') as self.dataset:
+        with ncbase.Dataset(self.testfilename, file_format='NETCDF4',
+                            mode='w') as self.dataset:
             self.dataset.create_dim('dim1', 15)
             self.dataset.create_dim('dim2', None)
-            self.dataset.write_var(
-                'test', np.arange(15 * 15).reshape((15, 15)),
-                dim=('dim1', 'dim2'))
+            self.dataset.write_var('test',
+                                   np.arange(15 * 15).reshape((15, 15)),
+                                   dim=('dim1', 'dim2'))
 
         with ncbase.Dataset(self.testfilename) as self.dataset:
             data = self.dataset.read_var('test')
-            nptest.assert_array_equal(
-                data, np.arange(15 * 15).reshape((15, 15)))
+            nptest.assert_array_equal(data,
+                                      np.arange(15 * 15).reshape((15, 15)))
 
         with ncbase.Dataset(self.testfilename, mode='a') as self.dataset:
             self.dataset.append_var('test', np.arange(15).reshape((15, 1)))
 
         with ncbase.Dataset(self.testfilename) as self.dataset:
             data = self.dataset.read_var('test')
-            nptest.assert_array_equal(data, np.hstack(
-                [np.arange(15 * 15).reshape((15, 15)),
-                 np.arange(15).reshape((15, 1))]))
+            nptest.assert_array_equal(
+                data,
+                np.hstack([
+                    np.arange(15 * 15).reshape((15, 15)),
+                    np.arange(15).reshape((15, 1))
+                ]))
 
 
 if __name__ == "__main__":

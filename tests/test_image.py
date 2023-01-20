@@ -24,7 +24,6 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Testing image classes of pynetcf.
 """
@@ -58,9 +57,11 @@ class ImageStackTests(unittest.TestCase):
         """
         Write/read test.
         """
-        with ncdata.ImageStack(self.testfilename, self.grid,
-                               [datetime(2007, 1, 1),
-                                datetime(2007, 1, 2)], mode="w") as nc:
+        with ncdata.ImageStack(
+                self.testfilename,
+                self.grid,
+            [datetime(2007, 1, 1), datetime(2007, 1, 2)],
+                mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
             nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
 
@@ -90,15 +91,17 @@ class ArrayStackTests(unittest.TestCase):
         """
         Write/read test.
         """
-        with ncdata.ArrayStack(self.testfilename, self.grid,
-                               [datetime(2007, 1, 1),
-                                datetime(2007, 1, 2)], mode="w") as nc:
+        with ncdata.ArrayStack(
+                self.testfilename,
+                self.grid,
+            [datetime(2007, 1, 1), datetime(2007, 1, 2)],
+                mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
             nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
 
-        with ncdata.ArrayStack(self.testfilename, self.grid,
-                               [datetime(2007, 1, 1),
-                                datetime(2007, 1, 2)]) as nc:
+        with ncdata.ArrayStack(
+                self.testfilename, self.grid,
+            [datetime(2007, 1, 1), datetime(2007, 1, 2)]) as nc:
             data = nc[14]
             assert list(data['variable'].values) == [141, 142]
             data = nc[22]
