@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 0.3.0
+=============
+
+- Code refactor of time series classes
+- Add destructor closing files
+- Minor documentation update
+- Fix warnings in tests
+- Update copyright date
+
 Version 0.2.2
 =============
 
