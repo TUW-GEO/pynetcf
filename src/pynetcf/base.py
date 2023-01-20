@@ -24,7 +24,6 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Base classes for reading and writing time series and images in NetCDF files
 using Climate Forecast Metadata Conventions (http://cfconventions.org/).
@@ -40,8 +39,8 @@ import datetime
 class DatasetError(Exception):
     pass
 
-class Dataset:
 
+class Dataset:
     """
     NetCDF file wrapper class that makes some things easier
 
@@ -82,9 +81,15 @@ class Dataset:
         This means Fill Values will be used instead of NaN.
     """
 
-    def __init__(self, filename, name=None, file_format="NETCDF4",
-                 mode='r', zlib=True, complevel=4,
-                 autoscale=True, automask=True):
+    def __init__(self,
+                 filename,
+                 name=None,
+                 file_format="NETCDF4",
+                 mode='r',
+                 zlib=True,
+                 complevel=4,
+                 autoscale=True,
+                 automask=True):
 
         self.dataset_name = name
         self.filename = filename
@@ -109,7 +114,8 @@ class Dataset:
             self._create_file_dir()
 
         try:
-            self.dataset = netCDF4.Dataset(self.filename, self.mode,
+            self.dataset = netCDF4.Dataset(self.filename,
+                                           self.mode,
                                            format=self.file_format)
         except RuntimeError:
             raise IOError("File {} does not exist".format(self.filename))
@@ -153,8 +159,16 @@ class Dataset:
         if name not in self.dataset.dimensions.keys():
             self.dataset.createDimension(name, size=n)
 
-    def write_var(self, name, data=None, dim=None, attr={}, dtype=None,
-                  zlib=None, complevel=None, chunksizes=None, **kwargs):
+    def write_var(self,
+                  name,
+                  data=None,
+                  dim=None,
+                  attr={},
+                  dtype=None,
+                  zlib=None,
+                  complevel=None,
+                  chunksizes=None,
+                  **kwargs):
         """
         Create or overwrite values in a NetCDF variable. The data will be
         written to disk once flush or close is called
@@ -198,10 +212,14 @@ class Dataset:
         if name in self.dataset.variables.keys():
             var = self.dataset.variables[name]
         else:
-            var = self.dataset.createVariable(name, dtype,
-                                              dim, fill_value=fill_value,
-                                              zlib=zlib, complevel=complevel,
-                                              chunksizes=chunksizes, **kwargs)
+            var = self.dataset.createVariable(name,
+                                              dtype,
+                                              dim,
+                                              fill_value=fill_value,
+                                              zlib=zlib,
+                                              complevel=complevel,
+                                              chunksizes=chunksizes,
+                                              **kwargs)
 
         for attr_name in attr:
             attr_value = attr[attr_name]
