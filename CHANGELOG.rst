@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 0.4.0
+=============
+
+- Replace read_ts, write_ts with read, write
+- Replace read_all_ts with read_all
+- Replace write_ts_all_loc with write_all
+- Pep8 fix
+
 Version 0.3.0
 =============
 

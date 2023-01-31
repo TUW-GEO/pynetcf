@@ -236,7 +236,7 @@ class DatasetTs(Dataset, ABC):
         self.write_var(self.loc_descr_name,
                        data=None,
                        dim=self.loc_dim_name,
-                       dtype=str)#"np.dtype("S30"))
+                       dtype=str)
 
         # initialize time variable
         self.write_var(self.time_var,
