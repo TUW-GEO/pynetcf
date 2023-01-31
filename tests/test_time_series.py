@@ -58,7 +58,7 @@ def test_open_non_existing_file():
 class OrthoMultiTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), "test.nc")
 
 
 #    def tearDown(self):
@@ -66,25 +66,25 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_io_simple(self):
 
-        with OrthoMultiTs(self.testfilename, mode='w', n_loc=3) as dataset:
+        with OrthoMultiTs(self.testfilename, mode="w", n_loc=3) as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
 
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=0,
                                   lat=0,
                                   alt=5)
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(2)
-            nptest.assert_array_equal(data['test'], np.arange(5))
+            nptest.assert_array_equal(data["test"], np.arange(5))
 
             test_dates = []
             for n_data in [5]:
@@ -93,22 +93,22 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_io_reading_non_existing_point(self):
 
-        with OrthoMultiTs(self.testfilename, mode='w', n_loc=3) as dataset:
+        with OrthoMultiTs(self.testfilename, mode="w", n_loc=3) as dataset:
             for n_data in [5]:
                 for location in [1, 2, 6]:
 
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=0,
                                   lat=0,
                                   alt=5)
@@ -119,11 +119,11 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_io_2_steps(self):
 
-        with OrthoMultiTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=3, mode="w") as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
 
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
@@ -131,32 +131,32 @@ class OrthoMultiTest(unittest.TestCase):
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=0,
                                   lat=0,
                                   alt=5,
-                                  fill_values={'test': -1})
+                                  fill_values={"test": -1})
 
-        with OrthoMultiTs(self.testfilename, n_loc=3, mode='a') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=3, mode="a") as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
 
-                    data = {'test': np.arange(n_data) + n_data}
+                    data = {"test": np.arange(n_data) + n_data}
                     base = datetime(2007, 2, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=0,
                                   lat=0,
                                   alt=5,
-                                  fill_values={'test': -1})
+                                  fill_values={"test": -1})
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(2)
-            nptest.assert_array_equal(data['test'], np.arange(10))
+            nptest.assert_array_equal(data["test"], np.arange(10))
 
             test_dates = []
             for n_data in [5]:
@@ -169,18 +169,18 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_write_all(self):
 
-        with OrthoMultiTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=3, mode="w") as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
-            data = {'test': np.arange(n_data * 3).reshape(3, n_data)}
+            data = {"test": np.arange(n_data * 3).reshape(3, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array(
                 [base + timedelta(hours=i) for i in range(n_data)])
-            descriptions = np.repeat([str('station')], 3).tolist()
+            descriptions = np.repeat([str("station")], 3).tolist()
 
             dataset.write_all(locations,
                               data,
@@ -192,7 +192,7 @@ class OrthoMultiTest(unittest.TestCase):
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(2)
-            nptest.assert_array_equal(data['test'], np.arange(5) + 5)
+            nptest.assert_array_equal(data["test"], np.arange(5) + 5)
             test_dates = []
             for n_data in [5]:
                 base = datetime(2007, 1, n_data)
@@ -200,18 +200,18 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_write_all_1_location(self):
 
-        with OrthoMultiTs(self.testfilename, n_loc=1, mode='w') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=1, mode="w") as dataset:
             n_data = 5
             locations = np.array([1])
-            data = {'test': np.arange(n_data).reshape(1, n_data)}
+            data = {"test": np.arange(n_data).reshape(1, n_data)}
             base = datetime(2007, 1, n_data)
             dates = np.array(
                 [base + timedelta(hours=i) for i in range(n_data)])
-            descriptions = np.repeat([str('station')], 1).tolist()
+            descriptions = np.repeat([str("station")], 1).tolist()
 
             dataset.write_all(locations,
                               data,
@@ -223,7 +223,7 @@ class OrthoMultiTest(unittest.TestCase):
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
-            nptest.assert_array_equal(data['test'], np.arange(5))
+            nptest.assert_array_equal(data["test"], np.arange(5))
             test_dates = []
             for n_data in [5]:
                 base = datetime(2007, 1, n_data)
@@ -231,21 +231,21 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_write_all_attributes(self):
 
-        with OrthoMultiTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=3, mode="w") as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
             data = {
-                'test': np.arange(n_data * 3).reshape(3, n_data),
-                'test2': np.arange(n_data * 3).reshape(3, n_data)
+                "test": np.arange(n_data * 3).reshape(3, n_data),
+                "test2": np.arange(n_data * 3).reshape(3, n_data)
             }
             base = datetime(2007, 1, n_data)
             dates = np.array(
                 [base + timedelta(hours=i) for i in range(n_data)])
-            descriptions = np.repeat([str('station')], 3).tolist()
+            descriptions = np.repeat([str("station")], 3).tolist()
 
             dataset.write_all(locations,
                               data,
@@ -254,15 +254,15 @@ class OrthoMultiTest(unittest.TestCase):
                               lons=np.arange(3),
                               lats=np.arange(3),
                               alts=np.arange(3),
-                              attributes={'testattribute': 'teststring'})
+                              attributes={"testattribute": "teststring"})
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(2)
-            nptest.assert_array_equal(data['test'], np.arange(5) + 5)
+            nptest.assert_array_equal(data["test"], np.arange(5) + 5)
             assert dataset.dataset.variables[
-                'test'].testattribute == 'teststring'
+                "test"].testattribute == "teststring"
             assert dataset.dataset.variables[
-                'test2'].testattribute == 'teststring'
+                "test2"].testattribute == "teststring"
             test_dates = []
             for n_data in [5]:
                 base = datetime(2007, 1, n_data)
@@ -270,24 +270,24 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_write_attributes_for_each(self):
         """
         test writing two datasets with attributes for each dataset
         """
 
-        with OrthoMultiTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with OrthoMultiTs(self.testfilename, n_loc=3, mode="w") as dataset:
             n_data = 5
             locations = np.array([1, 2, 3])
             data = {
-                'test': np.arange(n_data * 3).reshape(3, n_data),
-                'test2': np.arange(n_data * 3).reshape(3, n_data)
+                "test": np.arange(n_data * 3).reshape(3, n_data),
+                "test2": np.arange(n_data * 3).reshape(3, n_data)
             }
             base = datetime(2007, 1, n_data)
             dates = np.array(
                 [base + timedelta(hours=i) for i in range(n_data)])
-            descriptions = np.repeat([str('station')], 3).tolist()
+            descriptions = np.repeat([str("station")], 3).tolist()
 
             dataset.write_all(locations,
                               data,
@@ -297,21 +297,21 @@ class OrthoMultiTest(unittest.TestCase):
                               lats=np.arange(3),
                               alts=np.arange(3),
                               attributes={
-                                  'test': {
-                                      'testattribute': 'teststring'
+                                  "test": {
+                                      "testattribute": "teststring"
                                   },
-                                  'test2': {
-                                      'testattribute2': 'teststring2'
+                                  "test2": {
+                                      "testattribute2": "teststring2"
                                   }
                               })
 
         with OrthoMultiTs(self.testfilename) as dataset:
             data = dataset.read_all(2)
-            nptest.assert_array_equal(data['test'], np.arange(5) + 5)
+            nptest.assert_array_equal(data["test"], np.arange(5) + 5)
             assert dataset.dataset.variables[
-                'test'].testattribute == 'teststring'
+                "test"].testattribute == "teststring"
             assert dataset.dataset.variables[
-                'test2'].testattribute2 == 'teststring2'
+                "test2"].testattribute2 == "teststring2"
             test_dates = []
             for n_data in [5]:
                 base = datetime(2007, 1, n_data)
@@ -319,13 +319,13 @@ class OrthoMultiTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
 
 class DatasetContiguousTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         os.remove(self.testfilename)
@@ -338,34 +338,34 @@ class DatasetContiguousTest(unittest.TestCase):
              datetime(2007, 3, 1)])
 
         with ContiguousRaggedTs(self.testfilename, n_loc=3, n_obs=9,
-                                mode='w') as dataset:
-            data = {'test': np.arange(3)}
+                                mode="w") as dataset:
+            data = {"test": np.arange(3)}
             dataset.write(1,
                           data,
                           dates,
-                          loc_descr='first station',
+                          loc_descr="first station",
                           lon=1,
                           lat=1,
                           alt=1)
             dataset.write(2,
                           data,
                           dates,
-                          loc_descr='second station',
+                          loc_descr="second station",
                           lon=2,
                           lat=2,
                           alt=2)
             dataset.write(3,
                           data,
                           dates,
-                          loc_descr='third station',
+                          loc_descr="third station",
                           lon=3,
                           lat=3,
                           alt=3)
 
         with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
-            nptest.assert_array_equal(data['test'], np.arange(3))
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["test"], np.arange(3))
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_unlim_obs_file_writing(self):
 
@@ -375,34 +375,34 @@ class DatasetContiguousTest(unittest.TestCase):
              datetime(2007, 3, 1)])
 
         with ContiguousRaggedTs(self.testfilename, n_loc=3,
-                                mode='w') as dataset:
-            data = {'test': np.arange(3)}
+                                mode="w") as dataset:
+            data = {"test": np.arange(3)}
             dataset.write(1,
                           data,
                           dates,
-                          loc_descr='first station',
+                          loc_descr="first station",
                           lon=1,
                           lat=1,
                           alt=1)
             dataset.write(2,
                           data,
                           dates,
-                          loc_descr='second station',
+                          loc_descr="second station",
                           lon=2,
                           lat=2,
                           alt=2)
             dataset.write(3,
                           data,
                           dates,
-                          loc_descr='third station',
+                          loc_descr="third station",
                           lon=3,
                           lat=3,
                           alt=3)
 
         with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
-            nptest.assert_array_equal(data['test'], np.arange(3))
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["test"], np.arange(3))
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_unlim_loc_file_writing(self):
 
@@ -411,57 +411,57 @@ class DatasetContiguousTest(unittest.TestCase):
              datetime(2007, 2, 1),
              datetime(2007, 3, 1)])
 
-        with ContiguousRaggedTs(self.testfilename, mode='w') as dataset:
-            data = {'test': np.arange(3)}
+        with ContiguousRaggedTs(self.testfilename, mode="w") as dataset:
+            data = {"test": np.arange(3)}
             dataset.write(1,
                           data,
                           dates,
-                          loc_descr='first station',
+                          loc_descr="first station",
                           lon=1,
                           lat=1,
                           alt=1)
             dataset.write(2,
                           data,
                           dates,
-                          loc_descr='second station',
+                          loc_descr="second station",
                           lon=2,
                           lat=2,
                           alt=2)
             dataset.write(3,
                           data,
                           dates,
-                          loc_descr='third station',
+                          loc_descr="third station",
                           lon=3,
                           lat=3,
                           alt=3)
 
         with ContiguousRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
-            nptest.assert_array_equal(data['test'], np.arange(3))
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["test"], np.arange(3))
+            nptest.assert_array_equal(data["time"], dates)
 
 
 class DatasetIndexedTest(unittest.TestCase):
 
     def setUp(self):
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         os.remove(self.testfilename)
 
     def test_file_writing(self):
 
-        with IndexedRaggedTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=3, mode="w") as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=location,
                                   lat=location,
                                   alt=location)
@@ -469,7 +469,7 @@ class DatasetIndexedTest(unittest.TestCase):
         with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
             nptest.assert_array_equal(
-                data['test'],
+                data["test"],
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)]))
@@ -480,7 +480,7 @@ class DatasetIndexedTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_writing_multiple_points_at_once(self):
         """
@@ -489,10 +489,10 @@ class DatasetIndexedTest(unittest.TestCase):
         locations. This mean we only need to translate from locations to index
         and can write the data as is.
         """
-        with IndexedRaggedTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=3, mode="w") as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {
-                'test':
+                "test":
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)])
@@ -507,7 +507,7 @@ class DatasetIndexedTest(unittest.TestCase):
             dataset.write(locations,
                           data,
                           dates,
-                          loc_descr=['first station'] * 13,
+                          loc_descr=["first station"] * 13,
                           lon=locations,
                           lat=locations,
                           alt=locations)
@@ -515,23 +515,23 @@ class DatasetIndexedTest(unittest.TestCase):
         with IndexedRaggedTs(self.testfilename) as dataset:
             for gpis, n_data in zip([1, 2, 3], [2, 5, 6]):
                 data = dataset.read_all(gpis)
-                nptest.assert_array_equal(data['test'], np.arange(n_data))
+                nptest.assert_array_equal(data["test"], np.arange(n_data))
                 test_dates = []
                 base = datetime(2007, 1, n_data)
                 test_dates.append(
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
                 dates = np.concatenate(test_dates)
-                nptest.assert_array_equal(data['time'], dates)
+                nptest.assert_array_equal(data["time"], dates)
 
     def test_file_writing_multiple_points_at_once_two_steps(self):
         """
         Write multiple points at once. Add more during an append.
         """
-        with IndexedRaggedTs(self.testfilename, n_loc=4, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=4, mode="w") as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {
-                'test':
+                "test":
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)])
@@ -546,14 +546,14 @@ class DatasetIndexedTest(unittest.TestCase):
             dataset.write(locations,
                           data,
                           dates,
-                          loc_descr=['first station'] * 13,
+                          loc_descr=["first station"] * 13,
                           lon=locations,
                           lat=locations,
                           alt=locations)
 
-        with IndexedRaggedTs(self.testfilename, n_loc=4, mode='a') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=4, mode="a") as dataset:
             locations = np.array([1, 1, 4, 4])
-            data = {'test': np.concatenate([np.arange(2), np.arange(2)])}
+            data = {"test": np.concatenate([np.arange(2), np.arange(2)])}
             dates = []
             for n_data in [2, 2]:
                 base = datetime(2007, 2, n_data)
@@ -564,7 +564,7 @@ class DatasetIndexedTest(unittest.TestCase):
             dataset.write(locations,
                           data,
                           dates,
-                          loc_descr=['first station'] * 4,
+                          loc_descr=["first station"] * 4,
                           lon=locations,
                           lat=locations,
                           alt=locations)
@@ -575,11 +575,11 @@ class DatasetIndexedTest(unittest.TestCase):
                 data = dataset.read_all(gpis)
                 if gpis == 1:
                     nptest.assert_array_equal(
-                        data['test'],
+                        data["test"],
                         np.concatenate([np.arange(n_data),
                                         np.arange(n_data)]))
                 else:
-                    nptest.assert_array_equal(data['test'], np.arange(n_data))
+                    nptest.assert_array_equal(data["test"], np.arange(n_data))
                 test_dates = []
                 base = datetime(2007, base_month, n_data)
                 test_dates.append(
@@ -593,17 +593,17 @@ class DatasetIndexedTest(unittest.TestCase):
                         ]))
 
                 dates = np.concatenate(test_dates)
-                nptest.assert_array_equal(data['time'], dates)
+                nptest.assert_array_equal(data["time"], dates)
 
     def test_file_writing_multiple_points_at_once_two_steps_recarray_input(
             self):
         """
         Write multiple points at once. Add more during an append. Use record arrays as input.
         """
-        with IndexedRaggedTs(self.testfilename, n_loc=4, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=4, mode="w") as dataset:
             locations = np.array([1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3])
             data = {
-                'test':
+                "test":
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)])
@@ -615,22 +615,22 @@ class DatasetIndexedTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(dates)
-            data = np.array(data['test'],
+            data = np.array(data["test"],
                             dtype={
-                                'names': ['test'],
-                                'formats': ['i8']
+                                "names": ["test"],
+                                "formats": ["i8"]
                             })
             dataset.write(locations,
                           data,
                           dates,
-                          loc_descr=['first station'] * 13,
+                          loc_descr=["first station"] * 13,
                           lon=locations,
                           lat=locations,
                           alt=locations)
 
-        with IndexedRaggedTs(self.testfilename, n_loc=4, mode='a') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=4, mode="a") as dataset:
             locations = np.array([1, 1, 4, 4])
-            data = {'test': np.concatenate([np.arange(2), np.arange(2)])}
+            data = {"test": np.concatenate([np.arange(2), np.arange(2)])}
             dates = []
             for n_data in [2, 2]:
                 base = datetime(2007, 2, n_data)
@@ -639,15 +639,15 @@ class DatasetIndexedTest(unittest.TestCase):
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(dates)
 
-            data = np.array(data['test'],
+            data = np.array(data["test"],
                             dtype={
-                                'names': ['test'],
-                                'formats': ['i8']
+                                "names": ["test"],
+                                "formats": ["i8"]
                             })
             dataset.write(locations,
                           data,
                           dates,
-                          loc_descr=['first station'] * 4,
+                          loc_descr=["first station"] * 4,
                           lon=locations,
                           lat=locations,
                           alt=locations)
@@ -658,11 +658,11 @@ class DatasetIndexedTest(unittest.TestCase):
                 data = dataset.read_all(gpis)
                 if gpis == 1:
                     nptest.assert_array_equal(
-                        data['test'],
+                        data["test"],
                         np.concatenate([np.arange(n_data),
                                         np.arange(n_data)]))
                 else:
-                    nptest.assert_array_equal(data['test'], np.arange(n_data))
+                    nptest.assert_array_equal(data["test"], np.arange(n_data))
                 test_dates = []
                 base = datetime(2007, base_month, n_data)
                 test_dates.append(
@@ -676,21 +676,21 @@ class DatasetIndexedTest(unittest.TestCase):
                         ]))
 
                 dates = np.concatenate(test_dates)
-                nptest.assert_array_equal(data['time'], dates)
+                nptest.assert_array_equal(data["time"], dates)
 
     def test_unlim_loc_file_writing(self):
 
-        with IndexedRaggedTs(self.testfilename, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, mode="w") as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=location,
                                   lat=location,
                                   alt=location)
@@ -698,7 +698,7 @@ class DatasetIndexedTest(unittest.TestCase):
         with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
             nptest.assert_array_equal(
-                data['test'],
+                data["test"],
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)]))
@@ -709,33 +709,33 @@ class DatasetIndexedTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
     def test_file_writing_with_attributes(self):
 
-        with IndexedRaggedTs(self.testfilename, n_loc=3, mode='w') as dataset:
+        with IndexedRaggedTs(self.testfilename, n_loc=3, mode="w") as dataset:
             for n_data in [2, 5, 6]:
                 for location in [1, 2, 3]:
 
-                    data = {'test': np.arange(n_data)}
+                    data = {"test": np.arange(n_data)}
                     base = datetime(2007, 1, n_data)
                     dates = np.array(
                         [base + timedelta(hours=i) for i in range(n_data)])
                     dataset.write(location,
                                   data,
                                   dates,
-                                  loc_descr='first station',
+                                  loc_descr="first station",
                                   lon=0,
                                   lat=0,
                                   alt=5,
-                                  attributes={'testattribute': 'teststring'})
+                                  attributes={"testattribute": "teststring"})
 
         with IndexedRaggedTs(self.testfilename) as dataset:
             data = dataset.read_all(1)
             assert dataset.dataset.variables[
-                'test'].testattribute == 'teststring'
+                "test"].testattribute == "teststring"
             nptest.assert_array_equal(
-                data['test'],
+                data["test"],
                 np.concatenate([np.arange(2),
                                 np.arange(5),
                                 np.arange(6)]))
@@ -747,14 +747,14 @@ class DatasetIndexedTest(unittest.TestCase):
                     np.array(
                         [base + timedelta(hours=i) for i in range(n_data)]))
             dates = np.concatenate(test_dates)
-            nptest.assert_array_equal(data['time'], dates)
+            nptest.assert_array_equal(data["time"], dates)
 
 
 class DatasetGriddedTsTests(unittest.TestCase):
 
     def setUp(self):
         self.testdatapath = os.path.join(mkdtemp())
-        self.testfilename = os.path.join(self.testdatapath, '0107.nc')
+        self.testfilename = os.path.join(self.testdatapath, "0107.nc")
         self.grid = grids.genreg_grid().to_cell_grid()
 
 
@@ -769,28 +769,28 @@ class DatasetGriddedTsTests(unittest.TestCase):
                                       offsets=None,
                                       automask=True):
 
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        dates = pd.date_range(start="2007-01-01", end="2007-02-01")
 
         ts = pd.DataFrame(
             {
-                'var1': np.arange(len(dates)),
-                'var2': np.arange(len(dates))
+                "var1": np.arange(len(dates)),
+                "var2": np.arange(len(dates))
             },
             index=dates)
 
         attributes = {
-            'var1': {
-                'testattribute': 'teststring',
-                'scale_factor': 0.5
+            "var1": {
+                "testattribute": "teststring",
+                "scale_factor": 0.5
             },
-            'var2': {
-                'testattribute2': 'teststring2'
+            "var2": {
+                "testattribute2": "teststring2"
             }
         }
 
         dataset = ioclass(self.testdatapath,
                           IndexedRaggedTs,
-                          mode='w',
+                          mode="w",
                           grid=self.grid,
                           autoscale=autoscale)
         for gpi in [10, 11, 12, 18, 19, 20]:
@@ -798,13 +798,13 @@ class DatasetGriddedTsTests(unittest.TestCase):
                              ts,
                              attributes=attributes,
                              fill_values={
-                                 'var1': 5,
-                                 'var2': 5
+                                 "var1": 5,
+                                 "var2": 5
                              })
 
         dataset = ioclass(self.testdatapath,
                           IndexedRaggedTs,
-                          mode='a',
+                          mode="a",
                           grid=self.grid,
                           autoscale=autoscale)
         for gpi in [13, 10]:
@@ -825,12 +825,12 @@ class DatasetGriddedTsTests(unittest.TestCase):
             if automask:
                 dtype = np.float32
             ts_should = {
-                'var1': np.arange(len(dates), dtype=dtype),
-                'var2': np.arange(len(dates), dtype=dtype)
+                "var1": np.arange(len(dates), dtype=dtype),
+                "var2": np.arange(len(dates), dtype=dtype)
             }
             if automask:
-                ts_should['var1'][5] = np.nan
-                ts_should['var2'][5] = np.nan
+                ts_should["var1"][5] = np.nan
+                ts_should["var2"][5] = np.nan
 
             if dtypes is not None:
                 for dtype_column in dtypes:
@@ -848,13 +848,13 @@ class DatasetGriddedTsTests(unittest.TestCase):
                     if offset_column in ts.columns:
                         ts_should[offset_column] += offsets[offset_column]
 
-            nptest.assert_array_equal(ts['var1'], ts_should['var1'])
-            nptest.assert_array_equal(ts['var2'], ts_should['var2'])
+            nptest.assert_array_equal(ts["var1"], ts_should["var1"])
+            nptest.assert_array_equal(ts["var2"], ts_should["var2"])
 
     def _test_writing_with_attributes_prepared_classes(
             self,
             ioclass,
-            parameters=['var1', 'var2'],
+            parameters=["var1", "var2"],
             read_bulk=False,
             dtypes=None,
             scale_factors=None,
@@ -862,27 +862,27 @@ class DatasetGriddedTsTests(unittest.TestCase):
             automask=True,
             autoscale=True):
 
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        dates = pd.date_range(start="2007-01-01", end="2007-02-01")
 
         ts = pd.DataFrame(
             {
-                'var1': np.arange(len(dates)),
-                'var2': np.arange(len(dates))
+                "var1": np.arange(len(dates)),
+                "var2": np.arange(len(dates))
             },
             index=dates)
 
         attributes = {
-            'var1': {
-                'testattribute': 'teststring'
+            "var1": {
+                "testattribute": "teststring"
             },
-            'var2': {
-                'testattribute2': 'teststring2'
+            "var2": {
+                "testattribute2": "teststring2"
             }
         }
 
         dataset = ioclass(self.testdatapath,
                           self.grid,
-                          mode='w',
+                          mode="w",
                           ioclass_kws={"read_bulk": read_bulk},
                           autoscale=autoscale)
         for gpi in [10, 11, 12, 14, 15, 16, 18]:
@@ -890,13 +890,13 @@ class DatasetGriddedTsTests(unittest.TestCase):
                           ts,
                           attributes=attributes,
                           fill_values={
-                              'var1': 5,
-                              'var2': 5
+                              "var1": 5,
+                              "var2": 5
                           })
 
         dataset = ioclass(self.testdatapath,
                           self.grid,
-                          mode='a',
+                          mode="a",
                           ioclass_kws={"read_bulk": read_bulk},
                           autoscale=autoscale)
         for gpi in [13, 10]:
@@ -904,7 +904,7 @@ class DatasetGriddedTsTests(unittest.TestCase):
 
         dataset = ioclass(self.testdatapath,
                           self.grid,
-                          mode='r',
+                          mode="r",
                           ioclass_kws={"read_bulk": read_bulk},
                           parameters=parameters,
                           autoscale=autoscale,
@@ -919,12 +919,12 @@ class DatasetGriddedTsTests(unittest.TestCase):
             if automask:
                 dtype = np.float32
             ts_should = {
-                'var1': np.arange(len(dates), dtype=dtype),
-                'var2': np.arange(len(dates), dtype=dtype)
+                "var1": np.arange(len(dates), dtype=dtype),
+                "var2": np.arange(len(dates), dtype=dtype)
             }
             if automask:
-                ts_should['var1'][5] = np.nan
-                ts_should['var2'][5] = np.nan
+                ts_should["var1"][5] = np.nan
+                ts_should["var2"][5] = np.nan
 
             if dtypes is not None:
                 for dtype_column in dtypes:
@@ -972,67 +972,67 @@ class DatasetGriddedTsTests(unittest.TestCase):
     def test_writing_GriddedContigious_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcContiguousRaggedTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             automask=False)
 
     def test_writing_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcIndexedRaggedTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             automask=False)
 
     def test_writing_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcOrthoMultiTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             automask=False)
 
     def test_writing_parameters_GriddedContigious_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            GriddedNcContiguousRaggedTs, read_bulk=True, parameters=['var1'])
+            GriddedNcContiguousRaggedTs, read_bulk=True, parameters=["var1"])
 
     def test_writing_parameters_GriddedIndexed_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            GriddedNcIndexedRaggedTs, read_bulk=True, parameters=['var1'])
+            GriddedNcIndexedRaggedTs, read_bulk=True, parameters=["var1"])
 
     def test_writing_parameters_GriddedOrthoMulti_read_bulk(self):
         self._test_writing_with_attributes_prepared_classes(
-            GriddedNcOrthoMultiTs, read_bulk=True, parameters=['var1'])
+            GriddedNcOrthoMultiTs, read_bulk=True, parameters=["var1"])
 
     def test_writing_parameters_GriddedContigious_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcContiguousRaggedTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             autoscale=False,
-            parameters=['var1'],
+            parameters=["var1"],
             automask=False)
 
     def test_writing_parameters_GriddedIndexed_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcIndexedRaggedTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             autoscale=False,
-            parameters=['var1'],
+            parameters=["var1"],
             automask=False)
 
     def test_writing_parameters_GriddedOrthoMulti_conversion(self):
         self._test_writing_with_attributes_prepared_classes(
             GriddedNcOrthoMultiTs,
-            dtypes={'var1': np.ubyte},
-            offsets={'var1': 10},
-            scale_factors={'var1': 2},
+            dtypes={"var1": np.ubyte},
+            offsets={"var1": 10},
+            scale_factors={"var1": 2},
             autoscale=False,
-            parameters=['var1'],
+            parameters=["var1"],
             automask=False)
 
     def test_writing_parameters_GriddedContigious_autoscale_false(self):
@@ -1056,8 +1056,8 @@ class GriddedNcTsTests(unittest.TestCase):
         """
         self.testdatapath = os.path.join(mkdtemp())
         self.testfilenames = [
-            os.path.join(self.testdatapath, '0035.nc'),
-            os.path.join(self.testdatapath, '0107.nc')
+            os.path.join(self.testdatapath, "0035.nc"),
+            os.path.join(self.testdatapath, "0107.nc")
         ]
 
         self.gpis = [1, 10, 11, 12]
@@ -1078,19 +1078,19 @@ class GriddedNcTsTests(unittest.TestCase):
         Test whether the number of location is correctly reset if the cell
         needs to be changed within a loop of grid points.
         """
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        dates = pd.date_range(start="2007-01-01", end="2007-02-01")
 
         ts = pd.DataFrame(
             {
-                'var1': np.arange(len(dates)),
-                'var2': np.arange(len(dates))
+                "var1": np.arange(len(dates)),
+                "var2": np.arange(len(dates))
             },
             index=dates)
 
         dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                               self.grid,
-                                              mode='w')
-        fill_values = {'var1': 5, 'var2': 5}
+                                              mode="w")
+        fill_values = {"var1": 5, "var2": 5}
 
         for gpi in self.gpis:
             dataset.write(gpi, ts, fill_values=fill_values)
@@ -1103,7 +1103,7 @@ class GriddedNcTsTests(unittest.TestCase):
             warnings.simplefilter("ignore")
             dataset = GriddedNcContiguousRaggedTs(mkdtemp(),
                                                   self.grid,
-                                                  mode='r')
+                                                  mode="r")
 
             for gpi in self.gpis:
                 ts = dataset.read(gpi)
@@ -1113,34 +1113,34 @@ class GriddedNcTsTests(unittest.TestCase):
         """
         Test if integer datatype is correctly written into NetCDF file.
         """
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        dates = pd.date_range(start="2007-01-01", end="2007-02-01")
 
         ts = pd.DataFrame(
             {
-                'var1': np.arange(len(dates), dtype=np.int8),
-                'var2': np.arange(len(dates), dtype=np.int16),
-                'var3': np.arange(len(dates), dtype=np.int32),
-                'var4': np.arange(len(dates), dtype=np.int64)
+                "var1": np.arange(len(dates), dtype=np.int8),
+                "var2": np.arange(len(dates), dtype=np.int16),
+                "var3": np.arange(len(dates), dtype=np.int32),
+                "var4": np.arange(len(dates), dtype=np.int64)
             },
             index=dates)
 
         dataset_w = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                 self.grid,
-                                                mode='w')
+                                                mode="w")
 
         for gpi in self.gpis:
             dataset_w.write(gpi, ts)
 
         dataset_r = GriddedNcContiguousRaggedTs(self.testdatapath,
                                                 self.grid,
-                                                mode='r')
+                                                mode="r")
 
         for gpi in self.gpis:
             arr = dataset_r.read(gpi)
-            assert (arr['var1'].dtype == np.int8)
-            assert (arr['var2'].dtype == np.int16)
-            assert (arr['var3'].dtype == np.int32)
-            assert (arr['var4'].dtype == np.int64)
+            assert (arr["var1"].dtype == np.int8)
+            assert (arr["var2"].dtype == np.int16)
+            assert (arr["var3"].dtype == np.int32)
+            assert (arr["var4"].dtype == np.int64)
 
 
 class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
@@ -1150,7 +1150,7 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
         Create grid and temporary location for files.
         """
         self.testdatapath = os.path.join(mkdtemp())
-        self.testfilenames = [os.path.join(self.testdatapath, '0001.nc')]
+        self.testfilenames = [os.path.join(self.testdatapath, "0001.nc")]
 
         self.gpis = [1, 10, 11, 12]
         self.lons = [0, 0, 1, 1]
@@ -1171,19 +1171,19 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
         """
         Test whether None is returned if a non existing gpi is read.
         """
-        dates = pd.date_range(start='2007-01-01', end='2007-02-01')
+        dates = pd.date_range(start="2007-01-01", end="2007-02-01")
 
         ts = pd.DataFrame(
             {
-                'var1': np.arange(len(dates)),
-                'var2': np.arange(len(dates))
+                "var1": np.arange(len(dates)),
+                "var2": np.arange(len(dates))
             },
             index=dates)
 
         dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                               self.grid,
-                                              mode='w')
-        fill_values = {'var1': 5, 'var2': 5}
+                                              mode="w")
+        fill_values = {"var1": 5, "var2": 5}
 
         for gpi in [1, 10, 12]:
             dataset.write(gpi, ts, fill_values=fill_values)
@@ -1192,9 +1192,9 @@ class GriddedNcTsTestsSimpleGrid(unittest.TestCase):
 
         dataset = GriddedNcContiguousRaggedTs(self.testdatapath,
                                               self.grid,
-                                              mode='r')
+                                              mode="r")
         data = dataset.read(1)
         nptest.assert_array_equal(data.columns.values,
-                                  np.array([u'var1', u'var2'], dtype=object))
+                                  np.array([u"var1", u"var2"], dtype=object))
         with pytest.raises(IOError):
             data = dataset.read(11)

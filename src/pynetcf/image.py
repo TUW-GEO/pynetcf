@@ -45,17 +45,17 @@ class ArrayStack(OrthoMultiTs):
     array representation netCDF files.
     """
 
-    def __init__(self, filename, grid=None, times=None, mode='r', name=''):
+    def __init__(self, filename, grid=None, times=None, mode="r", name=""):
         self.grid = grid
         self.filename = filename
         self.times = times
         self.variables = []
-        self.time_var = 'time'
+        self.time_var = "time"
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
 
-        if mode in ['a', 'r']:
+        if mode in ["a", "r"]:
             super(ArrayStack, self).__init__(filename,
                                              name=name,
                                              mode=mode,
@@ -63,7 +63,7 @@ class ArrayStack(OrthoMultiTs):
             self._load_grid()
             self._load_times()
 
-        if mode == 'w':
+        if mode == "w":
             if grid is None:
                 raise IOError("grid needs to be defined")
 
@@ -91,7 +91,7 @@ class ArrayStack(OrthoMultiTs):
         """
         Load time stamps.
         """
-        self.times = netCDF4.num2date(self.dataset.variables['time'][:],
+        self.times = netCDF4.num2date(self.dataset.variables["time"][:],
                                       self.time_units)
 
     def write(self, gpi, data):
@@ -168,23 +168,23 @@ class ImageStack(Dataset):
     Class for writing stacks of 2D images into NetCDF.
     """
 
-    def __init__(self, filename, grid=None, times=None, mode='r', name=''):
+    def __init__(self, filename, grid=None, times=None, mode="r", name=""):
         self.grid = grid
         self.filename = filename
         self.times = times
         self.variables = []
-        self.time_var = 'time'
+        self.time_var = "time"
         self.time_units = "days since 1900-01-01"
         self.time_chunksize = 1
         self.lon_chunksize = 1
         self.lat_chunksize = self.grid.lat2d.shape[1]
         super(ImageStack, self).__init__(filename, name=name, mode=mode)
 
-        if self.mode == 'w':
+        if self.mode == "w":
             self._init_dimensions()
             self._init_time()
             self._init_location_variables()
-        elif self.mode in ['a', 'r']:
+        elif self.mode in ["a", "r"]:
             self._load_grid()
             self._load_variables()
 
@@ -192,16 +192,16 @@ class ImageStack(Dataset):
         """
         Initialize dimensions.
         """
-        self.create_dim('lon', self.grid.lon2d.shape[0])
-        self.create_dim('lat', self.grid.lat2d.shape[1])
-        self.create_dim('time', len(self.times))
+        self.create_dim("lon", self.grid.lon2d.shape[0])
+        self.create_dim("lat", self.grid.lat2d.shape[1])
+        self.create_dim("time", len(self.times))
 
     def _load_grid(self):
         """
         Load grid.
         """
-        lons = self.dataset.variables['lon'][:]
-        lats = self.dataset.variables['lat'][:]
+        lons = self.dataset.variables["lon"][:]
+        lats = self.dataset.variables["lat"][:]
         self.grid = grids.gridfromdims(lons, lats)
 
     def _load_variables(self):
@@ -209,15 +209,15 @@ class ImageStack(Dataset):
         Load variables.
         """
         for var in self.dataset.variables:
-            if self.dataset.variables[var].dimensions == ('time', 'lat',
-                                                          'lon'):
+            if self.dataset.variables[var].dimensions == ("time", "lat",
+                                                          "lon"):
                 self.variables.append(var)
 
     def _load_times(self):
         """
         Load time stamps.
         """
-        self.times = netCDF4.num2date(self.dataset.variables['time'][:],
+        self.times = netCDF4.num2date(self.dataset.variables["time"][:],
                                       self.time_units)
 
     def _init_time(self):
@@ -228,11 +228,11 @@ class ImageStack(Dataset):
         time_data = netCDF4.date2num(self.times, self.time_units)
         self.write_var(self.time_var,
                        data=time_data,
-                       dim='time',
+                       dim="time",
                        attr={
-                           'standard_name': 'time',
-                           'long_name': 'time of measurement',
-                           'units': self.time_units
+                           "standard_name": "time",
+                           "long_name": "time of measurement",
+                           "units": self.time_units
                        },
                        dtype=np.double,
                        chunksizes=[self.time_chunksize])
@@ -241,24 +241,24 @@ class ImageStack(Dataset):
         """
         Write station information, longitude, latitude and altitude
         """
-        self.write_var('lon',
+        self.write_var("lon",
                        data=self.grid.lon2d[:, 0],
-                       dim='lon',
+                       dim="lon",
                        attr={
-                           'standard_name': 'longitude',
-                           'long_name': 'location longitude',
-                           'units': 'degrees_east',
-                           'valid_range': (-180.0, 180.0)
+                           "standard_name": "longitude",
+                           "long_name": "location longitude",
+                           "units": "degrees_east",
+                           "valid_range": (-180.0, 180.0)
                        },
                        dtype=np.float32)
-        self.write_var('lat',
+        self.write_var("lat",
                        data=self.grid.lat2d[0, :],
-                       dim='lat',
+                       dim="lat",
                        attr={
-                           'standard_name': 'latitude',
-                           'long_name': 'location latitude',
-                           'units': 'degrees_north',
-                           'valid_range': (-90.0, 90.0)
+                           "standard_name": "latitude",
+                           "long_name": "location latitude",
+                           "units": "degrees_north",
+                           "valid_range": (-90.0, 90.0)
                        },
                        dtype=np.float32)
 
@@ -268,9 +268,9 @@ class ImageStack(Dataset):
         """
         self.write_var(var,
                        data=None,
-                       dim=('time', 'lat', 'lon'),
+                       dim=("time", "lat", "lon"),
                        dtype=np.float32,
-                       attr={'_FillValue': -9999.})
+                       attr={"_FillValue": -9999.})
 
     def write(self, gpi, data):
         """

@@ -55,16 +55,16 @@ class Dataset:
     file_format : string, optional
         file format
     mode : string, optional
-        access mode. default 'r'
-        'r' means read-only; no data can be modified.
-        'w' means write; a new file is created, an existing file with the
+        access mode. default "r"
+        "r" means read-only; no data can be modified.
+        "w" means write; a new file is created, an existing file with the
             same name is deleted.
-        'a' and 'r+' mean append (in analogy with serial files); an existing
+        "a" and "r+" mean append (in analogy with serial files); an existing
             file is opened for reading and writing.
         Appending s to modes w, r+ or a will enable unbuffered shared access
         to NETCDF3_CLASSIC or NETCDF3_64BIT formatted files. Unbuffered
-        access may be useful even if you don't need shared access, since it
-        may be faster for programs that don't access data sequentially.
+        access may be useful even if you don"t need shared access, since it
+        may be faster for programs that don"t access data sequentially.
         This option is ignored for NETCDF4 and NETCDF4_CLASSIC
         formatted files.
     zlib : boolean, optional
@@ -85,7 +85,7 @@ class Dataset:
                  filename,
                  name=None,
                  file_format="NETCDF4",
-                 mode='r',
+                 mode="r",
                  zlib=True,
                  complevel=4,
                  autoscale=True,
@@ -97,11 +97,11 @@ class Dataset:
         self.file_format = file_format
         self.buf_len = 0
         self.global_attr = {}
-        self.global_attr['id'] = os.path.split(self.filename)[1]
+        self.global_attr["id"] = os.path.split(self.filename)[1]
         s = "%Y-%m-%d %H:%M:%S"
-        self.global_attr['date_created'] = datetime.datetime.now().strftime(s)
+        self.global_attr["date_created"] = datetime.datetime.now().strftime(s)
         if self.dataset_name is not None:
-            self.global_attr['dataset_name'] = self.dataset_name
+            self.global_attr["dataset_name"] = self.dataset_name
         self.zlib = zlib
         self.complevel = complevel
         self.mode = mode
@@ -110,7 +110,7 @@ class Dataset:
 
         if self.mode == "a" and not os.path.exists(self.filename):
             self.mode = "w"
-        if self.mode == 'w':
+        if self.mode == "w":
             self._create_file_dir()
 
         try:
@@ -118,7 +118,7 @@ class Dataset:
                                            self.mode,
                                            format=self.file_format)
         except RuntimeError:
-            raise IOError("File {} does not exist".format(self.filename))
+            raise IOError(f"File {self.filename} does not exist")
 
         self.dataset.set_auto_scale(self.autoscale)
         self.dataset.set_auto_mask(self.automask)
@@ -198,8 +198,8 @@ class Dataset:
         """
 
         fill_value = None
-        if '_FillValue' in attr:
-            fill_value = attr.pop('_FillValue')
+        if "_FillValue" in attr:
+            fill_value = attr.pop("_FillValue")
 
         if dtype is None:
             dtype = data.dtype
@@ -268,8 +268,8 @@ class Dataset:
             if nr_unlimited > 0:
                 var[key] = data
             else:
-                raise IOError(''.join(('Cannot append to variable that ',
-                                       'has no unlimited dimension')))
+                raise IOError(
+                    "Cannot append to variable that has no unlimited dimension")
         else:
             self.write_var(name, data, **kwargs)
 
@@ -283,7 +283,7 @@ class Dataset:
             name of the variable
         """
 
-        if self.mode in ['r', 'r+']:
+        if self.mode in ["r", "r+"]:
             if name in self.dataset.variables.keys():
                 return self.dataset.variables[name][:]
 
@@ -305,7 +305,7 @@ class Dataset:
         Flush data to disk.
         """
         if self.dataset is not None:
-            if self.mode in ['w', 'r+']:
+            if self.mode in ["w", "r+"]:
                 self._set_global_attr()
                 self.dataset.sync()
 

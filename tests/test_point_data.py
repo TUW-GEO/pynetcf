@@ -43,8 +43,8 @@ class PointDataReadWriteTest(unittest.TestCase):
         """
         Define test file.
         """
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
-        self.fn_not_written = os.path.join(mkdtemp(), 'test_not_written.nc')
+        self.fn = os.path.join(mkdtemp(), "test.nc")
+        self.fn_not_written = os.path.join(mkdtemp(), "test_not_written.nc")
 
     def tearDown(self):
         """
@@ -63,14 +63,14 @@ class PointDataReadWriteTest(unittest.TestCase):
         data1 = np.arange(5, 10)
         data2 = np.arange(10, 15)
 
-        with PointData(self.fn, mode='w', n_obs=5) as nc:
+        with PointData(self.fn, mode="w", n_obs=5) as nc:
             for loc_id, d1, d2 in zip(loc_ids, data1, data2):
-                nc.write(loc_id, {'var1': np.array(d1), 'var2': np.array(d2)})
+                nc.write(loc_id, {"var1": np.array(d1), "var2": np.array(d2)})
 
         with PointData(self.fn) as nc:
-            nptest.assert_array_equal(nc['var1'], range(5, 10))
-            assert nc.nc['var1'].filters()['zlib'] == True
-            nptest.assert_array_equal(nc['var2'][1], np.array([11]))
+            nptest.assert_array_equal(nc["var1"], range(5, 10))
+            assert nc.nc["var1"].filters()["zlib"] == True
+            nptest.assert_array_equal(nc["var2"][1], np.array([11]))
 
     def test_ioerror(self):
         """
@@ -86,7 +86,7 @@ class PointDataAppendTest(unittest.TestCase):
         """
         Define test file.
         """
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         """
@@ -98,31 +98,31 @@ class PointDataAppendTest(unittest.TestCase):
         """
         Test appending data.
         """
-        with PointData(self.fn, mode='w', n_obs=10) as nc:
+        with PointData(self.fn, mode="w", n_obs=10) as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 data = np.array(data)
                 if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
+                    nc.write(loc_id, {"var1": data, "var2": data})
                 elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
+                    nc.write(loc_id, {"var1": data, "var3": data})
                 else:
-                    nc.write(loc_id, {'var1': data})
+                    nc.write(loc_id, {"var1": data})
 
-        with PointData(self.fn, mode='a') as nc:
+        with PointData(self.fn, mode="a") as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 data = np.array(data)
                 if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
+                    nc.write(loc_id, {"var1": data, "var2": data})
                 elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
+                    nc.write(loc_id, {"var1": data, "var3": data})
                 else:
-                    nc.write(loc_id, {'var1': data})
+                    nc.write(loc_id, {"var1": data})
 
         with PointData(self.fn) as nc:
             x = np.tile(range(5, 10), 2)
-            nptest.assert_array_equal(nc['var1'], x)
-            nptest.assert_array_equal(nc.read(1)['var2'], np.array([6, 6]))
-            nptest.assert_array_equal(nc.read(4)['var3'], np.array([9, 9]))
+            nptest.assert_array_equal(nc["var1"], x)
+            nptest.assert_array_equal(nc.read(1)["var2"], np.array([6, 6]))
+            nptest.assert_array_equal(nc.read(4)["var3"], np.array([9, 9]))
 
 
 class PointDataAppendUnlimTest(unittest.TestCase):
@@ -131,7 +131,7 @@ class PointDataAppendUnlimTest(unittest.TestCase):
         """
         Define test file.
         """
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         """
@@ -144,31 +144,31 @@ class PointDataAppendUnlimTest(unittest.TestCase):
         Test appending to pre - existing point data file with
         unlimited observation dimension.
         """
-        with PointData(self.fn, mode='a') as nc:
+        with PointData(self.fn, mode="a") as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 data = np.array(data)
                 if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
+                    nc.write(loc_id, {"var1": data, "var2": data})
                 elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
+                    nc.write(loc_id, {"var1": data, "var3": data})
                 else:
-                    nc.write(loc_id, {'var1': data})
+                    nc.write(loc_id, {"var1": data})
 
-        with PointData(self.fn, mode='a') as nc:
+        with PointData(self.fn, mode="a") as nc:
             for loc_id, data in zip(range(5), range(5, 10)):
                 data = np.array(data)
                 if loc_id == 1:
-                    nc.write(loc_id, {'var1': data, 'var2': data})
+                    nc.write(loc_id, {"var1": data, "var2": data})
                 elif loc_id == 4:
-                    nc.write(loc_id, {'var1': data, 'var3': data})
+                    nc.write(loc_id, {"var1": data, "var3": data})
                 else:
-                    nc.write(loc_id, {'var1': data})
+                    nc.write(loc_id, {"var1": data})
 
         with PointData(self.fn) as nc:
             x = np.tile(range(5, 10), 2)
-            nptest.assert_array_equal(nc['var1'], x)
-            nptest.assert_array_equal(nc.read(1)['var2'], np.array([6, 6]))
-            nptest.assert_array_equal(nc.read(4)['var3'], np.array([9, 9]))
+            nptest.assert_array_equal(nc["var1"], x)
+            nptest.assert_array_equal(nc.read(1)["var2"], np.array([6, 6]))
+            nptest.assert_array_equal(nc.read(4)["var3"], np.array([9, 9]))
 
 
 class PointDataMultiDimRecarrayTest(unittest.TestCase):
@@ -177,7 +177,7 @@ class PointDataMultiDimRecarrayTest(unittest.TestCase):
         """
         Define test file.
         """
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         """
@@ -191,28 +191,28 @@ class PointDataMultiDimRecarrayTest(unittest.TestCase):
         numpy.dtype.metadata field from recarray.
         """
         dim_info = {
-            'dims': {
-                'var': ('obs', 'coef', 'config'),
-                'var2': ('obs', 'coef', 'doy')
+            "dims": {
+                "var": ("obs", "coef", "config"),
+                "var2": ("obs", "coef", "doy")
             }
         }
 
         data = np.zeros(4,
-                        dtype=np.dtype([('var', np.float32, (3, 13)),
-                                        ('var2', np.int32, (3, 366))],
+                        dtype=np.dtype([("var", np.float32, (3, 13)),
+                                        ("var2", np.int32, (3, 366))],
                                        metadata=dim_info))
 
-        add_dims = {'coef': 3, 'config': 13, 'doy': 366}
+        add_dims = {"coef": 3, "config": 13, "doy": 366}
 
-        with PointData(self.fn, mode='w', add_dims=add_dims) as nc:
+        with PointData(self.fn, mode="w", add_dims=add_dims) as nc:
             nc.write(np.arange(4), data)
 
         with PointData(self.fn) as nc:
             for loc_id in range(4):
                 nptest.assert_array_equal(
-                    nc.read(loc_id)['var'], data['var'][0])
+                    nc.read(loc_id)["var"], data["var"][0])
                 nptest.assert_array_equal(
-                    nc.read(loc_id)['var2'], data['var2'][0])
+                    nc.read(loc_id)["var2"], data["var2"][0])
 
 
 class PointDataMultiDimDictTest(unittest.TestCase):
@@ -221,7 +221,7 @@ class PointDataMultiDimDictTest(unittest.TestCase):
         """
         Define test file.
         """
-        self.fn = os.path.join(mkdtemp(), 'test.nc')
+        self.fn = os.path.join(mkdtemp(), "test.nc")
 
     def tearDown(self):
         """
@@ -234,19 +234,19 @@ class PointDataMultiDimDictTest(unittest.TestCase):
         Test support of multi - dimensional arrays using
         numpy.dtype.metadata field from dictionary.
         """
-        dim_info = {'dims': {'var1': ('obs', 'coef', 'config')}}
+        dim_info = {"dims": {"var1": ("obs", "coef", "config")}}
         data_var = np.zeros((4, 3, 13),
                             dtype=np.dtype(np.float32, metadata=dim_info))
 
-        dim_info = {'dims': {'var2': ('obs', 'coef', 'doy')}}
+        dim_info = {"dims": {"var2": ("obs", "coef", "doy")}}
         data_var2 = np.zeros((4, 3, 366),
                              dtype=np.dtype(np.int32, metadata=dim_info))
 
-        add_dims = {'coef': 3, 'config': 13, 'doy': 366}
+        add_dims = {"coef": 3, "config": 13, "doy": 366}
 
-        data = {'var1': data_var, 'var2': data_var2}
+        data = {"var1": data_var, "var2": data_var2}
 
-        with PointData(self.fn, mode='w', add_dims=add_dims) as nc:
+        with PointData(self.fn, mode="w", add_dims=add_dims) as nc:
             nc.write(np.arange(4), data)
 
 
@@ -257,7 +257,7 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
         Define test file.
         """
         self.testdatapath = os.path.join(mkdtemp())
-        self.testfilename = os.path.join(self.testdatapath, '0107.nc')
+        self.testfilename = os.path.join(self.testdatapath, "0107.nc")
         self.grid = grids.genreg_grid().to_cell_grid()
 
     def tearDown(self):
@@ -271,26 +271,26 @@ class GriddedPointDataReadWriteTest(unittest.TestCase):
         Test writing and reading of gridded PointData.
         """
         nc = GriddedPointData(self.testdatapath,
-                              mode='w',
+                              mode="w",
                               grid=self.grid,
-                              fn_format='{:04d}.nc')
+                              fn_format="{:04d}.nc")
 
         loc_ids = [10, 11, 12]
         dataset = [1, 2, 3]
 
         for loc_id, data in zip(loc_ids, dataset):
             data = np.array(data)
-            nc.write(loc_id, {'var1': data})
+            nc.write(loc_id, {"var1": data})
 
         nc.close()
 
         nc = GriddedPointData(self.testdatapath,
                               grid=self.grid,
-                              fn_format='{:04d}.nc')
+                              fn_format="{:04d}.nc")
 
         for i, loc_id in enumerate(loc_ids):
             data = nc.read(loc_id)
-            nptest.assert_equal(data['var1'], i + 1)
+            nptest.assert_equal(data["var1"], i + 1)
 
         nc.close()
 
@@ -305,15 +305,15 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
         self.grid = grids.genreg_grid().to_cell_grid().subgrid_from_gpis(
             self.gpis)
         self.path = mkdtemp()
-        self.fn_global = os.path.join(self.path, 'global.nc')
+        self.fn_global = os.path.join(self.path, "global.nc")
 
     def tearDown(self):
         """
         Delete test files.
         """
-        os.remove(os.path.join(self.path, '0107.nc'))
-        os.remove(os.path.join(self.path, '1464.nc'))
-        os.remove(os.path.join(self.path, '2046.nc'))
+        os.remove(os.path.join(self.path, "0107.nc"))
+        os.remove(os.path.join(self.path, "1464.nc"))
+        os.remove(os.path.join(self.path, "2046.nc"))
 
     def test_read_write(self):
         """
@@ -322,20 +322,20 @@ class GriddedPointData2PointDataTest(unittest.TestCase):
         loc_ids = self.gpis
 
         with GriddedPointData(self.path,
-                              mode='w',
+                              mode="w",
                               grid=self.grid,
-                              fn_format='{:04d}.nc') as nc:
+                              fn_format="{:04d}.nc") as nc:
 
             for loc_id in loc_ids:
-                nc.write(loc_id, {'var1': np.array(loc_id)})
+                nc.write(loc_id, {"var1": np.array(loc_id)})
 
         with GriddedPointData(self.path, grid=self.grid,
-                              fn_format='{:04d}.nc') as nc:
+                              fn_format="{:04d}.nc") as nc:
 
             nc.to_point_data(self.fn_global)
 
         with PointData(self.fn_global) as nc:
-            nptest.assert_equal(nc['var1'][:].sort(), loc_ids.sort())
+            nptest.assert_equal(nc["var1"][:].sort(), loc_ids.sort())
 
 
 if __name__ == "__main__":

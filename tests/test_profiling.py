@@ -53,7 +53,7 @@ class ProfilingTest(unittest.TestCase):
 
         for i in range(NO_OF_FILES):
             self.testfilename[i] = os.path.join(mkdtemp(),
-                                                'test' + str(i) + '.nc')
+                                                "test" + str(i) + ".nc")
 
     def tearDown(self):
         for i in range(NO_OF_FILES):
@@ -63,20 +63,20 @@ class ProfilingTest(unittest.TestCase):
     def test_write_append_read_1D(self):
 
         with ncbase.Dataset(self.testfilename,
-                            file_format='NETCDF4', mode='w') as self.dataset:
+                            file_format="NETCDF4", mode="w") as self.dataset:
             # create unlimited Dimension
-            self.dataset.create_dim('dim', None)
-            self.dataset.write_var('test', np.arange(15), dim=('dim'))
+            self.dataset.create_dim("dim", None)
+            self.dataset.write_var("test", np.arange(15), dim=("dim"))
 
         with ncbase.Dataset(self.testfilename) as self.dataset:
-            data = self.dataset.read_var('test')
+            data = self.dataset.read_var("test")
             nptest.assert_array_equal(data, np.arange(15))
 
-        with ncbase.Dataset(self.testfilename, mode='a') as self.dataset:
-            self.dataset.append_var('test', np.arange(15))
+        with ncbase.Dataset(self.testfilename, mode="a") as self.dataset:
+            self.dataset.append_var("test", np.arange(15))
 
         with ncbase.Dataset(self.testfilename) as self.dataset:
-            data = self.dataset.read_var('test')
+            data = self.dataset.read_var("test")
             nptest.assert_array_equal(
                 data, np.concatenate([np.arange(15), np.arange(15)]))
     """
@@ -85,17 +85,17 @@ class ProfilingTest(unittest.TestCase):
 
         for i in range(NO_OF_FILES):
             with ncbase.Dataset(self.testfilename[i],
-                                file_format='NETCDF4',
-                                mode='w') as self.dataset:
-                self.dataset.create_dim('dim1', DIM_SIZE)
-                self.dataset.create_dim('dim2', DIM_SIZE)
-                self.dataset.write_var('test',
+                                file_format="NETCDF4",
+                                mode="w") as self.dataset:
+                self.dataset.create_dim("dim1", DIM_SIZE)
+                self.dataset.create_dim("dim2", DIM_SIZE)
+                self.dataset.write_var("test",
                                        np.arange(DIM_SIZE * DIM_SIZE).reshape(
                                            (DIM_SIZE, DIM_SIZE)),
-                                       dim=('dim1', 'dim2'))
+                                       dim=("dim1", "dim2"))
 
             with ncbase.Dataset(self.testfilename[i]) as self.dataset:
-                data = self.dataset.read_var('test')
+                data = self.dataset.read_var("test")
                 nptest.assert_array_equal(
                     data,
                     np.arange(DIM_SIZE * DIM_SIZE).reshape(
@@ -105,29 +105,29 @@ class ProfilingTest(unittest.TestCase):
 
         for i in range(NO_OF_FILES):
             with ncbase.Dataset(self.testfilename[i],
-                                file_format='NETCDF4',
-                                mode='w') as self.dataset:
-                self.dataset.create_dim('dim1', DIM_SIZE)
-                self.dataset.create_dim('dim2', None)
-                self.dataset.write_var('test',
+                                file_format="NETCDF4",
+                                mode="w") as self.dataset:
+                self.dataset.create_dim("dim1", DIM_SIZE)
+                self.dataset.create_dim("dim2", None)
+                self.dataset.write_var("test",
                                        np.arange(DIM_SIZE * DIM_SIZE).reshape(
                                            (DIM_SIZE, DIM_SIZE)),
-                                       dim=('dim1', 'dim2'))
+                                       dim=("dim1", "dim2"))
 
             with ncbase.Dataset(self.testfilename[i]) as self.dataset:
-                data = self.dataset.read_var('test')
+                data = self.dataset.read_var("test")
                 nptest.assert_array_equal(
                     data,
                     np.arange(DIM_SIZE * DIM_SIZE).reshape(DIM_SIZE, DIM_SIZE))
 
             with ncbase.Dataset(self.testfilename[i],
-                                mode='a') as self.dataset:
+                                mode="a") as self.dataset:
                 self.dataset.append_var(
-                    'test',
+                    "test",
                     np.arange(DIM_SIZE).reshape((DIM_SIZE, 1)))
 
             with ncbase.Dataset(self.testfilename[i]) as self.dataset:
-                data = self.dataset.read_var('test')
+                data = self.dataset.read_var("test")
                 nptest.assert_array_equal(
                     data,
                     np.hstack([

@@ -44,7 +44,7 @@ class ImageStackTests(unittest.TestCase):
         """
         Define test file.
         """
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), "test.nc")
         self.grid = grids.genreg_grid()
 
     def tearDown(self):
@@ -62,14 +62,14 @@ class ImageStackTests(unittest.TestCase):
                 self.grid,
             [datetime(2007, 1, 1), datetime(2007, 1, 2)],
                 mode="w") as nc:
-            nc[14] = {'variable': [141, 142]}
-            nc.write([22, 23], {'variable': [[221, 222], [231, 232]]})
+            nc[14] = {"variable": [141, 142]}
+            nc.write([22, 23], {"variable": [[221, 222], [231, 232]]})
 
         with ncdata.ImageStack(self.testfilename, self.grid) as nc:
             data = nc[14]
-            assert list(data['variable'].values) == [141, 142]
+            assert list(data["variable"].values) == [141, 142]
             data = nc[22]
-            assert list(data['variable'].values) == [221, 222]
+            assert list(data["variable"].values) == [221, 222]
 
 
 class ArrayStackTests(unittest.TestCase):
@@ -78,7 +78,7 @@ class ArrayStackTests(unittest.TestCase):
         """
         Define test file.
         """
-        self.testfilename = os.path.join(mkdtemp(), 'test.nc')
+        self.testfilename = os.path.join(mkdtemp(), "test.nc")
         self.grid = grids.BasicGrid(np.arange(180), np.arange(180) - 90)
 
     def tearDown(self):
@@ -96,16 +96,16 @@ class ArrayStackTests(unittest.TestCase):
                 self.grid,
             [datetime(2007, 1, 1), datetime(2007, 1, 2)],
                 mode="w") as nc:
-            nc[14] = {'variable': [141, 142]}
-            nc.write([22, 23], {'variable': [[221, 222], [231, 232]]})
+            nc[14] = {"variable": [141, 142]}
+            nc.write([22, 23], {"variable": [[221, 222], [231, 232]]})
 
         with ncdata.ArrayStack(
                 self.testfilename, self.grid,
             [datetime(2007, 1, 1), datetime(2007, 1, 2)]) as nc:
             data = nc[14]
-            assert list(data['variable'].values) == [141, 142]
+            assert list(data["variable"].values) == [141, 142]
             data = nc[22]
-            assert list(data['variable'].values) == [221, 222]
+            assert list(data["variable"].values) == [221, 222]
 
 
 if __name__ == "__main__":

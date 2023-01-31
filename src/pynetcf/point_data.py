@@ -49,16 +49,16 @@ class PointData:
         Filename of netCDF file. If already exiting then it will be opened
         as read only unless the append keyword is set.
     mode : str, optional
-        access mode. default 'r'
-        'r' means read-only; no data can be modified.
-        'w' means write; a new file is created, an existing file with the
+        access mode. default "r"
+        "r" means read-only; no data can be modified.
+        "w" means write; a new file is created, an existing file with the
             same name is deleted.
-        'a' and 'r+' mean append (in analogy with serial files); an existing
+        "a" and "r+" mean append (in analogy with serial files); an existing
             file is opened for reading and writing.
         Appending s to modes w, r+ or a will enable unbuffered shared access
         to NETCDF3_CLASSIC or NETCDF3_64BIT formatted files. Unbuffered
-        access may be useful even if you don't need shared access, since it
-        may be faster for programs that don't access data sequentially.
+        access may be useful even if you don"t need shared access, since it
+        may be faster for programs that don"t access data sequentially.
         This option is ignored for NETCDF4 and NETCDF4_CLASSIC
         formatted files.
     zlib : boolean, optional
@@ -70,92 +70,92 @@ class PointData:
         Number of observations. If None, unlimited dimension will be used.
         Default: None
     obs_dim : str, optional
-        Observation dimension name. Default: 'obs'
+        Observation dimension name. Default: "obs"
     add_dims : dict, optional
         Additional dimensions. Default: None
     loc_id_var : str, optional
-        Location id variable name. Default: 'location id'
+        Location id variable name. Default: "location id"
     time_units : str, optional
         Time unit.
     time_var : str, optional
-        Time variable name. Default 'time'
+        Time variable name. Default "time"
     lat_var : str, optional
-        Latitude variable name. Default 'lat'
+        Latitude variable name. Default "lat"
     lon_var : str, optional
-        Longitude variable name. Default: 'lon'
+        Longitude variable name. Default: "lon"
     alt_var : str, optional
-        Altitude variable name. Default: 'alt'
+        Altitude variable name. Default: "alt"
     """
 
     def __init__(self,
                  filename,
-                 mode='r',
-                 file_format='NETCDF4',
+                 mode="r",
+                 file_format="NETCDF4",
                  zlib=True,
                  complevel=4,
                  n_obs=None,
-                 obs_dim='obs',
+                 obs_dim="obs",
                  add_dims=None,
-                 loc_id_var='location_id',
+                 loc_id_var="location_id",
                  time_units="days since 1900-01-01 00:00:00",
-                 time_var='time',
-                 lat_var='lat',
-                 lon_var='lon',
-                 alt_var='alt',
+                 time_var="time",
+                 lat_var="lat",
+                 lon_var="lon",
+                 alt_var="alt",
                  **kwargs):
 
         self.nc_finfo = {
-            'filename': filename,
-            'mode': mode,
-            'format': file_format
+            "filename": filename,
+            "mode": mode,
+            "format": file_format
         }
 
         self.nc = None
 
         initial_mode = mode
 
-        if mode == 'a' and not os.path.exists(filename):
-            initial_mode = 'w'
+        if mode == "a" and not os.path.exists(filename):
+            initial_mode = "w"
 
-        if initial_mode == 'w':
+        if initial_mode == "w":
             path = os.path.dirname(filename)
             if not os.path.exists(path):
                 os.makedirs(path)
-        self.compression_info = {'zlib': zlib, 'complevel': complevel}
+        self.compression_info = {"zlib": zlib, "complevel": complevel}
 
         try:
             self.nc = netCDF4.Dataset(filename,
                                       format=file_format,
                                       mode=initial_mode)
         except RuntimeError:
-            raise IOError("File {} does not exist.".format(filename))
+            raise IOError(f"File {filename} does not exist.")
 
-        loc_id_attr = {'long_name': 'location_id'}
+        loc_id_attr = {"long_name": "location_id"}
 
         lon_attr = {
-            'standard_name': 'longitude',
-            'long_name': 'location longitude',
-            'units': 'degrees_east',
-            'valid_range': (-180.0, 180.0)
+            "standard_name": "longitude",
+            "long_name": "location longitude",
+            "units": "degrees_east",
+            "valid_range": (-180.0, 180.0)
         }
 
         lat_attr = {
-            'standard_name': 'latitude',
-            'long_name': 'location latitude',
-            'units': 'degrees_north',
-            'valid_range': (-90.0, 90.0)
+            "standard_name": "latitude",
+            "long_name": "location latitude",
+            "units": "degrees_north",
+            "valid_range": (-90.0, 90.0)
         }
 
         alt_attr = {
-            'standard_name': 'height',
-            'long_name': 'vertical distance above the '
-            'surface',
-            'units': 'm',
-            'positive': 'up',
-            'axis': 'Z'
+            "standard_name": "height",
+            "long_name": "vertical distance above the "
+            "surface",
+            "units": "m",
+            "positive": "up",
+            "axis": "Z"
         }
 
-        time_attr = {'standard_name': 'time'}
+        time_attr = {"standard_name": "time"}
 
         self.obs_dim = obs_dim
 
@@ -166,48 +166,48 @@ class PointData:
             self.dim = {obs_dim: n_obs}
 
         self.var = {
-            'loc_id': {
-                'name': loc_id_var,
-                'dim': obs_dim,
-                'attr': loc_id_attr,
-                'dtype': np.int32
+            "loc_id": {
+                "name": loc_id_var,
+                "dim": obs_dim,
+                "attr": loc_id_attr,
+                "dtype": np.int32
             },
-            'lon': {
-                'name': lon_var,
-                'dim': obs_dim,
-                'attr': lon_attr,
-                'dtype': np.float32
+            "lon": {
+                "name": lon_var,
+                "dim": obs_dim,
+                "attr": lon_attr,
+                "dtype": np.float32
             },
-            'lat': {
-                'name': lat_var,
-                'dim': obs_dim,
-                'attr': lat_attr,
-                'dtype': np.float32
+            "lat": {
+                "name": lat_var,
+                "dim": obs_dim,
+                "attr": lat_attr,
+                "dtype": np.float32
             },
-            'alt': {
-                'name': alt_var,
-                'dim': obs_dim,
-                'attr': alt_attr,
-                'dtype': np.float32
+            "alt": {
+                "name": alt_var,
+                "dim": obs_dim,
+                "attr": alt_attr,
+                "dtype": np.float32
             },
-            'time': {
-                'name': time_var,
-                'dim': obs_dim,
-                'unit': time_units,
-                'dtype': np.float64,
-                'attr': time_attr
+            "time": {
+                "name": time_var,
+                "dim": obs_dim,
+                "unit": time_units,
+                "dtype": np.float64,
+                "attr": time_attr
             }
         }
 
-        self.builtin_vars = [self.var[key]['name'] for key in self.var]
+        self.builtin_vars = [self.var[key]["name"] for key in self.var]
 
-        if initial_mode == 'w':
+        if initial_mode == "w":
 
             s = "%Y-%m-%d %H:%M:%S"
             attr = {
-                'id': os.path.split(self.nc_finfo['filename'])[1],
-                'date_created': datetime.datetime.now().strftime(s),
-                'featureType': 'point'
+                "id": os.path.split(self.nc_finfo["filename"])[1],
+                "date_created": datetime.datetime.now().strftime(s),
+                "featureType": "point"
             }
 
             self.nc.setncatts(attr)
@@ -216,8 +216,8 @@ class PointData:
 
         # find next free position, i.e. next empty loc_id
         self.loc_idx = 0
-        if initial_mode in ['r+', 'a']:
-            loc_id = self.nc.variables[self.var['loc_id']['name']]
+        if initial_mode in ["r+", "a"]:
+            loc_id = self.nc.variables[self.var["loc_id"]["name"]]
             if self.nc.dimensions[obs_dim].isunlimited():
                 self.loc_idx = loc_id.shape[0]
             else:
@@ -230,7 +230,7 @@ class PointData:
         if self.nc is not None:
             str = self.nc.__str__()
         else:
-            str = 'NetCDF file closed.'
+            str = "NetCDF file closed."
 
         return str
 
@@ -239,7 +239,7 @@ class PointData:
         Flush data.
         """
         if self.nc is not None:
-            if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
+            if self.nc_finfo["mode"] in ["w", "r+", "a"]:
                 self.nc.sync()
 
     def close(self):
@@ -286,11 +286,11 @@ class PointData:
         Initialize location information (lon, lat, etc.).
         """
         for k, var in self.var.items():
-            self.nc.createVariable(var['name'],
-                                   var['dtype'],
-                                   dimensions=var['dim'],
+            self.nc.createVariable(var["name"],
+                                   var["dtype"],
+                                   dimensions=var["dim"],
                                    **self.compression_info)
-            self.nc.variables[var['name']].setncatts(var['attr'])
+            self.nc.variables[var["name"]].setncatts(var["attr"])
 
     def write(self,
               loc_id,
@@ -318,7 +318,7 @@ class PointData:
         time : numpy.ndarray, optional
             Time information. Default: None
         """
-        if self.nc_finfo['mode'] in ['w', 'r+', 'a']:
+        if self.nc_finfo["mode"] in ["w", "r+", "a"]:
 
             num = np.array(loc_id).size
             idx = slice(self.loc_idx, self.loc_idx + num)
@@ -336,11 +336,11 @@ class PointData:
                 # merge metadata info into common dict
                 md_dict = {}
                 for md in sub_md_list:
-                    if md is not None and 'dims' in md:
-                        md_dict.update(md['dims'])
+                    if md is not None and "dims" in md:
+                        md_dict.update(md["dims"])
 
                 # convert dict to recarray
-                metadata = {'dims': md_dict}
+                metadata = {"dims": md_dict}
                 dtype = np.dtype(dtype_list, metadata=metadata)
                 data = np.core.records.fromarrays(data.values(), dtype=dtype)
 
@@ -352,8 +352,8 @@ class PointData:
                     # check if custom metadata is included
                     if data.dtype.metadata is not None:
                         metadata = data.dtype.metadata
-                        if 'dims' in metadata and var_data in metadata['dims']:
-                            dimensions = metadata['dims'][var_data]
+                        if "dims" in metadata and var_data in metadata["dims"]:
+                            dimensions = metadata["dims"][var_data]
 
                     self.nc.createVariable(var_data,
                                            dtype,
@@ -362,29 +362,28 @@ class PointData:
 
                 self.nc.variables[var_data][idx] = data[var_data]
 
-            var_loc_id = self.var['loc_id']['name']
+            var_loc_id = self.var["loc_id"]["name"]
             self.nc.variables[var_loc_id][idx] = loc_id
 
             if lon is not None:
-                var_lon = self.var['lon']['name']
+                var_lon = self.var["lon"]["name"]
                 self.nc.variables[var_lon][idx] = lon
 
             if lat is not None:
-                var_lat = self.var['lat']['name']
+                var_lat = self.var["lat"]["name"]
                 self.nc.variables[var_lat][idx] = lat
 
             if alt is not None:
-                var_alt = self.var['alt']['name']
+                var_alt = self.var["alt"]["name"]
                 self.nc.variables[var_alt][idx] = alt
 
             if time is not None:
-                var_time = self.var['time']['name']
+                var_time = self.var["time"]["name"]
                 self.nc.variables[var_time][idx] = time
 
             self.loc_idx += num
         else:
-            raise IOError("Write operations failed. "
-                          "File not open for writing.")
+            raise IOError("Write operations failed. File not open for writing.")
 
     def read(self, loc_id):
         """
@@ -402,8 +401,8 @@ class PointData:
         """
         data = None
 
-        if self.nc_finfo['mode'] in ['r', 'r+', 'a']:
-            loc_id_var = self.nc.variables[self.var['loc_id']['name']][:]
+        if self.nc_finfo["mode"] in ["r", "r+", "a"]:
+            loc_id_var = self.nc.variables[self.var["loc_id"]["name"]][:]
             pos = np.where(loc_id_var == loc_id)[0]
 
             if pos.size > 0:
@@ -416,8 +415,7 @@ class PointData:
                     data[var_name] = read_data
 
         else:
-            raise IOError("Read operations failed. "
-                          "File not open for reading.")
+            raise IOError("Read operations failed. File not open for reading.")
 
         return data
 
@@ -445,9 +443,9 @@ class GriddedPointData(GriddedBase):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs['ioclass'] = PointData
-        if 'fn_format' not in kwargs:
-            kwargs['fn_format'] = '{:04d}.nc'
+        kwargs["ioclass"] = PointData
+        if "fn_format" not in kwargs:
+            kwargs["fn_format"] = "{:04d}.nc"
         super(GriddedPointData, self).__init__(*args, **kwargs)
 
     def to_point_data(self, filename, **kwargs):
@@ -459,11 +457,11 @@ class GriddedPointData(GriddedBase):
         filename : str
             File name.
         """
-        with PointData(filename, mode='w', **kwargs) as nc:
+        with PointData(filename, mode="w", **kwargs) as nc:
             for data, gp in self.iter_gp():
                 nc.write(gp,
                          data,
-                         lon=data['lon'],
-                         lat=data['lat'],
-                         alt=data['alt'],
-                         time=data['time'])
+                         lon=data["lon"],
+                         lat=data["lat"],
+                         alt=data["alt"],
+                         time=data["time"])
