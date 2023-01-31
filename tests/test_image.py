@@ -63,7 +63,7 @@ class ImageStackTests(unittest.TestCase):
             [datetime(2007, 1, 1), datetime(2007, 1, 2)],
                 mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
-            nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
+            nc.write([22, 23], {'variable': [[221, 222], [231, 232]]})
 
         with ncdata.ImageStack(self.testfilename, self.grid) as nc:
             data = nc[14]
@@ -97,7 +97,7 @@ class ArrayStackTests(unittest.TestCase):
             [datetime(2007, 1, 1), datetime(2007, 1, 2)],
                 mode="w") as nc:
             nc[14] = {'variable': [141, 142]}
-            nc.write_ts([22, 23], {'variable': [[221, 222], [231, 232]]})
+            nc.write([22, 23], {'variable': [[221, 222], [231, 232]]})
 
         with ncdata.ArrayStack(
                 self.testfilename, self.grid,

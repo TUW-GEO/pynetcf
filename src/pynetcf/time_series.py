@@ -88,7 +88,7 @@ class DatasetTs(Dataset, ABC):
         will be calculated by the netCDF library
     read_bulk : boolean, optional
         if set to True the data of all locations is read into memory,
-        and subsequent calls to read_ts read from the cache and not from disk
+        and subsequent calls to 'read' read from the cache and not from disk
         this makes reading complete files faster#
     read_dates : boolean, optional
         if false dates will not be read automatically but only on specific
@@ -236,7 +236,7 @@ class DatasetTs(Dataset, ABC):
         self.write_var(self.loc_descr_name,
                        data=None,
                        dim=self.loc_dim_name,
-                       dtype=str)
+                       dtype=str)#'np.dtype("S30"))
 
         # initialize time variable
         self.write_var(self.time_var,
@@ -526,7 +526,7 @@ class DatasetTs(Dataset, ABC):
 
         return self.variables[var][index]
 
-    def read_ts(self, variables, loc_id, dates_direct=False):
+    def read(self, variables, loc_id, dates_direct=False):
         """
         reads time series of variables
 
@@ -567,7 +567,7 @@ class DatasetTs(Dataset, ABC):
 
         return ts
 
-    def read_all_ts(self, loc_id, dates_direct=False):
+    def read_all(self, loc_id, dates_direct=False):
         """
         read a time series of all time series variables at a given location id
 
@@ -584,9 +584,9 @@ class DatasetTs(Dataset, ABC):
         time_series : dict
             keys of var and time with numpy.arrays as values
         """
-        ts = self.read_ts(self._get_all_ts_variables(),
-                          loc_id,
-                          dates_direct=dates_direct)
+        ts = self.read(self._get_all_ts_variables(),
+                       loc_id,
+                       dates_direct=dates_direct)
 
         return ts
 
@@ -643,17 +643,17 @@ class DatasetTs(Dataset, ABC):
         return indexes
 
     @abstractmethod
-    def write_ts(self,
-                 loc_id,
-                 data,
-                 dates,
-                 loc_descr=None,
-                 lon=None,
-                 lat=None,
-                 alt=None,
-                 fill_values=None,
-                 attributes=None,
-                 dates_direct=False):
+    def write(self,
+              loc_id,
+              data,
+              dates,
+              loc_descr=None,
+              lon=None,
+              lat=None,
+              alt=None,
+              fill_values=None,
+              attributes=None,
+              dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file
         for this data format it is assumed that in each write/append cycle
@@ -678,17 +678,17 @@ class DatasetTs(Dataset, ABC):
         """
         pass
 
-    def write_ts_all_loc(self,
-                         loc_ids,
-                         data,
-                         dates,
-                         loc_descrs=None,
-                         lons=None,
-                         lats=None,
-                         alts=None,
-                         fill_values=None,
-                         attributes=None,
-                         dates_direct=False):
+    def write_all(self,
+                  loc_ids,
+                  data,
+                  dates,
+                  loc_descrs=None,
+                  lons=None,
+                  lats=None,
+                  alts=None,
+                  fill_values=None,
+                  attributes=None,
+                  dates_direct=False):
         """
         Write time series data in bulk, for this the user has to provide
         a 2D array with dimensions (self.nloc, dates) that is filled with
@@ -830,7 +830,7 @@ class OrthoMultiTs(DatasetTs):
         will be calculated by the netCDF library
     read_bulk : boolean, optional
         if set to True the data of all locations is read into memory,
-        and subsequent calls to read_ts read from the cache and not from disk
+        and subsequent calls to 'read' read from the cache and not from disk
         this makes reading complete files faster#
     read_dates : boolean, optional
         if false dates will not be read automatically but only on specific
@@ -931,17 +931,17 @@ class OrthoMultiTs(DatasetTs):
         """
         return self.read_var(self.loc_ids_name)
 
-    def write_ts(self,
-                 loc_id,
-                 data,
-                 dates,
-                 loc_descr=None,
-                 lon=None,
-                 lat=None,
-                 alt=None,
-                 fill_values=None,
-                 attributes=None,
-                 dates_direct=False):
+    def write(self,
+              loc_id,
+              data,
+              dates,
+              loc_descr=None,
+              lon=None,
+              lat=None,
+              alt=None,
+              fill_values=None,
+              attributes=None,
+              dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file
         for this data format it is assumed that in each write/append cycle
@@ -1196,17 +1196,17 @@ class ContiguousRaggedTs(DatasetTs):
         """
         return self._read_var_ts(loc_id, self.time_var)
 
-    def write_ts(self,
-                 loc_id,
-                 data,
-                 dates,
-                 loc_descr=None,
-                 lon=None,
-                 lat=None,
-                 alt=None,
-                 fill_values=None,
-                 attributes=None,
-                 dates_direct=False):
+    def write(self,
+              loc_id,
+              data,
+              dates,
+              loc_descr=None,
+              lon=None,
+              lat=None,
+              alt=None,
+              fill_values=None,
+              attributes=None,
+              dates_direct=False):
         """
         Write time series data, if not yet existing also add location to file.
 
@@ -1390,17 +1390,17 @@ class IndexedRaggedTs(DatasetTs):
         """
         return self._read_var_ts(loc_id, self.time_var)
 
-    def write_ts(self,
-                 loc_id,
-                 data,
-                 dates,
-                 loc_descr=None,
-                 lon=None,
-                 lat=None,
-                 alt=None,
-                 fill_values=None,
-                 attributes=None,
-                 dates_direct=False):
+    def write(self,
+              loc_id,
+              data,
+              dates,
+              loc_descr=None,
+              lon=None,
+              lat=None,
+              alt=None,
+              fill_values=None,
+              attributes=None,
+              dates_direct=False):
         """
         write time series data, if not yet existing also add location to file
 
@@ -1614,7 +1614,7 @@ class GriddedNcTs(GriddedTsBase):
     def _read_gp(self, gpi, period=None, **kwargs):
         """
         Method reads data for given gpi, additional keyword arguments
-        are passed to ioclass.read_ts
+        are passed to ioclass.read
 
         Parameters
         ----------
@@ -1635,9 +1635,9 @@ class GriddedNcTs(GriddedTsBase):
             return None
 
         if self.parameters is None:
-            data = self.fid.read_all_ts(gpi, **kwargs)
+            data = self.fid.read_all(gpi, **kwargs)
         else:
-            data = self.fid.read_ts(self.parameters, gpi, **kwargs)
+            data = self.fid.read(self.parameters, gpi, **kwargs)
 
         if self.dates is None or self.read_dates:
             if "dates_direct" in kwargs:
@@ -1704,12 +1704,12 @@ class GriddedNcTs(GriddedTsBase):
         for key in ds:
             ds[key] = ds[key].values
 
-        self.fid.write_ts(gp,
-                          ds,
-                          data.index.to_pydatetime(),
-                          lon=lon,
-                          lat=lat,
-                          **kwargs)
+        self.fid.write(gp,
+                       ds,
+                       data.index.to_pydatetime(),
+                       lon=lon,
+                       lat=lat,
+                       **kwargs)
 
 
 class GriddedNcOrthoMultiTs(GriddedNcTs):
@@ -1785,10 +1785,5 @@ class GriddedNcIndexedRaggedTs(GriddedNcTs):
 
         dates = data[datefield]
         del data[datefield]
-        self.fid.write_ts(gpi,
-                          data,
-                          dates,
-                          lon=lons,
-                          lat=lats,
-                          dates_direct=True)
+        self.fid.write(gpi, data, dates, lon=lons, lat=lats, dates_direct=True)
         self.close()

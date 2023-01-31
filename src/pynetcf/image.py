@@ -94,7 +94,7 @@ class ArrayStack(OrthoMultiTs):
         self.times = netCDF4.num2date(self.dataset.variables['time'][:],
                                       self.time_units)
 
-    def write_ts(self, gpi, data):
+    def write(self, gpi, data):
         """
         Write a time series into the imagestack for gpi.
 
@@ -113,7 +113,7 @@ class ArrayStack(OrthoMultiTs):
 
         for i, gp in enumerate(gpi):
             for var in data:
-                super(ArrayStack, self).write_ts(
+                super(ArrayStack, self).write(
                     gp, {var: np.atleast_1d(np.atleast_2d(data[var])[i, :])},
                     np.array(self.times))
 
@@ -132,7 +132,7 @@ class ArrayStack(OrthoMultiTs):
             that should be written
             shape must be (len(gpi), len(times))
         """
-        self.write_ts(gpi, data)
+        self.write(gpi, data)
 
     def __getitem__(self, key):
         """
@@ -158,7 +158,7 @@ class ArrayStack(OrthoMultiTs):
         else:
             gpi = np.atleast_1d(key)
             for i, gp in enumerate(gpi):
-                data = super(ArrayStack, self).read_all_ts(gp)
+                data = super(ArrayStack, self).read_all(gp)
 
             return pd.DataFrame(data, index=self.times)
 
@@ -272,7 +272,7 @@ class ImageStack(Dataset):
                        dtype=np.float32,
                        attr={'_FillValue': -9999.})
 
-    def write_ts(self, gpi, data):
+    def write(self, gpi, data):
         """
         Write a time series into the imagestack for gpi.
 
@@ -313,7 +313,7 @@ class ImageStack(Dataset):
             that should be written
             shape must be (len(gpi), len(times))
         """
-        self.write_ts(gpi, data)
+        self.write(gpi, data)
 
     def __getitem__(self, key):
         """
