@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Unreleased changes in master
+============================
+
+- Add test for writing strings to netcdf
+
 Version 0.4.0
 =============
 
