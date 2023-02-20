@@ -1,6 +1,4 @@
 name: pynetcf
-channels:
-  - defaults
 dependencies:
 - h5py
 - numpy
