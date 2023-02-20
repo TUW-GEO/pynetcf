@@ -1,6 +1,5 @@
 name: pynetcf
 channels:
-  - conda-forge
   - defaults
 dependencies:
 - h5py
