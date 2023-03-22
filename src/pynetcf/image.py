@@ -337,3 +337,4 @@ class ImageStack(Dataset):
                 data[var] = self.dataset.variables[var][:, row, column]
 
         return pd.DataFrame(data, index=self.times)
+

@@ -355,10 +355,15 @@ class PointData:
                         if "dims" in metadata and var_data in metadata["dims"]:
                             dimensions = metadata["dims"][var_data]
 
+                    comp = self.compression_info.copy()
+
+                    if not np.issubdtype(dtype, np.number):
+                        comp['zlib'] = False
+
                     self.nc.createVariable(var_data,
                                            dtype,
                                            dimensions=dimensions,
-                                           **self.compression_info)
+                                           **comp)
 
                 self.nc.variables[var_data][idx] = data[var_data]
 

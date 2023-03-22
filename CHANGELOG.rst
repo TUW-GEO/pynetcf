@@ -6,6 +6,7 @@ Unreleased changes in master
 ============================
 
 - Add test for writing strings to netcdf
+- Zlib compress always off for non-numeric data
 
 Version 0.4.0
 =============

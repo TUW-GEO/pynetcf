@@ -206,6 +206,9 @@ class Dataset:
 
         if zlib is None:
             zlib = self.zlib
+        if not np.issubdtype(dtype, np.number):
+            # Only numeric data can be compressed
+            zlib = False
         if complevel is None:
             complevel = self.complevel
 
