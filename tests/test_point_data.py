@@ -55,6 +55,26 @@ class PointDataReadWriteTest(unittest.TestCase):
         except OSError:
             pass
 
+    def test_io_str(self):
+        """
+        Write/read test.
+        """
+        loc_ids = np.arange(0, 5)
+        data1 = np.array([str(n) for n in np.arange(5, 10)])
+        data2 = np.arange(10, 15)
+
+        with PointData(self.fn, mode="w", n_obs=5) as nc:
+            for loc_id, d1, d2 in zip(loc_ids, data1, data2):
+                nc.write(loc_id, {"var1": d1, "var2": d2})
+
+        with PointData(self.fn) as nc:
+            nptest.assert_array_equal(
+                nc["var1"], np.array([str(n) for n in range(5, 10)]))
+            assert nc.nc["var1"].filters()["zlib"] is False
+            assert nc.nc["var2"].filters()["zlib"] is True
+            nptest.assert_array_equal(nc["var1"][1], np.array(['6']))
+            nptest.assert_array_equal(nc["var2"][1], np.array([11]))
+
     def test_io(self):
         """
         Write/read test.
@@ -69,7 +89,7 @@ class PointDataReadWriteTest(unittest.TestCase):
 
         with PointData(self.fn) as nc:
             nptest.assert_array_equal(nc["var1"], range(5, 10))
-            assert nc.nc["var1"].filters()["zlib"] == True
+            assert nc.nc["var1"].filters()["zlib"] is True
             nptest.assert_array_equal(nc["var2"][1], np.array([11]))
 
     def test_ioerror(self):

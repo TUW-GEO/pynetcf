@@ -1,9 +1,11 @@
 name: pynetcf
+channels:
+  - conda-forge
 dependencies:
 - h5py
 - numpy
 - pandas
-- netCDF4!=1.6.2
+- netCDF4
 - pykdtree
 - pyproj
 - pip

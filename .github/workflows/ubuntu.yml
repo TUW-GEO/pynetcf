@@ -24,7 +24,7 @@ jobs:
         run : |
           git submodule init
           git submodule update
-      - uses: conda-incubator/setup-miniconda@v2.0.1
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest"
           auto-update-conda: true
