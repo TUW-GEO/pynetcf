@@ -309,7 +309,7 @@ class DatasetTs(Dataset, ABC):
         loc_id = np.atleast_1d(loc_id)
         # check if the location ids are all actually in the location id
         # variable
-        in1d = np.in1d(loc_id, self.loc_ids_var.data, assume_unique=True)
+        in1d = np.isin(loc_id, self.loc_ids_var.data, assume_unique=True)
         if loc_id[in1d].size != loc_id.size:
             raise IOError("Location not yet defined")
         loc_ids_sorted = np.argsort(self.loc_ids_var.data)
@@ -380,7 +380,7 @@ class DatasetTs(Dataset, ABC):
 
         loc_count = len(locations)
         if loc_count > 0:
-            loc_ids_new = np.invert(np.in1d(loc_id, locations))
+            loc_ids_new = np.invert(np.isin(loc_id, locations))
             if len(np.nonzero(loc_ids_new)[0]) == 0:
                 # no new locations to add
                 return None

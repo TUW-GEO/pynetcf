@@ -286,7 +286,7 @@ class Dataset:
             name of the variable
         """
 
-        if self.mode in ["r", "r+"]:
+        if self.mode in ["r", "r+", "a"]:
             if name in self.dataset.variables.keys():
                 return self.dataset.variables[name][:]
 
@@ -308,7 +308,7 @@ class Dataset:
         Flush data to disk.
         """
         if self.dataset is not None:
-            if self.mode in ["w", "r+"]:
+            if self.mode in ["w", "r+", "a"]:
                 self._set_global_attr()
                 self.dataset.sync()
 

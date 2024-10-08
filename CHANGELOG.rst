@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.5.1
+=============
+
+- Fixed a bug where global attrs were not updated when appending data
+- Fixed some numpy warnings
+
 Version 0.5.0
 =============
 
