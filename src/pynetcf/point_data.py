@@ -342,7 +342,7 @@ class PointData:
                 # convert dict to recarray
                 metadata = {"dims": md_dict}
                 dtype = np.dtype(dtype_list, metadata=metadata)
-                data = np.core.records.fromarrays(data.values(), dtype=dtype)
+                data = np.rec.fromarrays(data.values(), dtype=dtype)
 
             for var_data in data.dtype.names:
                 if var_data not in self.nc.variables:
