@@ -2,12 +2,16 @@
 Changelog
 =========
 
+Unreleased changes in master branch
+===================================
+
+- Read time units from existing file (fix `#52 <https://github.com/TUW-GEO/pynetcf/issues/52>`_)
+
 Version 0.5.1
 =============
 
 - Fixed a bug where global attrs were not updated when appending data
 - Fixed some numpy warnings
-- Read time units from existing file (fix `#52 <https://github.com/TUW-GEO/pynetcf/issues/52>`_)
 
 Version 0.5.0
 =============
