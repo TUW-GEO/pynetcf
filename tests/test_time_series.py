@@ -66,7 +66,10 @@ class OrthoMultiTest(unittest.TestCase):
 
     def test_file_io_simple(self):
 
-        with OrthoMultiTs(self.testfilename, mode="w", n_loc=3) as dataset:
+        tunits = 'days since 2000-01-01 00:00:00'
+
+        with OrthoMultiTs(self.testfilename, mode="w", n_loc=3,
+                          time_units=tunits) as dataset:
             for n_data in [5]:
                 for location in [1, 2, 3]:
 
@@ -83,6 +86,7 @@ class OrthoMultiTest(unittest.TestCase):
                                   alt=5)
 
         with OrthoMultiTs(self.testfilename) as dataset:
+            assert dataset.time_units == tunits
             data = dataset.read_all(2)
             nptest.assert_array_equal(data["test"], np.arange(5))
 
@@ -114,6 +118,7 @@ class OrthoMultiTest(unittest.TestCase):
                                   alt=5)
 
         with OrthoMultiTs(self.testfilename) as dataset:
+            assert dataset.time_units == "days since 1900-01-01 00:00:00"
             with pytest.raises(IOError):
                 data = dataset.read_all(5)
 
@@ -337,8 +342,10 @@ class DatasetContiguousTest(unittest.TestCase):
              datetime(2007, 2, 1),
              datetime(2007, 3, 1)])
 
-        with ContiguousRaggedTs(self.testfilename, n_loc=3, n_obs=9,
-                                mode="w") as dataset:
+        tunits = 'days since 2000-01-01 00:00:00'
+
+        with ContiguousRaggedTs(self.testfilename, n_loc=3, n_obs=9, mode="w",
+                                time_units=tunits) as dataset:
             data = {"test": np.arange(3)}
             dataset.write(1,
                           data,
@@ -363,6 +370,7 @@ class DatasetContiguousTest(unittest.TestCase):
                           alt=3)
 
         with ContiguousRaggedTs(self.testfilename) as dataset:
+            assert dataset.time_units == tunits
             data = dataset.read_all(1)
             nptest.assert_array_equal(data["test"], np.arange(3))
             nptest.assert_array_equal(data["time"], dates)
@@ -400,6 +408,7 @@ class DatasetContiguousTest(unittest.TestCase):
                           alt=3)
 
         with ContiguousRaggedTs(self.testfilename) as dataset:
+            assert dataset.time_units == "days since 1900-01-01 00:00:00"
             data = dataset.read_all(1)
             nptest.assert_array_equal(data["test"], np.arange(3))
             nptest.assert_array_equal(data["time"], dates)
