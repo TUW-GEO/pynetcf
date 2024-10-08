@@ -127,7 +127,7 @@ class DatasetTs(Dataset, ABC):
 
         # time, time units and location
         self.time_var = time_var
-        self.time_units = time_units
+        self.time_units = self._init_time_units(time_units)
         self.lat_var = lat_var
         self.lon_var = lon_var
         self.alt_var = alt_var
@@ -182,6 +182,13 @@ class DatasetTs(Dataset, ABC):
         the time series.
         """
         pass
+
+    def _init_time_units(self, _default_units: str) -> str:
+        try:
+            time_units = self.dataset['time'].getncattr('units')
+        except (IndexError, AttributeError):
+            time_units = _default_units
+        return time_units
 
     def _init_location_variables(self):
         """
