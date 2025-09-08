@@ -1639,7 +1639,8 @@ class GriddedNcTs(GriddedTsBase):
         else:
             data = self.fid.read(self.parameters, gpi, **kwargs)
 
-        if self.dates is None or self.read_dates:
+        if (self.dates is None) or self.read_dates or \
+                (self.dates.size != data['time'].size):
             if "dates_direct" in kwargs:
                 self.dates = self.fid.read_time(gpi)
             else:
