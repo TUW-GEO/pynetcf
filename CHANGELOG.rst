@@ -6,6 +6,7 @@ Unreleased changes in master branch
 ===================================
 
 - Read time units from existing file (fix `#52 <https://github.com/TUW-GEO/pynetcf/issues/52>`_)
+- Fix bug where OrthomultiTs dates have different length (PR `#65 <https://github.com/TUW-GEO/pynetcf/pull/65>`_)
 
 Version 0.5.1
 =============
