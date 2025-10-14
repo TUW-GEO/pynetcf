@@ -5,6 +5,7 @@ Changelog
 Unreleased changes in master branch
 ===================================
 
+- Fixed a bug where the reader was None after a failed attempt to read data from a non existing cell (PR `#66 <https://github.com/TUW-GEO/pynetcf/pull/66>`_)
 - Read time units from existing file (fix `#52 <https://github.com/TUW-GEO/pynetcf/issues/52>`_)
 - Fix bug where OrthomultiTs dates have different length (PR `#65 <https://github.com/TUW-GEO/pynetcf/pull/65>`_)
 
