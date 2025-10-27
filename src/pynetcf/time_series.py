@@ -1576,7 +1576,7 @@ class GriddedNcTs(GriddedTsBase):
                                 f"{self.fn_format.format(cell)}.nc")
 
         if self.mode == "r":
-            if self.previous_cell != cell:
+            if (self.previous_cell != cell) or self.fid is None:
                 self.close()
 
                 try:
@@ -1590,7 +1590,7 @@ class GriddedNcTs(GriddedTsBase):
                     warnings.warn(f"I/O error {filename}", RuntimeWarning)
 
         if self.mode in ["w", "a"]:
-            if self.previous_cell != cell:
+            if (self.previous_cell != cell) or self.fid is None:
                 self.close()
 
                 try:
