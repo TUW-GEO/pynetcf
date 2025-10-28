@@ -4,6 +4,11 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
+-
+
+
+Version 0.5.2
+=============
 
 - Fixed a bug where the reader was None after a failed attempt to read data from a non existing cell (PR `#66 <https://github.com/TUW-GEO/pynetcf/pull/66>`_)
 - Read time units from existing file (fix `#52 <https://github.com/TUW-GEO/pynetcf/issues/52>`_)
