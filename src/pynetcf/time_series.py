@@ -1587,6 +1587,7 @@ class GriddedNcTs(GriddedTsBase):
                 except (IOError, RuntimeError):
                     success = False
                     self.fid = None
+                    self.previous_cell = None
                     warnings.warn(f"I/O error {filename}", RuntimeWarning)
 
         if self.mode in ["w", "a"]:
@@ -1607,6 +1608,7 @@ class GriddedNcTs(GriddedTsBase):
                 except (IOError, RuntimeError):
                     success = False
                     self.fid = None
+                    self.previous_cell = None
                     warnings.warn(f"I/O error {filename}", RuntimeWarning)
 
         return success
