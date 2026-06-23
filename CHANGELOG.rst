@@ -4,7 +4,8 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
--
+
+- Fixed a bug where the previous cell from the reader was not cleared properly. This caused empty data when a previous attempt failed.
 
 
 Version 0.5.2

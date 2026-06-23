@@ -12,3 +12,4 @@ dependencies:
 - pip:
   - pygeobase
   - pygeogrids
+  - pytest-cov
